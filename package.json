@@ -1,0 +1,12 @@
+{
+  "name": "rapserver2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "enhanced-resolve": "^4.1.0"
+  },
+  "devDependencies": {
+    "vue": "^2.6.10"
+  }
+}
