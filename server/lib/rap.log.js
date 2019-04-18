@@ -1,5 +1,8 @@
 global.rap = global.rap||{};
 
+let defaultSettings;
+
+
 ["log", "warn", "info", "error"].forEach(function (type) {
     rap.debounce(mergePortalFunc,defaultSettings.debounce.time,"uuid-log-"+type,[stringifyParams(type,this[type].caller,arguments)]);
 });
