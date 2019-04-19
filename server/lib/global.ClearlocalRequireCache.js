@@ -1,4 +1,4 @@
-require("./global.localRequire");
+
 global.clearLocalRequireCache = function(file){
     var requireFile = localRequire(file,true);
     try{
