@@ -2,9 +2,10 @@
 require("../lib/rap.inputFileSystem.js");
 require("../lib/rap.cacheInputFileSystem.js");
 
+const pt = require("path")
+
 const CachedInputFileSystem = require("../lib/node_modules/enhanced-resolve/lib/CachedInputFileSystem");
 
-const pt = require("path");
 
 //测试exist
 test('rap cacheInputFileSystem exists', (done) => {
@@ -35,7 +36,7 @@ test('rap cacheInputFileSystem exists', (done) => {
 
 //必须提供以下api
 test('rap cacheInputFileSystem api', () => {
-	["readdir","stat","readfile","readlink","exists","readJson","readData","findFile","findDir","getSize","getModify","isDir","isFile"].forEach(type=>{
+	["readdir","stat","readFile","readlink","exists","readJson","readData","findFile","findDir","getSize","getModify","isDir","isFile"].forEach(type=>{
 		console.log(type,typeof rap.cacheInputFileSystem[type])
 		expect(typeof rap.cacheInputFileSystem[type]).toBe("function");
 		expect(typeof rap.cacheInputFileSystem[type+"Sync"]).toBe("function");
@@ -44,27 +45,77 @@ test('rap cacheInputFileSystem api', () => {
 
 //必须提供以下api
 test('rap cacheInputFileSystem cache', () => {
-	var inputFileSystem = {}
-	["readdir","stat","readfile","readlink","exists"].forEach(type=>{
+	var inputFileSystem = {};
+	["readdir","stat","readFile","readlink","exists"].forEach(type=>{
 		inputFileSystem[type] = jest.fn();
 		inputFileSystem[type+"Sync"] = jest.fn();
-	})
+	});
 	var cacheInput = new CachedInputFileSystem(inputFileSystem);
-	["readdir","stat","readfile","readlink","exists"].forEach(type=>{
-		["1",2,3,"4"].forEach(()=>{
+	["readdir","stat","readFile","readlink","exists"].forEach(type=>{
+		[1,2,3,4].forEach(()=>{
 			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
 				expect(inputFileSystem[type]).toHaveBeenCalledTimes(1);
+			});
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem[type]).toHaveBeenCalledTimes(1);
+			});
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem[type]).toHaveBeenCalledTimes(1);
+			});
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem[type]).toHaveBeenCalledTimes(1);
+			});
+		});
+	});
+	//扩展的接口
+	["readJson","readData","findFile","findDir","getSize","getModify","isDir","isFile"].forEach(type=>{
+		[1,2,3,4].forEach(()=>{
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["readFile"]).toHaveBeenCalledTimes(0);
+			});
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["readFile"]).toHaveBeenCalledTimes(0);
+			});
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["readFile"]).toHaveBeenCalledTimes(0);
+			});
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["readFile"]).toHaveBeenCalledTimes(1);
+			});
+		})
+	});
+	["findFile","findDir"].forEach(type=>{
+		[1,2,3,4].forEach(()=>{
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["readdir"]).toHaveBeenCalledTimes(0);
 			})
 			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
-				expect(inputFileSystem[type]).toHaveBeenCalledTimes(1);
+				expect(inputFileSystem["readdir"]).toHaveBeenCalledTimes(0);
 			})
 			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
-				expect(inputFileSystem[type]).toHaveBeenCalledTimes(1);
+				expect(inputFileSystem["readdir"]).toHaveBeenCalledTimes(0);
 			})
 			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
-				expect(inputFileSystem[type]).toHaveBeenCalledTimes(1);
+				expect(inputFileSystem["readdir"]).toHaveBeenCalledTimes(0);
 			})
 		})
-	})
+	});
+
+	["getSize","getModify","isDir","isFile"].forEach(type=>{
+		[1,2,3,4].forEach(()=>{
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["stat"]).toHaveBeenCalledTimes(0);
+			})
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["stat"]).toHaveBeenCalledTimes(0);
+			})
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["stat"]).toHaveBeenCalledTimes(0);
+			})
+			cacheInput[type](pt.resolve(__dirname,"../test"),function(){
+				expect(inputFileSystem["stat"]).toHaveBeenCalledTimes(0);
+			})
+		})
+	});
 
 })
