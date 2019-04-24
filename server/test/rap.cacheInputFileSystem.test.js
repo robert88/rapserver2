@@ -50,9 +50,10 @@ test('rap cacheInputFileSystem storage cache sync', () => {
 		inputFileSystem[type+"Sync"] = jest.fn();
 	});
 	var cacheInput = new CachedInputFileSystem(inputFileSystem);
+	var testPath = pt.resolve(__dirname,"../test");
 	["readdir","stat","readFile","readlink","exists"].forEach(type=>{
 		[1,2,3,4].forEach(()=>{
-			cacheInput[type+"Sync"](pt.resolve(__dirname,"../test"));
+			cacheInput[type+"Sync"](testPath);
 		});
 		expect(inputFileSystem[type+"Sync"]).toHaveBeenCalledTimes(1);
 	});
@@ -65,22 +66,23 @@ test('rap cacheInputFileSystem extend api', () => {
 	});
 	var cacheInput = new CachedInputFileSystem(inputFileSystem);
 	//扩展的接口
+	var testPath = pt.resolve(__dirname,"../test");
 	["readJson","readData","getSize","getModify","isDir","isFile"].forEach(type=>{
 		[1,2,3,4].forEach(()=>{
-			cacheInput[type+"Sync"](pt.resolve(__dirname,"../test"));
+			cacheInput[type+"Sync"](testPath);
 		});
 		expect(inputFileSystem["readFileSync"]).toHaveBeenCalledTimes(1);
 	});
 	["findFile","findDir"].forEach(type=>{
 		[1,2,3,4].forEach(()=>{
-			cacheInput[type+"Sync"](pt.resolve(__dirname,"../test"));
+			cacheInput[type+"Sync"](testPath);
 		});
 		expect(inputFileSystem["readdirSync"]).toHaveBeenCalledTimes(1);
 	});
 
 	["getSize","getModify","isDir","isFile"].forEach(type=>{
 		[1,2,3,4].forEach(()=>{
-			cacheInput[type+"Sync"](pt.resolve(__dirname,"../test"));
+			cacheInput[type+"Sync"](testPath);
 		});
 		expect(inputFileSystem["statSync"]).toHaveBeenCalledTimes(1);
 	});
