@@ -1,11 +1,8 @@
 
 global.rap = global.rap||{};
 
-const NodeJsInputFileSystem = require("enhanced-resolve/lib/NodeJsInputFileSystem");
+const CachedInputFileSystem = require("enhanced-resolve/lib/CachedInputFileSystem");
 
+//å®šä¹‰5sä»¥å†…çš„ç¼“å­˜
 
-rap.inputFileSystem = new NodeJsInputFileSystem();
-
-//¶¨Òå5sÒÔÄÚµÄ»º´æ
-
-rap.cacheInputFileSystem = new CachedInputFileSystem(rap.inputFileSystem,5000);
+rap.cacheInputFileSystem = new CachedInputFileSystem(5000);
