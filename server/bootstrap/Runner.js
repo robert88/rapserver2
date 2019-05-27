@@ -3,32 +3,43 @@ const https = require("https");
 const domain = require('domain');
 
 //初始化必要的全局变量
-require("./enviroment.js")
+require("./enviroment.js");
 
-class Runner{
+ global.rap =  global.rap || {};
+
+rap.runnerStack = [];
+
+module.exports = class Runner{
 
     constructor(options){
 
         this.responseStack = [];
 
+        this.pipe = new rap.AsyncSeriesWaterfallHook(["request","response"])
 
         //创建http服务
         this.server = http.createServer(this.middleware.bind(this)).listen(options.port||80);
 
         //创建https服务
         if(options.https){
-            http.createServer(this.middleware).listen(options.https.port||443);
+            this.serverHttps =  http.createServer(this.middleware.bind(this)).listen(options.https.port||443);
         }
 
-        http.get({
-            hostname: 'localhost',
-            port: options.port||80,
-            path: '/',
-            agent: false  // 仅为此一个请求创建一个新代理。
-          }, (res) => {
-            // 用响应做些事情。
-            res.end("ok")
-          });
+        this.pipe.tap("filterRequest",function(request,response,callback){
+
+        });
+
+        this.pipe.tab("getAction",function(){
+
+        })
+        this.pipe.tab("getRealFile",function(){
+
+        })
+        this.pipe.tab("responseEnd",function(){
+
+        })
+
+        rap.runnerStack.push(this);
     }
     
     //处理error
@@ -42,7 +53,6 @@ class Runner{
     }
     
     middleware(request,response){
-
         //清除无用的response
         this.clear();
         this.responseStack.push(response);
@@ -71,16 +81,7 @@ class Runner{
             d = null;
         });
     }
-    //处理请求
-    handler(request,response){
-    
-        requestFilter(req, function (request) {
-    
-            handleResponse(request, response);
 
-        });
-
-    }
     clear(filter){
         let ret = [];
         this.responseStack.forEach(function(response){
@@ -93,10 +94,26 @@ class Runner{
         this.responseStack = ret;
         ret = null;
     }
+    //处理请求
+    handler(request,response){
+
+        this.pipe(request,response);
+
+    }
 }
 
+//服务器挂了
 process.on('uncaughtException', function (err) {
- console.log(err)
+    rap.runnerStack.forEach(runner=>{
+        runner.error(err, runner.response, "uncaughtException");
+        runner.clear();
+    });
+    rap.runnerStack = null;
 });
 
-new Runner({port:1026})
+this.pipe.tab({
+    name:"filterPermision",
+    before:"getAction"
+},function(){
+            
+})
