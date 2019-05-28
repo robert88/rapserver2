@@ -1,9 +1,10 @@
-require("../lib/rap.cacheInputFileSystem.js");
-require("../lib/rap.toPath.js");
+require("../lib/global/global.localRequire");
+localRequire("@/server/lib/rap/rap.cacheInputFileSystem.js");
+
 
 const pt = require("path");
 const system = rap.cacheInputFileSystem.getSystem();
-//readdir
+// readdir
 test(`rap cacheInputFileSystem readdir cache`, (done) => {
 	var comp = 2;
 	function checkEnd(){
@@ -51,7 +52,9 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
   
 	system.readFile = jest.fn();
 	system.readFileSync = jest.fn();
-  
+	
+	console.log("------------jest will throw error but will pass","beause readFile is overwrite!------------")
+	
 	rap.cacheInputFileSystem.readJsonSync(dir);
 	rap.cacheInputFileSystem.readJsonSync(dir);
 	rap.cacheInputFileSystem.readDataSync(dir);
@@ -89,7 +92,9 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
 	  var dir = pt.resolve(__dirname, "./readDir/file4.json");
 	
 	  system.stat = jest.fn();
-	  system.statSync = jest.fn();
+		system.statSync = jest.fn();
+		
+		console.log("-----------jest will throw error but will pass","beause stat is overwrite!-----------")
 	
 	  rap.cacheInputFileSystem.statSync(dir);
 	  rap.cacheInputFileSystem.statSync(dir);

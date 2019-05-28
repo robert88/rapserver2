@@ -1,6 +1,6 @@
+require("../lib/global/global.localRequire");
+localRequire("@/server/lib/rap/rap.cacheInputFileSystem.js");
 
-require("../lib/rap.cacheInputFileSystem.js");
-require("../lib/rap.toPath.js");
 
 const pt = require("path")
 

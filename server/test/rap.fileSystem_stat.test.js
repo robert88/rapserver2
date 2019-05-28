@@ -1,6 +1,6 @@
+require("../lib/global/global.localRequire");
+localRequire("@/server/lib/rap/rap.cacheInputFileSystem.js");
 
-require("../lib/rap.cacheInputFileSystem.js");
-require("../lib/rap.toPath.js");
 
 const pt = require("path")
 
@@ -90,6 +90,9 @@ test(`rap cacheInputFileSystem api getModify`, (done) => {
 test(`rap cacheInputFileSystem api isDir`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
 	var dir2 = pt.resolve(__dirname,"./readDir1");//测试一个不存在的
+	
+	console.log("-----------jest will throw error but will pass","beause readDir1 is not exist!-----------")
+
 	let data = rap.cacheInputFileSystem.isDirSync(dir);
 	let data2 = rap.cacheInputFileSystem.isDirSync(dir2);
 	expect(data).toBe(true);

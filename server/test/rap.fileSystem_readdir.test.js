@@ -1,6 +1,6 @@
-
-require("../lib/rap.cacheInputFileSystem.js");
-require("../lib/rap.toPath.js");
+require("../lib/global/global.localRequire");
+localRequire("@/server/lib/rap/rap.cacheInputFileSystem.js");
+const toPath = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/toPath.js");
 
 const pt = require("path")
 
@@ -33,9 +33,9 @@ test(`rap cacheInputFileSystem api readdir`, (done) => {
 test(`rap cacheInputFileSystem api findDir`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
 	let data = rap.cacheInputFileSystem.findDirSync(dir,"",true);
-	expect(data).toEqual([rap.toPath(dir+"/deep1"),rap.toPath(dir+"/deep1/deep2")]);
+	expect(data).toEqual([toPath(dir+"/deep1"),toPath(dir+"/deep1/deep2")]);
 	rap.cacheInputFileSystem.findDir(dir,true,data=>{
-		expect(data).toEqual([rap.toPath(dir+"/deep1"),rap.toPath(dir+"/deep1/deep2")]);
+		expect(data).toEqual([toPath(dir+"/deep1"),toPath(dir+"/deep1/deep2")]);
 		done();
 	});
 });
@@ -44,9 +44,9 @@ test(`rap cacheInputFileSystem api findDir`, (done) => {
 test(`rap cacheInputFileSystem api findFile`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
 	let data = rap.cacheInputFileSystem.findFileSync(dir,"txt",true);
-	expect(data).toEqual([rap.toPath(dir+"/deep1/deep2/file.txt"),rap.toPath(dir+"/file2.txt")]);
+	expect(data).toEqual([toPath(dir+"/deep1/deep2/file.txt"),toPath(dir+"/file2.txt")]);
 	rap.cacheInputFileSystem.findFile(dir,true,data=>{
-		expect(data).toEqual([rap.toPath(dir+"/file2.txt"),rap.toPath(dir+"/file3.js"),rap.toPath(dir+"/file4.json"),rap.toPath(dir+"/deep1/deep2/file.txt")]);
+		expect(data).toEqual([toPath(dir+"/file2.txt"),toPath(dir+"/file3.js"),toPath(dir+"/file4.json"),toPath(dir+"/deep1/deep2/file.txt")]);
 		done();
 	});
 });

@@ -2,8 +2,9 @@ const http = require("http");
 const https = require("https");
 const domain = require('domain');
 
+const AsyncSeriesWaterfallHook = localRequire("@/server/lib/node_modules/tapable/AsyncSeriesWaterfallHook.js");
+
 //初始化必要的全局变量
-require("./enviroment.js");
 
  global.rap =  global.rap || {};
 
@@ -12,10 +13,24 @@ rap.runnerStack = [];
 module.exports = class Runner{
 
     constructor(options){
-
+        //存储未完成的response
         this.responseStack = [];
 
-        this.pipe = new rap.AsyncSeriesWaterfallHook(["request","response"])
+        options = options || {};
+
+        this.pipe = new AsyncSeriesWaterfallHook(["request","response"]);
+
+        //默认response
+        this.pipe.tap({
+            stage:-10,
+            name:"responseEnd",
+            //如果可以传递到这里，那么就输出helloworld
+            fn(request,response){
+                if(response){
+                    response.end("helloworld");
+                }
+            }
+        });
 
         //创建http服务
         this.server = http.createServer(this.middleware.bind(this)).listen(options.port||80);
@@ -25,31 +40,12 @@ module.exports = class Runner{
             this.serverHttps =  http.createServer(this.middleware.bind(this)).listen(options.https.port||443);
         }
 
-        this.pipe.tap("filterRequest",function(request,response,callback){
-
-        });
-
-        this.pipe.tab("getAction",function(){
-
-        })
-        this.pipe.tab("getRealFile",function(){
-
-        })
-        this.pipe.tab("responseEnd",function(){
-
-        })
-
         rap.runnerStack.push(this);
     }
     
     //处理error
-    error(err, response, from){
-      if(typeof err=="object"){
-          if(err.stack){
-              let code = rap.error(err.stack);
-          }
-      }
-
+    error(err,response,from){
+        console.error(err&&err.message,"from",from);
     }
     
     middleware(request,response){
@@ -97,23 +93,17 @@ module.exports = class Runner{
     //处理请求
     handler(request,response){
 
-        this.pipe(request,response);
+        this.pipe.callAsync(request,response);
 
     }
 }
 
 //服务器挂了
 process.on('uncaughtException', function (err) {
-    rap.runnerStack.forEach(runner=>{
+    rap.runnerStack&&rap.runnerStack.forEach(runner=>{
         runner.error(err, runner.response, "uncaughtException");
         runner.clear();
     });
     rap.runnerStack = null;
 });
 
-this.pipe.tab({
-    name:"filterPermision",
-    before:"getAction"
-},function(){
-            
-})

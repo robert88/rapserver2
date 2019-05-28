@@ -1,5 +1,6 @@
 //测试
-require("../lib/rap.debounce");
+require("../lib/global/global.localRequire");
+localRequire("@/server/lib/rap/rap.debounce");
 
 //测试间隔
 test('debounce intervel time', (done) => {
