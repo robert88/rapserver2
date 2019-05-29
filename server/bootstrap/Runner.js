@@ -26,18 +26,18 @@ module.exports = class Runner{
             name:"responseEnd",
             //如果可以传递到这里，那么就输出helloworld
             fn(request,response){
-                if(response){
+                if(response&&response.finished==false){
                     response.end("helloworld");
                 }
             }
         });
 
         //创建http服务
-        this.server = http.createServer(this.middleware.bind(this)).listen(options.port||80);
+        this.server = http.createServer(this.middleware.bind(this)).listen(options.port||3003);
 
         //创建https服务
         if(options.https){
-            this.serverHttps =  http.createServer(this.middleware.bind(this)).listen(options.https.port||443);
+            this.serverHttps =  http.createServer(this.middleware.bind(this)).listen(options.https.port||3004);
         }
 
         rap.runnerStack.push(this);
@@ -59,6 +59,12 @@ module.exports = class Runner{
 
         let d = domain.create();
 
+        //捕获异步异常
+        d.on('error',  (err) =>{
+            this.error(err, response, "domainErrorEvent");
+            d = null;
+        });
+
         d.run(()=>{
             //捕获同步异常
             try {
@@ -71,11 +77,7 @@ module.exports = class Runner{
             }
         });
     
-        //捕获异步异常
-        d.on('error',  (err) =>{
-            this.error(err, response, "domainErrorEvent");
-            d = null;
-        });
+
     }
 
     clear(filter){
