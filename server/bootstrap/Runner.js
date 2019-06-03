@@ -21,14 +21,15 @@ module.exports = class Runner{
         this.pipe = new AsyncSeriesWaterfallHook(["request","response"]);
 
         //默认response
-        this.pipe.tap({
+        this.pipe.tapAsync({
             stage:-10,
             name:"responseEnd",
             //如果可以传递到这里，那么就输出helloworld
-            fn(request,response){
+            fn(request,response,callback){
                 if(response&&response.finished==false){
                     response.end("helloworld");
                 }
+                callback();
             }
         });
 
@@ -47,7 +48,16 @@ module.exports = class Runner{
     error(err,response,from){
         console.error(err&&err.message,"from",from);
     }
-    
+
+    close(){
+        this.clear();
+        this.server.close();
+        if(this.serverHttps){
+            this.serverHttps.close();
+        }
+        this.pipe.taps=[];
+        this.pipe._resetCompilation();
+    }
     middleware(request,response){
         //清除无用的response
         this.clear();
