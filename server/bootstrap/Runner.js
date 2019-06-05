@@ -19,22 +19,21 @@ module.exports = class Runner{
         options = options || {};
 
         this.pipe = new AsyncSeriesWaterfallHook(["request","response"]);
+        this.error = new AsyncSeriesWaterfallHook(["err","response","comeFrom"]);
 
-        //默认response
-        this.pipe.tapAsync({
-            stage:-10,
-            name:"responseEnd",
-            //如果可以传递到这里，那么就输出helloworld
-            fn(request,response,callback){
+        this.error.tapAsync({
+            name:"normalErrorHandle",
+            fn(err,response,comeFrom){
+                //默认response
                 if(response&&response.finished==false){
-                    response.end("helloworld");
+                    response.end(comeFrom+":"+err&&err.message);
                 }
-                callback();
             }
-        });
 
+        })
         //创建http服务
         this.server = http.createServer(this.middleware.bind(this)).listen(options.port||3003);
+         console.log("server run port "+(options.port||3003));
 
         //创建https服务
         if(options.https){
@@ -44,10 +43,6 @@ module.exports = class Runner{
         rap.runnerStack.push(this);
     }
     
-    //处理error
-    error(err,response,from){
-        console.error(err&&err.message,"from",from);
-    }
 
     close(){
         this.clear();
@@ -71,19 +66,22 @@ module.exports = class Runner{
 
         //捕获异步异常
         d.on('error',  (err) =>{
-            this.error(err, response, "domainErrorEvent");
-            d = null;
+
+            this.error.callAsync(err,response, "domainErrorEvent",()=>{
+                d = null;
+            });
+
         });
 
         d.run(()=>{
             //捕获同步异常
             try {
                 this.handler(request,response);
-                throw new Error();
             } catch (err) {
-                this.error(err, response, "trycatch");
-                err = null;
-                d = null;
+                this.error.callAsync(err,response, "trycatch",()=>{
+                    err = null;
+                    d = null;
+                });
             }
         });
     
@@ -97,7 +95,9 @@ module.exports = class Runner{
             if (typeof filter == "function" && filter(response) === false) {
                 return;
             }
-            ret.push(response);
+            if(response&&response.finished==false){
+                ret.push(response);
+            }
         });
         this.responseStack = ret;
         ret = null;
@@ -105,7 +105,14 @@ module.exports = class Runner{
     //处理请求
     handler(request,response){
 
-        this.pipe.callAsync(request,response);
+        this.pipe.callAsync(request,response,(err,request,response)=>{
+            if(err){
+                this.error(err,response,"pipeException");
+            //默认response
+            }else if(request&&response&&response.finished==false){
+                response.end("helloworld");
+            }
+        });
 
     }
 }
@@ -113,8 +120,11 @@ module.exports = class Runner{
 //服务器挂了
 process.on('uncaughtException', function (err) {
     rap.runnerStack&&rap.runnerStack.forEach(runner=>{
-        runner.error(err, runner.response, "uncaughtException");
-        runner.clear();
+        this.responseStack.forEach((response)=>{
+            runner.error.callAsync(err, response, "uncaughtException",()=>{
+                runner.clear();
+            });
+        })
     });
     rap.runnerStack = null;
 });

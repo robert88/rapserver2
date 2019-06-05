@@ -6,8 +6,19 @@
 * */
 require("./lib/global/global.localRequire");
 
-// const Cluser = localRequire("@/server/bootstrap/Cluser.js");
 const Runner = localRequire("@/server/bootstrap/Runner.js");
+
+let run = new Runner();
+
+run.pipe.tap({
+    name:"requestCount",
+    fn(request,response){
+        console.clear();
+       console.log(run.responseStack.length);
+    }
+});
+
+// const Cluser = localRequire("@/server/bootstrap/Cluser.js");
 // const Sockie = localRequire("@/server/bootstrap/Sockie.js");
 
 //全局变量
@@ -15,8 +26,6 @@ const Runner = localRequire("@/server/bootstrap/Runner.js");
 // localRequire("@/server/lib/global/global.js");
 // localRequire("@/server/lib/rap/rap.js");
 // let config = localRequire("@/server/config.js");
-
-let run = new Runner(config);
 
 // localRequire("@/server/pipe/filter/query")(run);
 // localRequire("@/server/pipe/filter/action")(run);

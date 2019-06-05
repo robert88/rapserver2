@@ -4,37 +4,37 @@ const Runner = localRequire("@/server/bootstrap/Runner.js");
 const AsyncParallelBailHook = localRequire("@/server/lib/node_modules/tapable/AsyncParallelBailHook.js")
 localRequire("@/server/lib/rap/rap.restful.js");
 
-test("test empty http server", function(done) {
-  let run = new Runner();
+test("test http server 3005", function(done) {
+  let run = new Runner({ port:3005 });
   rap.restful({
-    url: "http://localhost:3003",
+    url: "http://localhost:3005",
     success: function(ret) {
       expect(ret).toBe("helloworld");
       done();
       run.close();
     }
-  })
-})
+  });
+},100000)
 
-test("test empty http server", (done)=> {
-  let run = new Runner({ port: 3005 });
-  var parallel = new AsyncParallelBailHook();
-  var arr = [...Array(300)];
-  arr.forEach(() => {
-    parallel.tapAsync("test", function(callback) {
-      rap.restful({
-        url: "http://localhost:3005",
-        success: function(ret) {
-      expect(ret).toBe("helloworld");
-      console.log(1)
-          callback();
-        }
-      })
-    });
-  })
 
-parallel.callAsync(function() {
-    done();
+test("test http server 3006 handler error", function(done) {
+  let run = new Runner({ port:3006 });
+  run.pipe.tapAsync({
+    name:"asyncThrowError",
+    fn(request,response,callback) {
+      setTimeout(()=>{
+        throw Error("test async error");
+        callback();
+      },10)
+    }
   });
 
-},1000*600);
+  rap.restful({
+    url: "http://localhost:3006",
+    success: function(ret) {
+      expect(ret).toBe("helloworld");
+      done();
+      run.close();
+    }
+  });
+},100000)

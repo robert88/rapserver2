@@ -6,10 +6,11 @@ localRequire("@/server/lib/rap/rap.debounce");
 test('debounce intervel time', (done) => {
 	// expect.assertions(1)
 	let recordTime;
+	//setTimeout has 10ms deviation with Date,so this value is 990
 	let callFunction =(params,uuid)=>{
 		if(recordTime){
 			let intervel = +new Date()-recordTime;
-			expect(intervel).toBeGreaterThan(999);
+			expect(intervel).toBeGreaterThan(990);
 			done()
 		}else{
 			recordTime = +new Date();
