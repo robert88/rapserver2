@@ -31,18 +31,57 @@ module.exports = class Runner{
             }
 
         })
+
         //创建http服务
-        this.server = http.createServer(this.middleware.bind(this)).listen(options.port||3003);
-         console.log("server run port "+(options.port||3003));
+        this.readyStack = [];
+        this.httpStatus = "ready";
+        this.server = http.createServer(this.middleware.bind(this)).listen(options.port||3003,()=>{
+            this.httpStatus = "started";
+            this.ready();
+            console.log("server http run port "+(options.port||3003));
+        });
+
 
         //创建https服务
         if(options.https){
-            this.serverHttps =  http.createServer(this.middleware.bind(this)).listen(options.https.port||3004);
+            this.HttpsReadyStack = [];
+            this.httpsStatus = "ready";
+            this.serverHttps =  http.createServer(this.middleware.bind(this)).listen(options.https.port||3004,()=>{
+                this.httpsStatus = "started";
+                this.HttpsReady();
+                console.log("server https run port "+(options.https.port||3003));
+            });
         }
 
         rap.runnerStack.push(this);
     }
     
+    ready(fn){
+        if(typeof fn=="function"){
+            this.httpReadyStack.push(fn);
+        }
+        if(this.httpStatus=="started"){
+            this.httpReadyStack.forEach((fn)=>{
+                fn();
+            });
+            this.httpReadyStack.length = 0
+        }
+    }
+
+    HttpsReady(fn){
+        if( !this.serverHttps ){
+            return;
+        }
+        if(typeof fn=="function"){
+            this.httpsReadyStack.push(fn);
+        }
+        if(this.httpsStatus=="started"){
+            this.httpsReadyStack.forEach((fn)=>{
+                fn();
+            });
+            this.httpsReadyStack.length = 0
+        }
+    }
 
     close(){
         this.clear();
@@ -120,7 +159,7 @@ module.exports = class Runner{
 //服务器挂了
 process.on('uncaughtException', function (err) {
     rap.runnerStack&&rap.runnerStack.forEach(runner=>{
-        this.responseStack.forEach((response)=>{
+        runner.responseStack.forEach((response)=>{
             runner.error.callAsync(err, response, "uncaughtException",()=>{
                 runner.clear();
             });
@@ -128,4 +167,4 @@ process.on('uncaughtException', function (err) {
     });
     rap.runnerStack = null;
 });
-
+ 

@@ -18,6 +18,25 @@ run.pipe.tap({
     }
 });
 
+// 异步测试
+run.pipe.tapAsync({
+  name:"asyncThrowError",
+  fn(request,response,callback) {
+    setTimeout(()=>{
+      throw Error("test async error");
+      callback();
+    },10)
+  }
+});
+
+//同步测试
+// run.pipe.tapAsync({
+//     name:"throwError",
+//     fn(request,response,callback) {
+//         throw Error("test async error");
+//         callback();
+//     }
+//   });
 // const Cluser = localRequire("@/server/bootstrap/Cluser.js");
 // const Sockie = localRequire("@/server/bootstrap/Sockie.js");
 

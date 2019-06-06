@@ -1,40 +1,30 @@
 //测试
 require("../lib/global/global.localRequire");
-const Runner = localRequire("@/server/bootstrap/Runner.js");
-const AsyncParallelBailHook = localRequire("@/server/lib/node_modules/tapable/AsyncParallelBailHook.js")
 localRequire("@/server/lib/rap/rap.restful.js");
+const run4000 = localRequire("@/server/test/RunnerTest4000.js")
+const run4001 = localRequire("@/server/test/RunnerTest4001.js")
+test("test http server 4001", function(done) {
 
-test("test http server 3005", function(done) {
-  let run = new Runner({ port:3005 });
   rap.restful({
-    url: "http://localhost:3005",
+    url: "http://localhost:4000",
     success: function(ret) {
       expect(ret).toBe("helloworld");
       done();
-      run.close();
+      run4000.close();
     }
   });
 },100000)
 
 
-test("test http server 3006 handler error", function(done) {
-  let run = new Runner({ port:3006 });
-  run.pipe.tapAsync({
-    name:"asyncThrowError",
-    fn(request,response,callback) {
-      setTimeout(()=>{
-        throw Error("test async error");
-        callback();
-      },10)
-    }
-  });
+
+test("test http server 4000 handler error", function(done) {
 
   rap.restful({
-    url: "http://localhost:3006",
+    url: "http://localhost:4001",
     success: function(ret) {
       expect(ret).toBe("helloworld");
       done();
-      run.close();
+      run4001.close();
     }
   });
 },100000)
