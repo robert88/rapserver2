@@ -34,54 +34,38 @@ module.exports = class Runner{
 
         //创建http服务
         this.readyStack = [];
-        this.httpStatus = "ready";
-        this.server = http.createServer(this.middleware.bind(this)).listen(options.port||3003,()=>{
-            this.httpStatus = "started";
-            this.ready();
-            console.log("server http run port "+(options.port||3003));
-        });
-
-
-        //创建https服务
+        this.status = "ready";
         if(options.https){
-            this.HttpsReadyStack = [];
-            this.httpsStatus = "ready";
-            this.serverHttps =  http.createServer(this.middleware.bind(this)).listen(options.https.port||3004,()=>{
-                this.httpsStatus = "started";
-                this.HttpsReady();
-                console.log("server https run port "+(options.https.port||3003));
+            this.server = https.createServer(this.middleware.bind(this)).listen(options.port||3004,()=>{
+                this.status = "started";
+                this.ready();
+                console.log("server https run port "+(options.port||3004));
             });
+        }else{
+            this.server = http.createServer(this.middleware.bind(this)).listen(options.port||3003,()=>{
+                this.status = "started";
+                this.ready();
+                console.log("server http run port "+(options.port||3003));
+            });
+    
         }
+
 
         rap.runnerStack.push(this);
     }
     
     ready(fn){
         if(typeof fn=="function"){
-            this.httpReadyStack.push(fn);
+            this.readyStack.push(fn);
         }
-        if(this.httpStatus=="started"){
-            this.httpReadyStack.forEach((fn)=>{
+        if(this.status=="started"){
+            this.readyStack.forEach((fn)=>{
                 fn();
             });
-            this.httpReadyStack.length = 0
+            this.readyStack.length = 0
         }
     }
 
-    HttpsReady(fn){
-        if( !this.serverHttps ){
-            return;
-        }
-        if(typeof fn=="function"){
-            this.httpsReadyStack.push(fn);
-        }
-        if(this.httpsStatus=="started"){
-            this.httpsReadyStack.forEach((fn)=>{
-                fn();
-            });
-            this.httpsReadyStack.length = 0
-        }
-    }
 
     close(){
         this.clear();
