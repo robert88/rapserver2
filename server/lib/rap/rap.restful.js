@@ -75,7 +75,6 @@ rap.restful =function(options) {
 		});
 //
 	}).on('error', function (e) {
-	    console.error(`rap.restful:request url: ${options.url}`,e&&e.message)
         if(typeof options.error == "function"){
             options.error(e);
         }
