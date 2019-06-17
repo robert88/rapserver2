@@ -1,6 +1,7 @@
 require("../lib/global/global.localRequire");
-localRequire("@/server/lib/rap/rap.cacheInputFileSystem.js");
+localRequire("@/server/lib/rap/rap.fileSystem.js");
 
+const cacheInputFileSystem = rap.inputFileSystem.cache;
 
 const pt = require("path")
 
@@ -8,7 +9,7 @@ const pt = require("path")
 test(`rap cacheInputFileSystem api stat`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
 
-	rap.cacheInputFileSystem.stat(dir,function(data){
+	cacheInputFileSystem.stat(dir,function(data){
 
 		expect(data.atime.constructor == Date).toBe(false);//目前测试发现不是Date的实例
 		expect(typeof data.atime.getTime).toBe("function");
@@ -31,7 +32,7 @@ test(`rap cacheInputFileSystem api stat`, (done) => {
 		done();
 	})
 
-	let data = rap.cacheInputFileSystem.statSync(dir);
+	let data = cacheInputFileSystem.statSync(dir);
 
 
 	expect(data.atime.constructor == Date).toBe(false);
@@ -61,14 +62,14 @@ test(`rap cacheInputFileSystem api stat`, (done) => {
 test(`rap cacheInputFileSystem api getSize`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
 	var dir2 = pt.resolve(__dirname,"./readDir/file4.json");
-	let data = rap.cacheInputFileSystem.getSizeSync(dir);
-	let data2 = rap.cacheInputFileSystem.getSizeSync(dir2);
+	let data = cacheInputFileSystem.getSizeSync(dir);
+	let data2 = cacheInputFileSystem.getSizeSync(dir2);
 	expect(data).toBe(0);
 	//toBeLessThanOrEqual <=
 	expect(data2).toBeLessThanOrEqual(1024);
-	rap.cacheInputFileSystem.getSize(dir,data=>{
+	cacheInputFileSystem.getSize(dir,data=>{
 		expect(data).toBe(0);
-		rap.cacheInputFileSystem.getSize(dir2,data=>{
+		cacheInputFileSystem.getSize(dir2,data=>{
 			expect(data2).toBeLessThanOrEqual(1024);
 			done();
 		});
@@ -78,9 +79,9 @@ test(`rap cacheInputFileSystem api getSize`, (done) => {
 //getModify
 test(`rap cacheInputFileSystem api getModify`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
-	let data = rap.cacheInputFileSystem.getModifySync(dir);
+	let data = cacheInputFileSystem.getModifySync(dir);
 	expect(data).toBe(1558763435000);
-	rap.cacheInputFileSystem.getModify(dir,data=>{
+	cacheInputFileSystem.getModify(dir,data=>{
 		expect(data).toBe(1558763435000);
 		done();
 	});
@@ -93,13 +94,13 @@ test(`rap cacheInputFileSystem api isDir`, (done) => {
 	
 	console.log("-----------jest will throw error but will pass","beause readDir1 is not exist!-----------")
 
-	let data = rap.cacheInputFileSystem.isDirSync(dir);
-	let data2 = rap.cacheInputFileSystem.isDirSync(dir2);
+	let data = cacheInputFileSystem.isDirSync(dir);
+	let data2 = cacheInputFileSystem.isDirSync(dir2);
 	expect(data).toBe(true);
 	expect(data2).toBeUndefined();
-	rap.cacheInputFileSystem.isDir(dir,data=>{
+	cacheInputFileSystem.isDir(dir,data=>{
 		expect(data).toBe(true);
-		rap.cacheInputFileSystem.isDir(dir2,data=>{
+		cacheInputFileSystem.isDir(dir2,data=>{
 			expect(1).toBe(2);//这个不会测到
 		},()=>{
 			done();
@@ -111,13 +112,13 @@ test(`rap cacheInputFileSystem api isDir`, (done) => {
 test(`rap cacheInputFileSystem api isFile`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
 	var dir2 = pt.resolve(__dirname,"./readDir/file4.json");
-	let data = rap.cacheInputFileSystem.isFileSync(dir);
-	let data2 = rap.cacheInputFileSystem.isFileSync(dir2);
+	let data = cacheInputFileSystem.isFileSync(dir);
+	let data2 = cacheInputFileSystem.isFileSync(dir2);
 	expect(data).toBe(false);
 	expect(data2).toBe(true);
-	rap.cacheInputFileSystem.isFile(dir,data=>{
+	cacheInputFileSystem.isFile(dir,data=>{
 		expect(data).toBe(false);
-		rap.cacheInputFileSystem.isFile(dir2,data=>{
+		cacheInputFileSystem.isFile(dir2,data=>{
 			expect(data).toBe(true);
 			done();
 		});
@@ -128,13 +129,13 @@ test(`rap cacheInputFileSystem api isFile`, (done) => {
 test(`rap cacheInputFileSystem api exists`, (done) => {
 	var dir = pt.resolve(__dirname,"./readDir");
 	var dir2 = pt.resolve(__dirname,"./readDir1");
-	let data = rap.cacheInputFileSystem.existsSync(dir);
-	let data2 = rap.cacheInputFileSystem.existsSync(dir2);
+	let data = cacheInputFileSystem.existsSync(dir);
+	let data2 = cacheInputFileSystem.existsSync(dir2);
 	expect(data).toBe(true);
 	expect(data2).toBeUndefined();
-	rap.cacheInputFileSystem.exists(dir,data=>{
+	cacheInputFileSystem.exists(dir,data=>{
 		expect(data).toBe(true);
-		rap.cacheInputFileSystem.exists(dir2,data=>{
+		cacheInputFileSystem.exists(dir2,data=>{
 			expect(1).toBe(2);//如果不存在，就不会调用
 		},()=>{
 			done();

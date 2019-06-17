@@ -1,8 +1,8 @@
 
 global.rap = global.rap||{};
 
-const CachedInputFileSystem = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/CachedInputFileSystem.js");
-const CachedOutputFileSystem = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/CachedOutputFileSystem.js");
+const CachedInputFileSystem = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/FileSystemInput.js");
+const CachedOutputFileSystem = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/FileSystemOutput.js");
 
 //定义5s以内的缓存
 
