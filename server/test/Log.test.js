@@ -9,9 +9,10 @@ const cacheInputFileSystem = rap.fileSystem.input.cache;
 //测试间隔
 test('class Log', (done) => {
  let log = new Log({filesystem:cacheInputFileSystem,outpath:logPath}).init();
-	log.save("ok",()=>{
-		var stat = 	fs.statSync(logPath+"/"+log.active);
-		expect(typeof stat).toBe("object");
+	log.save("test string",()=>{
+		var data = fs.readFileSync(logPath+"/"+log.active).toString("utf-8")
+		expect(data).toBe("test string");
+		fs.readFileSync(logPath+"/"+log.active)
 		done();
 	});
 
