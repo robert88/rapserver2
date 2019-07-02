@@ -110,14 +110,14 @@ test("makeCallbackFunc 将异步代码转为callback异步方式", () => {
       if(!await test()){
         b=3;
       }
-      let f = " await is function";
+      let f = "await is function async";
       let obj = {test:test};
       let g = '1 async\' ';
-      let d =  await obj["test"]();
+      let d =  await obj['test']();
     }
     var t = makeCallbackFunc(a1.toString()).toString().replace(/\s+/g,"");
      //toString会把没有用的()去掉，而！这样会添加（）
-      expect(t).toBe('function(__error__,{parama:{},paramb}){if(__error__){throw__error__;}letb={};leta=1+2;lettest=function(__buildAsyncError__){if(__error__){throw__error__;}letd=1;};test(function(__error__,__result__){if(__error__){throw__error__;}lett=__result__;if(a){b=1;}test(function(__error__,__result__){if(__error__){throw__error__;}if(!(__result__)){b=3;}letf="awaitisfunction";letobj={test:test};letg=\'1async\\\'\';obj["test"](function(__error__,__result__){if(__error__){throw__error__;}letd=__result__;})})})}');
+      expect(t).toBe('function(__error__,{parama:{},paramb}){if(__error__){throw__error__;}letb={};leta=1+2;lettest=function(__buildAsyncError__){if(__error__){throw__error__;}letd=1;};test(function(__error__,__result__){if(__error__){throw__error__;}lett=__result__;if(a){b=1;}test(function(__error__,__result__){if(__error__){throw__error__;}if(!(__result__)){b=3;}letf="awaitisfunctionasync";letobj={test:test};letg=\'1async\\\'\';obj[\'test\'](function(__error__,__result__){if(__error__){throw__error__;}letd=__result__;})})})}');
     }
 
 });

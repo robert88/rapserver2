@@ -107,14 +107,14 @@ test("makeSyncFunc 将异步代码转为同步代码", () => {
       if(!await test()){
         b=3;
       }
-      let f = " await is function";
+      let f = " await is function async";
       let obj = {test:test};
       let g = '1 async\' ';
-      let d =  await obj["test"]();
+      let d =  await obj['test']();
     }
     var t = makeSyncFunc(a1.toString()).toString().replace(/\s+/g,"");
      //toString会把没有用的()去掉，而！这样会添加（）
-     expect(t).toBe('function({parama:{},paramb}){letb={};leta=1+2;lettest=function(){letd=1;};lett=testSync();if(a){b=1;}if(!(testSync())){b=3;}letf="awaitisfunction";letobj={test:test};letg=\'1async\\\'\';letd=obj["test"+"Sync"]();}');
+     expect(t).toBe('function({parama:{},paramb}){letb={};leta=1+2;lettest=function(){letd=1;};lett=testSync();if(a){b=1;}if(!(testSync())){b=3;}letf="awaitisfunctionasync";letobj={test:test};letg=\'1async\\\'\';letd=obj[\'test\'+"Sync"]();}');
    }
 
 });
