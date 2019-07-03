@@ -7,29 +7,37 @@ test("makeCallbackToPromise 将callback异步转为promise异步方式", () => {
   {
 
     var obj = {
-      wake: function (params, callback) {
+      wake: function (errparams, callback) {
+        var ret = 1;
+        ///为了测试
+        var err = errparams&&new Error(errparams);
         setTimeout(()=>{
-          callback(null, params)
+          callback(err, ret);
         },10)
       },
       wakeSync: function () { }
     }
-
-    obj.wake("www", (err, pa) => {
-      expect(err).toBeNull();
-      expect(pa).toBe("www");
+    
+    obj.wake("err1", (err, ret) => {
+      expect(err.message).toBe("err1");
+      expect(ret).toBe(1);
     });
 
     makeCallbackToPromise(obj)
-
-    obj.wake("www").then(pa => { expect(pa).toBe("www"); });
-
-    obj.wake("www",function(){
-      throw "err"
-    }).catch(e=>{
-      expect(e.message).toBe("err");
+    
+    obj.wake().then(ret => {
+      expect(ret).toBe(1);
+     });
+    
+    obj.wake("err2").catch(e=>{
+      expect(e.message).toBe("err2");
     })
-
+    let mo = jest.fn();
+    obj.wake(null,()=>{
+      mo();
+    }).catch(e=>{
+      expect(mo.mock.calls.length).toBe(0);
+    })
   }
 
 });
