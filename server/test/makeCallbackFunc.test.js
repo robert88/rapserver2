@@ -98,22 +98,14 @@ test("makeCallbackFunc 将异步代码转为callback异步方式", () => {
   }
   {
     let a1 = async function({parama:{},paramb}){
-      let b = {}; 
-      let a= (1+2);
-      let  test = async function(){
-        let d = 1;
-      }; 
-      let t = await test();
-      if(a){
-        b=1;
+
+      if(!await atesta(paap)){
+        let t = await btestb(pbbp);
+        if(!await ctestc(pccp)){
+          let t = await dtestd(pddp)&&await eteste(peep);
+        }
       }
-      if(!await test()){
-        b=3;
-      }
-      let f = "await is function async";
-      let obj = {test:test};
-      let g = '1 async\' ';
-      let d =  await obj['test']();
+
     }
     var t = makeCallbackFunc(a1.toString()).toString().replace(/\s+/g,"");
      //toString会把没有用的()去掉，而！这样会添加（）
