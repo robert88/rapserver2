@@ -1,12 +1,13 @@
 
 global.rap = global.rap||{};
 
-require("./rap.debounce");
-require("./rap.inputfileSystem");
-require("./rap.fileSystem");
-require("./rap.restful");		
+require("../global/global.localRequire");
 
-const Log = require("./Log");
+localRequire("@/server/lib/rap/rap.debounce.js");
+localRequire("@/server/lib/rap/rap.fileSystem");
+localRequire("@/server/lib/rap/rap.restful.js");		
+
+const Log = localRequire("@/server/lib/rap/Log.js");
 
 let log = new Log({filesystem:rap.cacheInputFileSystem,outpath:localRequire("@/sever/log",true)}).init();
 
