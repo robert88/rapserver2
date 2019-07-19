@@ -108,7 +108,7 @@ test(`rap cacheInputFileSystem api isDir`, (done) => {
         jestFn(error.message)
     }
 
-    expect(jestFn).toHaveBeenNthCalledWith(1,"ENOENT: no such file or directory, stat 'd:/yinming/code/rapserver2-master/server/test/readDir2'");
+    expect(jestFn).toHaveBeenNthCalledWith(1,"ENOENT: no such file or directory, stat 'D:/yinming/code/rapserver2-master/server/test/readDir2'");
 
     expect(data).toBe(true);
     
@@ -117,7 +117,7 @@ test(`rap cacheInputFileSystem api isDir`, (done) => {
 	cacheInputFileSystem.isDir(dir,(err,data)=>{
 		expect(data).toBe(true);
 		cacheInputFileSystem.isDir(dir2,(err,data)=>{
-            expect(err.message).toBe("ENOENT: no such file or directory, stat 'd:/yinming/code/rapserver2-master/server/test/readDir2'");
+            expect(err.message).toBe("ENOENT: no such file or directory, stat 'D:/yinming/code/rapserver2-master/server/test/readDir2'");
             done();
 		});
 	});

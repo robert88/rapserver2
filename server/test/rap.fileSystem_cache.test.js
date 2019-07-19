@@ -1,12 +1,9 @@
 require("../lib/global/global.localRequire");
-localRequire("@/server/lib/rap/rap.fileSystem.js");
-
-
+var FileSystemInput = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/FileSystemInput.js");
 const pt = require("path");
-
-const cacheInputFileSystem = rap.fileSystem.input.cache;
-
+const cacheInputFileSystem = new FileSystemInput(5000);
 const system = cacheInputFileSystem.getSystem();
+const fs = require("fs");
 // readdir
 test(`rap cacheInputFileSystem readdir cache`, (done) => {
 	var comp = 2;
@@ -15,28 +12,36 @@ test(`rap cacheInputFileSystem readdir cache`, (done) => {
 	  done();
 	}
 	var dir = pt.resolve(__dirname, "./readDir");
-  
-	system.readdir = jest.fn();
-	system.readdirSync = jest.fn();
+
+  var readdir =  jest.fn();
+  var readdirSync =     jest.fn();
+  system.readdir = function(){
+    readdir();
+    return fs.readdir.apply(fs,arguments);
+  }
+  system.readdirSync = function(){
+    readdirSync();
+    return fs.readdirSync.apply(fs,arguments);
+  }
   
 	cacheInputFileSystem.readdirSync(dir);
 	cacheInputFileSystem.findDirSync(dir);
 	cacheInputFileSystem.findFileSync(dir);
 
-	expect(system.readdirSync.mock.calls.length).toBe(1);
+	expect(readdirSync.mock.calls.length).toBe(1);
 
 	setTimeout(function() {
 		cacheInputFileSystem.readdirSync(dir);
 		cacheInputFileSystem.findDirSync(dir);
 		cacheInputFileSystem.findFileSync(dir);
-	  expect(system.readdirSync.mock.calls.length).toBe(2);
+	  expect(readdirSync.mock.calls.length).toBe(2);
 	  checkEnd();
 	}, 6000);
 
 	cacheInputFileSystem.readdir(dir, function(data) {
 	  cacheInputFileSystem.findDir(dir, data => {
 		cacheInputFileSystem.findFile(dir, () => {
-		  expect(system.readdir.mock.calls.length).toBe(0);
+		  expect(readdir.mock.calls.length).toBe(0);
 		  checkEnd();
 		});
 	  });
@@ -51,33 +56,40 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
 	  comp--;
 	  done();
 	}
-	var dir = pt.resolve(__dirname, "./readDir");
-  
-	system.readFile = jest.fn();
-	system.readFileSync = jest.fn();
-	
-	console.log("------------jest will throw error but will pass","beause readFile is overwrite!------------")
+	var dir = pt.resolve(__dirname, "./readDir/testCache.txt");
+
+  var readFile =  jest.fn();
+  var readFileSync =     jest.fn();
+  system.readFile = function(){
+    readFile();
+    return fs.readFile.apply(fs,arguments);
+  }
+  system.readFileSync = function(){
+		readFileSync();
+		//必须是文件
+    return fs.readFileSync.apply(fs,arguments);
+  }
 	
 	cacheInputFileSystem.readJsonSync(dir);
 	cacheInputFileSystem.readJsonSync(dir);
 	cacheInputFileSystem.readDataSync(dir);
 	cacheInputFileSystem.readFileSync(dir);
   
-	expect(system.readFileSync.mock.calls.length).toBe(1);
+	expect(readFileSync.mock.calls.length).toBe(1);
   
 	setTimeout(function() {
 	  cacheInputFileSystem.readJsonSync(dir);
 	  cacheInputFileSystem.readJsonSync(dir);
 	  cacheInputFileSystem.readDataSync(dir);
 	  cacheInputFileSystem.readFileSync(dir);
-	  expect(system.readFileSync.mock.calls.length).toBe(2);
+	  expect(readFileSync.mock.calls.length).toBe(2);
 	  checkEnd();
 	}, 6000)
   
 	cacheInputFileSystem.readFile(dir, function(data) {
 	  cacheInputFileSystem.readJson(dir, data => {
 		cacheInputFileSystem.readData(dir, () => {
-		  expect(system.readFile.mock.calls.length).toBe(0);
+		  expect(readFile.mock.calls.length).toBe(0);
 		  checkEnd()
 		});
 	  });
@@ -92,13 +104,19 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
 	  comp--;
 	  done();
 	}
-	  var dir = pt.resolve(__dirname, "./readDir/file4.json");
-	
-	  system.stat = jest.fn();
-		system.statSync = jest.fn();
+		var dir = pt.resolve(__dirname, "./readDir/testCache.txt");
 		
-		console.log("-----------jest will throw error but will pass","beause stat is overwrite!-----------")
-	
+		var stat =  jest.fn();
+		var statSync =     jest.fn();
+		system.stat = function(){
+			stat();
+			return fs.stat.apply(fs,arguments);
+		}
+		system.statSync = function(){
+			statSync();
+			return fs.statSync.apply(fs,arguments);
+		}
+
 	  cacheInputFileSystem.statSync(dir);
 	  cacheInputFileSystem.statSync(dir);
 	  cacheInputFileSystem.getSizeSync(dir);
@@ -106,7 +124,7 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
 	  cacheInputFileSystem.isDirSync(dir);
 	  cacheInputFileSystem.existsSync(dir);
 	  cacheInputFileSystem.isFileSync(dir);
-	  expect(system.statSync.mock.calls.length).toBe(1);
+	  expect(statSync.mock.calls.length).toBe(1);
 	
 	  setTimeout(function() {
 		cacheInputFileSystem.statSync(dir);
@@ -116,7 +134,7 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
 		cacheInputFileSystem.isDirSync(dir);
 		cacheInputFileSystem.existsSync(dir);
 		cacheInputFileSystem.isFileSync(dir);
-		expect(system.statSync.mock.calls.length).toBe(2);
+		expect(statSync.mock.calls.length).toBe(2);
 		checkEnd()
 	  }, 6000)
 	
@@ -127,7 +145,7 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
 			  cacheInputFileSystem.isDir(dir, () => {
 				cacheInputFileSystem.exists(dir, () => {
 				  cacheInputFileSystem.isFile(dir, () => {
-					expect(system.stat.mock.calls.length).toBe(0);
+					expect(stat.mock.calls.length).toBe(0);
 					checkEnd()
 				  });
 				});

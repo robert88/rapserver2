@@ -1,27 +1,32 @@
 require("../lib/global/global.localRequire");
-localRequire("@/server/lib/rap/rap.fileSystem.js");
+var FileSystemInput = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/FileSystemInput.js");
 
 const pt = require("path");
-
-const cacheInputFileSystem = rap.fileSystem.input.cache;
-
+const cacheInputFileSystem = new FileSystemInput(5000);
 const system = cacheInputFileSystem.getSystem();
 
+const fs = require("fs");
 //stat
-test(`rap cacheInputFileSystem stat cache`, (done) => {
+test(`rap cacheInputFileSystem stat cache`, () => {
 
-  var dir = pt.resolve(__dirname, "./readDir/file4.json");
-
-  system.stat = jest.fn();
-  system.statSync = jest.fn();
-
-  console.log("-----------jest will throw error but will pass", "beause stat is overwrite!-----------")
+  var dir = pt.resolve(__dirname, "./readDir/testCache.txt");
+  var stat =  jest.fn();
+  var statSync =     jest.fn();
+  system.stat = function(){
+    stat();
+    return fs.stat.apply(fs,arguments);
+  }
+  system.statSync = function(){
+    statSync();
+    return fs.statSync.apply(fs,arguments);
+  }
 
   cacheInputFileSystem.statSync(dir);
   cacheInputFileSystem.statSync(dir);
-  cacheInputFileSystem.purpe("stat", dir);
+  //清除
+  cacheInputFileSystem.purge("stat");
   cacheInputFileSystem.getSizeSync(dir);
   cacheInputFileSystem.getSizeSync(dir);
-  expect(system.statSync.mock.calls.length).toBe(2);
+  expect(statSync).toHaveBeenCalledTimes(2);
 
 });

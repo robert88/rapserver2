@@ -21,7 +21,7 @@ test("makeSyncFunc 将异步代码转为同步代码", () => {
       let g = '1';
       let d =  await obj["test"]();
     }
-    var t = makeSyncFunc(a1.toString()).toString().replace(/\s+/g,"");
+    var t = makeSyncFunc(a1).toString().replace(/\s+/g,"");
     //toString会把没有用的()去掉，而！这样会添加（）
     expect(t).toBe('function(){letb={};leta=1+2;lettest=function(){letd=1;};lett=testSync();if(a){b=1;}if(!(testSync())){b=3;}letobj={test:test};letg=\'1\';letd=obj["test"+"Sync"]();}');
   }
@@ -44,7 +44,7 @@ test("makeSyncFunc 将异步代码转为同步代码", () => {
       let g = '1';
       let d =  await obj["test"]();
     }
-     var t = makeSyncFunc(a1.toString()).toString().replace(/\s+/g,"");
+     var t = makeSyncFunc(a1).toString().replace(/\s+/g,"");
      //toString会把没有用的()去掉，而！这样会添加（）
      expect(t).toBe('function(parama,paramb){letb={};leta=1+2;lettest=function(){letd=1;};lett=testSync();if(a){b=1;}if(!(testSync())){b=3;}letobj={test:test};letg=\'1\';letd=obj["test"+"Sync"]();}');
    }
@@ -67,7 +67,7 @@ test("makeSyncFunc 将异步代码转为同步代码", () => {
       let g = '1';
       let d =  await obj["test"]();
     }
-    var t = makeSyncFunc(a1.toString()).toString().replace(/\s+/g,"");
+    var t = makeSyncFunc(a1).toString().replace(/\s+/g,"");
     //toString会把没有用的()去掉，而！这样会添加（）
     expect(t).toBe('function({parama,paramb}){letb={};leta=1+2;lettest=function(){letd=1;};lett=testSync();if(a){b=1;}if(!(testSync())){b=3;}letobj={test:test};letg=\'1\';letd=obj["test"+"Sync"]();}');
   }
@@ -89,7 +89,7 @@ test("makeSyncFunc 将异步代码转为同步代码", () => {
       let g = '1';
       let d =  await obj["test"]();
     }
-    var t = makeSyncFunc(a1.toString()).toString().replace(/\s+/g,"");
+    var t = makeSyncFunc(a1).toString().replace(/\s+/g,"");
     //toString会把没有用的()去掉，而！这样会添加（）
     expect(t).toBe('function(parama=[],paramb){letb={};leta=1+2;lettest=function(){letd=1;};lett=testSync();if(a){b=1;}if(!(testSync())){b=3;}letobj={test:test};letg=\'1\';letd=obj["test"+"Sync"]();}');
   }
@@ -112,7 +112,7 @@ test("makeSyncFunc 将异步代码转为同步代码", () => {
       let g = '1 async\' ';
       let d =  await obj['test']();
     }
-    var t = makeSyncFunc(a1.toString()).toString().replace(/\s+/g,"");
+    var t = makeSyncFunc(a1).toString().replace(/\s+/g,"");
      //toString会把没有用的()去掉，而！这样会添加（）
      expect(t).toBe('function({parama:{},paramb}){letb={};leta=1+2;lettest=function(){letd=1;};lett=testSync();if(a){b=1;}if(!(testSync())){b=3;}letf="awaitisfunctionasync";letobj={test:test};letg=\'1async\\\'\';letd=obj[\'test\'+"Sync"]();}');
    }
