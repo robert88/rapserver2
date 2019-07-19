@@ -10,9 +10,9 @@ const cacheInputFileSystem = rap.fileSystem.input.cache;
 
 //readFile
 test(`rap cacheInputFileSystem api readFile`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir/file2.txt");
+	var dir = pt.resolve(__dirname,"./readDir/testReadFile.txt");
 
-	cacheInputFileSystem.readFile(dir,function(data){
+	cacheInputFileSystem.readFile(dir,function(err,data){
 		expect(data.toString("utf-8")).toBe("LINE1\r\nLINE2\r\nLINE3\r\nLINE4");
 		done();
 	})
@@ -23,9 +23,9 @@ test(`rap cacheInputFileSystem api readFile`, (done) => {
 });
 
 test(`rap cacheInputFileSystem api readData`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir/file2.txt");
+	var dir = pt.resolve(__dirname,"./readDir/testReadFile.txt");
 
-	cacheInputFileSystem.readData(dir,function(data){
+	cacheInputFileSystem.readData(dir,function(err,data){
 		expect(data).toBe("LINE1\r\nLINE2\r\nLINE3\r\nLINE4");
 		done();
 	})
@@ -36,9 +36,9 @@ test(`rap cacheInputFileSystem api readData`, (done) => {
 });
 
 test(`rap cacheInputFileSystem api readJson`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir/file4.json");
+	var dir = pt.resolve(__dirname,"./readDir/testReadjson.json");
 
-	cacheInputFileSystem.readJson(dir,function(data){
+	cacheInputFileSystem.readJson(dir,function(err,data){
 		expect(data).toEqual({"testname":"robert"});
 		done();
 	})

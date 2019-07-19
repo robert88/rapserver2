@@ -7,9 +7,10 @@ const pt = require("path")
 
 //stat
 test(`rap cacheInputFileSystem api stat`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir");
 
-	cacheInputFileSystem.stat(dir,function(data){
+	var dir = localRequire("@/server/test/readDir",true);
+
+	cacheInputFileSystem.stat(dir,function(err,data){
 
 		expect(data.atime.constructor == Date).toBe(false);//目前测试发现不是Date的实例
 		expect(typeof data.atime.getTime).toBe("function");
@@ -60,16 +61,16 @@ test(`rap cacheInputFileSystem api stat`, (done) => {
 
 //getSize
 test(`rap cacheInputFileSystem api getSize`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir");
-	var dir2 = pt.resolve(__dirname,"./readDir/file4.json");
+	var dir = localRequire("@/server/test/readDir",true);
+	var dir2 = localRequire("@/server/test/readDir/testGetSize.json",true);
 	let data = cacheInputFileSystem.getSizeSync(dir);
 	let data2 = cacheInputFileSystem.getSizeSync(dir2);
 	expect(data).toBe(0);
 	//toBeLessThanOrEqual <=
 	expect(data2).toBeLessThanOrEqual(1024);
-	cacheInputFileSystem.getSize(dir,data=>{
+	cacheInputFileSystem.getSize(dir,(err,data)=>{
 		expect(data).toBe(0);
-		cacheInputFileSystem.getSize(dir2,data=>{
+		cacheInputFileSystem.getSize(dir2,(err,data)=>{
 			expect(data2).toBeLessThanOrEqual(1024);
 			done();
 		});
@@ -78,47 +79,61 @@ test(`rap cacheInputFileSystem api getSize`, (done) => {
 
 //getModify
 test(`rap cacheInputFileSystem api getModify`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir");
-	let data = cacheInputFileSystem.getModifySync(dir);
-	expect(data).toBe(1558763435000);
-	cacheInputFileSystem.getModify(dir,data=>{
-		expect(data).toBe(1558763435000);
+    //最后修改时间20190719 8:56
+    var dir = localRequire("@/server/test/readDir/testmodify.txt",true);
+
+	cacheInputFileSystem.getModify(dir,(err,data)=>{
+		expect(data).toBe(1563497806000);
 		done();
-	});
+    });
+    
+    let data = cacheInputFileSystem.getModifySync(dir);
+	expect(data).toBe(1563497806000);
 });
 
 //isDir
 test(`rap cacheInputFileSystem api isDir`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir");
-	var dir2 = pt.resolve(__dirname,"./readDir1");//测试一个不存在的
+    var dir = localRequire("@/server/test/readDir",true);
+    var dir2 = localRequire("@/server/test/readDir2",true);
 	
-	console.log("-----------jest will throw error but will pass","beause readDir1 is not exist!-----------")
+    console.log("-----------jest will throw error but will pass","beause readDir1 is not exist!-----------")
+    
+    var jestFn = jest.fn();
 
-	let data = cacheInputFileSystem.isDirSync(dir);
-	let data2 = cacheInputFileSystem.isDirSync(dir2);
-	expect(data).toBe(true);
-	expect(data2).toBeUndefined();
-	cacheInputFileSystem.isDir(dir,data=>{
+    let data = cacheInputFileSystem.isDirSync(dir);
+    let data2 
+    try {
+        data2 = cacheInputFileSystem.isDirSync(dir2);
+    } catch (error) {
+        jestFn(error.message)
+    }
+
+    expect(jestFn).toHaveBeenNthCalledWith(1,"ENOENT: no such file or directory, stat 'd:/yinming/code/rapserver2-master/server/test/readDir2'");
+
+    expect(data).toBe(true);
+    
+    expect(data2).toBeUndefined();
+    
+	cacheInputFileSystem.isDir(dir,(err,data)=>{
 		expect(data).toBe(true);
-		cacheInputFileSystem.isDir(dir2,data=>{
-			expect(1).toBe(2);//这个不会测到
-		},()=>{
-			done();
+		cacheInputFileSystem.isDir(dir2,(err,data)=>{
+            expect(err.message).toBe("ENOENT: no such file or directory, stat 'd:/yinming/code/rapserver2-master/server/test/readDir2'");
+            done();
 		});
 	});
 });
 
 //isFile
 test(`rap cacheInputFileSystem api isFile`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir");
-	var dir2 = pt.resolve(__dirname,"./readDir/file4.json");
+	var dir = localRequire("@/server/test/readDir",true);
+	var dir2 = localRequire("@/server/test/readDir/testIsFile.json",true);
 	let data = cacheInputFileSystem.isFileSync(dir);
 	let data2 = cacheInputFileSystem.isFileSync(dir2);
 	expect(data).toBe(false);
 	expect(data2).toBe(true);
-	cacheInputFileSystem.isFile(dir,data=>{
+	cacheInputFileSystem.isFile(dir,(err,data)=>{
 		expect(data).toBe(false);
-		cacheInputFileSystem.isFile(dir2,data=>{
+		cacheInputFileSystem.isFile(dir2,(err,data)=>{
 			expect(data).toBe(true);
 			done();
 		});
@@ -127,18 +142,17 @@ test(`rap cacheInputFileSystem api isFile`, (done) => {
 
 // exists
 test(`rap cacheInputFileSystem api exists`, (done) => {
-	var dir = pt.resolve(__dirname,"./readDir");
-	var dir2 = pt.resolve(__dirname,"./readDir1");
+    var dir = localRequire("@/server/test/readDir",true);
+    var dir2 = localRequire("@/server/test/readDir2",true);
 	let data = cacheInputFileSystem.existsSync(dir);
 	let data2 = cacheInputFileSystem.existsSync(dir2);
 	expect(data).toBe(true);
-	expect(data2).toBeUndefined();
-	cacheInputFileSystem.exists(dir,data=>{
+	expect(data2).toBe(false);
+	cacheInputFileSystem.exists(dir,(err,data)=>{
 		expect(data).toBe(true);
-		cacheInputFileSystem.exists(dir2,data=>{
-			expect(1).toBe(2);//如果不存在，就不会调用
-		},()=>{
-			done();
+		cacheInputFileSystem.exists(dir2,(err,data)=>{
+            expect(!err).toBe(true);
+            done();
 		});
 	});
 });

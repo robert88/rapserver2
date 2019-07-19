@@ -48,7 +48,9 @@ test('debounce params', (done) => {
 	rap.debounce(jestFn,1000,"test params","params5");
 
 	setTimeout(()=>{
+		//第一次调用带的参数
 		expect(jestFn).toHaveBeenNthCalledWith(1, ['params1'],"test params");
+		//第二次调用带的参数
 		expect(jestFn).toHaveBeenNthCalledWith(2, ['params2',"params3","params4","params5"],"test params");
 		done()
 	},2000);
