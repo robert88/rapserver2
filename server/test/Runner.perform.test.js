@@ -1,7 +1,7 @@
 //测试
 require("../lib/global/global.localRequire");
 localRequire("@/server/lib/rap/rap.restful.js");
-const AsyncParallelBailHook = localRequire("@/server/lib/node_modules/tapable/AsyncParallelBailHook.js")
+const AsyncParallelBailHook = localRequire("@/node_modules/tapable/lib/AsyncParallelBailHook.js")
 const run4002 = localRequire("@/server/test/RunnerTest4002.js")
 
 //This test need starting a 3003 server by other terminal, and jest is a single thread that can only test 5000 requests.

@@ -40,4 +40,37 @@ test("makeCallbackToPromise 将callback异步转为promise异步方式", () => {
     })
   }
 
+
+var create = async function (createDirPath,isFile,callback) {
+
+  if (!createDirPath) {
+    return;
+  }
+
+  if (await this.system.exists(createDirPath)) {
+    return;
+  }
+
+  //最外层肯定要存在,才可以创建文件
+  let parentDirPath = pt.dirname(createDirPath);
+
+  if (parentDirPath && !await this.system.exists(parentDirPath)) {
+    await this.create(parentDirPath,false);
+  }
+  //必须指定
+  if(isFile){
+    await this.system.writeFile(createDirPath,"");
+  }else{
+    await this.system.mkdir(createDirPath);
+  }
+
+  this.system.purge("stat",createDirPath);
+
+  if (typeof callback == "function") {
+    callback();
+  }
+}
+
+makeCallbackToPromise(create)
+
 });

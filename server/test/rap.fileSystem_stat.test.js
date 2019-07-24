@@ -83,12 +83,12 @@ test(`rap cacheInputFileSystem api getModify`, (done) => {
     var dir = localRequire("@/server/test/readDir/testmodify.txt",true);
 
 	cacheInputFileSystem.getModify(dir,(err,data)=>{
-		expect(data).toBe(1563497806000);
+		expect(data).toBe(1563497806932);
 		done();
     });
     
     let data = cacheInputFileSystem.getModifySync(dir);
-	expect(data).toBe(1563497806000);
+	expect(data).toBe(1563497806932);
 });
 
 //isDir

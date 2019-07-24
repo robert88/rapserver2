@@ -20,7 +20,7 @@ test('rap cacheInputFileSystem api', () => {
 test(`rap cacheInputFileSystem api readdir`, (done) => {
   var dir = pt.resolve(__dirname, "./readDir/testReaddir");
 
-  cacheInputFileSystem.readdir(dir, function(err, data) {
+  cacheInputFileSystem.readdir(dir,function(err, data) {
     //toBe不能比较对象
     // expect(data).toBe(["deep1", "file2.txt", "file3.js"]);
     expect(data).toEqual(["deep1", "file2.txt", "file3.js", "file4.json"]);
@@ -39,22 +39,22 @@ test(`rap cacheInputFileSystem api findDir`, (done) => {
     toPath(dir + "/deep1"),
     toPath(dir + "/deep1/deep2")
   ]);
-  cacheInputFileSystem.findDir(dir, true, (err, data) => {
+  cacheInputFileSystem.findDir(dir, true,null, (err, data) => {
     expect(data).toEqual([
       toPath(dir + "/deep1"),
       toPath(dir + "/deep1/deep2")
     ]);
     //过滤测试
-    cacheInputFileSystem.findDir(dir, true, (err, data) => {
-      expect(data).toEqual([
-        toPath(dir + "/deep1/deep2")
-      ]);
-      done();
-    }, (file, isdirFlag) => {
+    cacheInputFileSystem.findDir(dir, true, (file, isdirFlag) => {
       expect(isdirFlag).toBe(true);
       if (~file.indexOf("deep2")) {
         return true;
       }
+    }, (err, data) => {
+      expect(data).toEqual([
+        toPath(dir + "/deep1/deep2")
+      ]);
+      done();
     });
   });
 });
@@ -68,7 +68,7 @@ test(`rap cacheInputFileSystem api findFile`, (done) => {
     toPath(dir + "/deep1/file5.txt"),
     toPath(dir + "/file2.txt")
   ]);
-  cacheInputFileSystem.findFile(dir, true, (err, data) => {
+  cacheInputFileSystem.findFile(dir, true,null, (err, data) => {
     expect(data).toEqual([
       toPath(dir + "/file2.txt"),
       toPath(dir + "/file3.js"),
@@ -77,18 +77,17 @@ test(`rap cacheInputFileSystem api findFile`, (done) => {
       toPath(dir + "/deep1/deep2/file6.txt")
     ]);
     //过滤测试
-    cacheInputFileSystem.findFile(dir, true, (err, data) => {
+    cacheInputFileSystem.findFile(dir, true, (file, isdirFlag) => {
+      expect(isdirFlag).toBe(false);
+      if (~file.indexOf("deep1")) {
+        return true;
+      }
+    }, (err, data) => {
       expect(data).toEqual([
         toPath(dir + "/deep1/file5.txt"),
         toPath(dir + "/deep1/deep2/file6.txt")
       ]);
       done();
-    }, (file, isdirFlag) => {
-      expect(isdirFlag).toBe(false);
-      if (~file.indexOf("deep1")) {
-        return true;
-      }
-
     });
 
   });
@@ -116,7 +115,12 @@ test(`rap cacheInputFileSystem api findAll`, (done) => {
       toPath(dir + "/deep1/deep2/file6.txt")
     ]);
     //过滤测试
-    cacheInputFileSystem.findAll(dir, true, (err, data) => {
+    cacheInputFileSystem.findAll(dir, true, (file, isdirFlag) => {
+      if (~file.indexOf("deep1")) {
+        return true;
+      }
+
+    }, (err, data) => {
       expect(data).toEqual([
         toPath(dir + "/deep1"),
         toPath(dir + "/deep1/deep2"),
@@ -124,11 +128,6 @@ test(`rap cacheInputFileSystem api findAll`, (done) => {
         toPath(dir + "/deep1/deep2/file6.txt")
       ]);
       done();
-    }, (file, isdirFlag) => {
-      if (~file.indexOf("deep1")) {
-        return true;
-      }
-
     });
 
   });
