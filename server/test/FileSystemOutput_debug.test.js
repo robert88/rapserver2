@@ -10,7 +10,7 @@ var allDir = localRequire("@/server/test/output", true);
 
 output.removeSync(allDir);
 
-// //write
+// // //write
 test('FileSystemOutput debug write', (done) => {
   var src = localRequire("@/server/test/output/testWrite/a.txt", true);
 
@@ -37,7 +37,7 @@ test('FileSystemOutput debug write', (done) => {
 
 })
 
-//copy
+// //copy
 test('FileSystemOutput debug copy', (done) => {
   var src = localRequire("@/server/test/output/testcopy/a.txt", true);
   var dir = localRequire("@/server/test/output/testcopy2/a.txt", true);
@@ -85,7 +85,7 @@ test('FileSystemOutput debug copy', (done) => {
 })
 
 
-// //remove
+// // //remove
 test('FileSystemOutput debug remove', (done) => {
   var src1 = localRequire("@/server/test/output/testremove/a1.txt", true);
   var src2 = localRequire("@/server/test/output/testremove/a2.txt", true);
@@ -121,7 +121,7 @@ test('FileSystemOutput debug remove', (done) => {
 
 })
 
-//cut
+// //cut
 
 test('FileSystemOutput debug cut', (done) => {
   var src = localRequire("@/server/test/output/testcut/a1.txt", true);
@@ -187,13 +187,8 @@ test('FileSystemOutput debug rename', (done) => {
   var srcFlag, dirFlag;
   var dirName = "a2.txt"
   //不存在源文件
-  try {
-    output.renameSync(src, dirName);
-  } catch (error) {
-    expect(error.message).toBe(true);
-  }
 
-
+  output.renameSync(src, dirName);
 
   output.writeSync(src, "hello world1!");
 
@@ -236,10 +231,10 @@ test('FileSystemOutput debug rename', (done) => {
   output.removeSync(dir);
 
   srcFlag = input.existsSync(src);
-  // dirFlag = input.existsSync(dir)
+  dirFlag = input.existsSync(dir)
 
   expect(srcFlag).toBe(true);
-  // expect(dirFlag).toBe(false);
+  expect(dirFlag).toBe(false);
 
   output.writeSync(src, "hello world3!");
   output.rename(src, dirName).then(() => {
@@ -269,6 +264,7 @@ test('FileSystemOutput debug rename', (done) => {
 
       var data = input.readDataSync(dir);
       expect(data).toBe("hello world3!");
+
       done();
     });
   });

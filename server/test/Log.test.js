@@ -5,7 +5,7 @@ localRequire("@/server/lib/rap/rap.fileSystem.js");
 
 var logPath = localRequire("@/server/test/log",true);
 var fs = require("fs");
-const cacheInputFileSystem = rap.fileSystem.input.cache;
+const cacheInputFileSystem = rap.fileSystem.input;
 //测试间隔
 test('class Log', (done) => {
  let log = new Log({filesystem:cacheInputFileSystem,outpath:logPath}).init();

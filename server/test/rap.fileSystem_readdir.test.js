@@ -6,7 +6,7 @@ const pt = require("path")
 
 var apis = ["readdir", "stat", "readFile", "readlink", "exists", "readJson", "readData", "findFile", "findDir", "getSize", "getModify", "isDir", "isFile"];
 
-const cacheInputFileSystem = rap.fileSystem.input.cache;
+const cacheInputFileSystem = rap.fileSystem.input;
 
 //必须提供以下api
 test('rap cacheInputFileSystem api', () => {
