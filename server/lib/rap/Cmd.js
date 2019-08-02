@@ -1,15 +1,15 @@
 const exec = require('child_process').exec;
-const path = require('path');
+const pt = require('path');
 const os = require('os');
 
 require("../global/global.localRequire");
 const exeTemplDir = localRequire("@/server/exe/cmd/templ", true);
-const iconvFile = localRequire("@/server/exe/iconv.exe");
+const iconvFile = localRequire("@/server/exe/iconv.exe", true);
 
 const execPath = process.cwd();
 // HACK: to make our calls to exec() testable,
 // support using a mock shell instead of a real shell
-const shell = process.env.SHELL || 'sh';
+var shell = process.env.SHELL || 'sh';
 // support for Win32 outside Cygwin/command.exe
 if (os.platform() === 'win32' && process.env.SHELL === undefined) {
   shell = process.env.COMSPEC || 'cmd.exe';
@@ -37,15 +37,11 @@ function createEnv(params) {
   return env;
 }
 
-//解析接口
-async function exec(){
-
-}
-
 class Cmd {
-  constructor( environment, path) {
+  constructor(system, environment, path) {
     this.env = createEnv(environment || {});
     this.execPath = path || execPath;
+    this.system = system.output;
   }
   /**
    *
@@ -57,16 +53,17 @@ class Cmd {
     uuid++;
     var converFile = exeTemplDir + "/converCmd" + uuid + ".bat";
     let cmd = `${iconvFile}  -f UTF-8 -t GBK ${file} > ${converFile}`;
-    return this.exec(cmd).finally(()=>{
-      uuid--;
+    return this.exec(cmd).then(()=>{
       return converFile;
+    }).finally(() => {
+      uuid--;
     });
   }
 
   //执行命令
   async exec(cmd) {
     return new Promise((resolve, reject) => {
-      exec(cmd, {shell: shell,cwd: this.execPath, env: this.env },
+      exec(cmd, { shell: shell, cwd: this.execPath, env: this.env },
         function(e, stdout, stderr) {
           if (e) {
             reject(e);
@@ -81,6 +78,9 @@ class Cmd {
   //执行命令和文件
   async execApi(scriptFile) {
 
+    //保证当前路径被创建
+    await this.system.create(exeTemplDir);
+
     var existScriptFile = false;
     var cmd;
 
@@ -91,13 +91,13 @@ class Cmd {
 
     if (existScriptFile) {
       //防止中文乱码
-      cmd = await this.converFileUTF8toGBK(existScriptFile);
+      cmd = await this.converFileUTF8toGBK(scriptFile);
     } else {
       cmd = scriptFile;
     }
 
     // transform windows backslashes to forward slashes for use in cygwin on windows
-    if (path.sep === '\\') {
+    if (pt.sep === '\\') {
       cmd = cmd.replace(/\\/g, '/');
     }
 
@@ -112,7 +112,12 @@ class Cmd {
 
     lock[cmd] = false
 
-   return  ret;
+    return ret;
   }
 }
 
+localRequire("@/server/lib/rap/rap.system.js")
+
+var cmd = new Cmd(rap.system)
+
+cmd.execApi("D:/yinming/code/rapserverSvn/run.www4.bat");
