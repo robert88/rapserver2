@@ -16,7 +16,7 @@ test("test http server:4002 parallel require 5000", (done) => {
 
     arr.forEach(() => {
       parallel.tapAsync("test", function(callback) {
-        rap.restful({
+        rap.rest({
           url: "http://localhost:4002",
           success(ret) {
             testFn = null;

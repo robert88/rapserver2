@@ -5,7 +5,7 @@ const run4000 = localRequire("@/server/test/RunnerTest4000.js")
 const run4001 = localRequire("@/server/test/RunnerTest4001.js")
 test("test http server 4001", function(done) {
   run4000.ready(() => {
-    rap.restful({
+    rap.rest({
       url: "http://localhost:4000",
       success: function(ret) {
         expect(ret).toBe("helloworld");
@@ -21,7 +21,7 @@ test("test http server 4001", function(done) {
 
 test("test http server 4000 handler error", function(done) {
   run4001.ready(() => {
-    rap.restful({
+    rap.rest({
       url: "http://localhost:4001",
       success: function(ret) {
         expect(ret).toBe("helloworld");

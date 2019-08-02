@@ -1,12 +1,12 @@
 require("../lib/global/global.localRequire");
-localRequire("@/server/lib/rap/rap.fileSystem.js");
+localRequire("@/server/lib/rap/rap.system.js");
 const toPath = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/toPath.js");
 
 const pt = require("path")
 
 var apis = ["readdir", "stat", "readFile", "readlink", "exists", "readJson", "readData", "findFile", "findDir", "getSize", "getModify", "isDir", "isFile"];
 
-const cacheInputFileSystem = rap.fileSystem.input;
+const cacheInputFileSystem = rap.system.input;
 
 //必须提供以下api
 test('rap cacheInputFileSystem api', () => {

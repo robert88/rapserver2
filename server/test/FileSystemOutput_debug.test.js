@@ -4,7 +4,7 @@ const FileSystemOutput = localRequire("@/server/lib/node_modules/enhanced-resolv
 
 var output = new FileSystemOutput(null, true);
 
-var input = output.system;
+var input = output.input;
 
 var allDir = localRequire("@/server/test/output", true);
 
@@ -12,7 +12,7 @@ output.removeSync(allDir);
 
 // // //write
 test('FileSystemOutput debug write', (done) => {
-  var src = localRequire("@/server/test/output/testWrite/a.txt", true);
+  var src = allDir + "/testWrite/a.txt"
 
   output.writeSync(src, "hello world1!");
   var data = input.readDataSync(src);
@@ -39,8 +39,8 @@ test('FileSystemOutput debug write', (done) => {
 
 // //copy
 test('FileSystemOutput debug copy', (done) => {
-  var src = localRequire("@/server/test/output/testcopy/a.txt", true);
-  var dir = localRequire("@/server/test/output/testcopy2/a.txt", true);
+  var src = allDir+"/testcopy/a.txt";
+  var dir = allDir+"/testcopy2/a.txt"
   var data, srcModify, dirModify
 
   output.removeSync(src)
@@ -87,10 +87,10 @@ test('FileSystemOutput debug copy', (done) => {
 
 // // //remove
 test('FileSystemOutput debug remove', (done) => {
-  var src1 = localRequire("@/server/test/output/testremove/a1.txt", true);
-  var src2 = localRequire("@/server/test/output/testremove/a2.txt", true);
-  var src3 = localRequire("@/server/test/output/testremove/a3.txt", true);
-  var dir = localRequire("@/server/test/output/testremove", true);
+  var src1 =allDir+"/testremove/a1.txt"
+  var src2 = allDir+"/testremove/a2.txt"
+  var src3 = allDir+"/testremove/a3.txt"
+  var dir = allDir+"/testremove"
 
 
   output.writeSync(src1, "hello world1!");
@@ -124,8 +124,8 @@ test('FileSystemOutput debug remove', (done) => {
 // //cut
 
 test('FileSystemOutput debug cut', (done) => {
-  var src = localRequire("@/server/test/output/testcut/a1.txt", true);
-  var dir = localRequire("@/server/test/output/testcut2/a1.txt", true);
+  var src = allDir+"/testcut/a1.txt"
+  var dir = allDir+"/testcut2/a1.txt"
 
   try {
     output.cutSync(src, dir);
@@ -182,8 +182,8 @@ test('FileSystemOutput debug cut', (done) => {
 
 test('FileSystemOutput debug rename', (done) => {
 
-  var src = localRequire("@/server/test/output/testrename/a1.txt", true);
-  var dir = localRequire("@/server/test/output/testrename/a2.txt", true);
+  var src = allDir+"/testrename/a1.txt"
+  var dir = allDir+"/testrename/a2.txt"
   var srcFlag, dirFlag;
   var dirName = "a2.txt"
   //不存在源文件

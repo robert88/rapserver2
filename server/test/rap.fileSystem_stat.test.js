@@ -1,7 +1,7 @@
 require("../lib/global/global.localRequire");
-localRequire("@/server/lib/rap/rap.fileSystem.js");
+localRequire("@/server/lib/rap/rap.system.js");
 
-const cacheInputFileSystem = rap.fileSystem.input;
+const cacheInputFileSystem = rap.system.input;
 
 const pt = require("path")
 
