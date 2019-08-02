@@ -15,7 +15,7 @@ localRequire("@/server/lib/global/extention.String.js")
 
 global.rap = global.rap || {};
 
-rap.restful =function(options) {
+rap.rest =function(options) {
 
 	if(typeof options!=="object"){
         throwError("restful options must object");
