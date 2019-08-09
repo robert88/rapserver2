@@ -1,11 +1,12 @@
-const exec = require('child_process').exec;
+const cp = require('child_process')
 const pt = require('path');
 const os = require('os');
 
 require("../global/global.localRequire");
 const exeTemplDir = localRequire("@/server/exe/cmd/templ", true);
 const iconvFile = localRequire("@/server/exe/iconv.exe", true);
-
+const GbkDecoder = localRequire('@/server/lib/node_modules/iconv-lite/GbkDecoder.js');
+const iconvGBK = new GbkDecoder();
 const execPath = process.cwd();
 // HACK: to make our calls to exec() testable,
 // support using a mock shell instead of a real shell
@@ -60,18 +61,45 @@ class Cmd {
     });
   }
 
-  //执行命令
+  //执行命令,exec并不会退出
   async exec(cmd) {
     return new Promise((resolve, reject) => {
-      exec(cmd, { shell: shell, cwd: this.execPath, env: this.env },
+    let child = cp.exec(cmd,
+        {  shell:shell,
+            cwd: this.execPath,
+            env: this.env,
+            encoding:null
+        },
         function(e, stdout, stderr) {
           if (e) {
             reject(e);
-          } else {
-            resolve(stdout, stderr);
+          } else if(stderr&&stderr.length) {
+            stderr = iconvGBK.decode(stderr);//使用GBK解码
+            reject(stderr);
+          }else{
+            stdout = iconvGBK.decode(stdout);//使用GBK解码
+            resolve(stdout);
           }
+          if(child.stdout){
+            child.stdout.destroy();
+          }
+          if(child.stderr){
+            child.stderr.destroy();
+          }
+          child = null;
         }
       )
+      //只要有数据输出就结束
+        if(child.stdout){
+          child.stdout.on('data',  (chunk)=> {
+            child.emit("close",0,null);
+           })
+        }
+        if(child.stderr){
+          child.stderr.on('data', function (chunk) {
+            child.emit("close",0,null);
+           })
+        }
     })
   }
 
@@ -85,7 +113,7 @@ class Cmd {
     var cmd;
 
     //如果执行的是文件
-    if (/(bat)|(cmd)/.test(pt.extname(scriptFile))) {
+    if (/(bat)|(cmd)|(exe)/.test(pt.extname(scriptFile))) {
       existScriptFile = true;
     }
 
@@ -108,16 +136,24 @@ class Cmd {
     } else {
       lock[cmd] = true;
     }
-    let ret = await this.exec(cmd);
 
+    cmd = cmd.split("&&");
+
+    let ret = [];
+   for(var i=0;i<cmd.length;i++){
+     ret.push(await this.exec(cmd[i]));
+   }
+    
     lock[cmd] = false
 
-    return ret;
+    return ret.join("");
   }
 }
 
-localRequire("@/server/lib/rap/rap.system.js")
+module.exports = Cmd;
 
+localRequire("@/server/lib/rap/rap.js");
 var cmd = new Cmd(rap.system)
-
-cmd.execApi("D:/yinming/code/rapserverSvn/run.www4.bat");
+cmd.execApi("nslookup && calc").then((ret)=>{
+console.log(11)
+});

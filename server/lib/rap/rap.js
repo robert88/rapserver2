@@ -8,7 +8,7 @@ localRequire("@/server/lib/rap/rap.restful.js");
 
 /*cmd*/
 const Cmd = localRequire("@/server/lib/rap/Cmd.js");
-let cmd = new Cmd();
+let cmd = new Cmd(rap.system);
 rap.exec = cmd.execApi;
 
 /***log***/
