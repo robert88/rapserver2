@@ -8,8 +8,7 @@ localRequire("@/server/lib/rap/rap.restful.js");
 
 /*cmd*/
 const Cmd = localRequire("@/server/lib/rap/Cmd.js");
-let cmd = new Cmd(rap.system);
-rap.exec = cmd.execApi;
+rap.cmd = new Cmd(rap.system);
 
 /***log***/
 const Log = localRequire("@/server/lib/rap/Log.js");
@@ -21,6 +20,4 @@ rap.console = log.init(rap,function(type,fn){
 
 /****Archiver */
 const Archiver = localRequire("@/server/lib/rap/Archiver.js");
-let archive = new Archiver(rap.system,rap.exec);
-rap.pack = archive.pack.bind(archive);
-rap.unpack = archive.unpack.bind(archive);
+rap.rar = new Archiver(rap.system,rap.cmd);
