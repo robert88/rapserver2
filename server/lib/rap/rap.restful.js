@@ -35,7 +35,7 @@ rap.rest =function(options) {
         hostname: urlOptions.hostname,
 		host: urlOptions.host,
         path: urlOptions.href.replace(urlOptions.origin,"").toURI(),
-        method: (options.type||"GET").toUpperCase(),//这里是发送的方法
+        method: (options.method||"GET").toUpperCase(),//这里是发送的方法
 		headers: options.headers||{},
         agent: false
     }
@@ -45,7 +45,9 @@ rap.rest =function(options) {
         json: "application/json, text/javascript",
         script: "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript",
         text: "text/plain",
-        xml: "application/xml, text/xml"
+        xml: "application/xml, text/xml",
+        file:"multipart/form-data",
+        binary:"application/octet-stream"
     }
     if(options.dataType&&accept[options.dataType]){
         opt.headers['Accept']=accept[options.dataType]
@@ -65,13 +67,14 @@ rap.rest =function(options) {
 
 	var req = protocol.request(opt, function (res) {
 
-		var buffer = [];
-		res.on('data', function (d) {
-            buffer.push(d);
+		var buffer = Buffer.alloc(0);
+		res.on('data', function (data) {
+            buffer = Buffer.concat([buffer,data]);
 		}).on('end', function () {
             if(typeof options.success == "function"){
-                options.success(buffer.join(""));
+                options.success(buffer.toString("utf8"),res);
             }
+            buffer = null;
 		});
 //
 	}).on('error', function (e) {
@@ -80,7 +83,7 @@ rap.rest =function(options) {
         }
 	});
 
-	//如何是post请求就直接将params做为请求体
+	//如何是post请求就直接将params做为请求体$.ajax和querystring.stringify都是区分数字和字符串
 	if (opt.method == "POST") {
 		req.write(querystring.stringify(options.data));
 	}

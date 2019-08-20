@@ -270,3 +270,22 @@ test('rap FileSystemOutput rename', (done) => {
   });
 
 })
+
+
+//rename
+
+test('rap FileSystemOutput writeSplit', (done) => {
+
+  var src = allDir+"/testWriteSplit/a1.txt"
+  var a = Buffer.from("abc");
+  output.writeSync(src,"请离开");
+  //中文占三个字节
+  output.writeSplitSync(src,a,6);
+  var data = input.readDataSync(src);
+  expect(data).toBe("请离abc");
+  output.writeSplit(src,a,8).then(()=>{
+    var data = input.readDataSync(src);
+    expect(data).toBe("请离ababc");
+    done()
+  })
+})

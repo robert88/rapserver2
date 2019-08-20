@@ -24,12 +24,23 @@ module.exports = class Runner {
     this.error.tapAsync({
       name: "normalErrorHandle",
       fn(err, response, comeFrom) {
-        //默认response
+        //默认错误response
         if (response && response.finished == false) {
           response.end(comeFrom + ":" + err && err.message);
         }
       }
+    })
 
+        //默认response
+    this.pipe.tapAsync({
+      name: "ResponseFinish",
+      stage:1,
+      fn(request, response, next) {
+          if (response && response.finished == false) {
+          response.end("helloworld");
+        }
+        next();
+      }
     })
 
     //创建http服务
@@ -131,9 +142,6 @@ module.exports = class Runner {
     this.pipe.callAsync(request, response, (err, request, response) => {
       if (err) {
         this.error(err, response, "pipeException");
-        //默认response
-      } else if (request && response && response.finished == false) {
-        response.end("helloworld");
       }
     });
 
@@ -149,5 +157,5 @@ process.on('uncaughtException', function(err) {
       });
     })
   });
-  console.log(err);
+  console.log(err.stack);
 });
