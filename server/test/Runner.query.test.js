@@ -121,17 +121,17 @@ test("test http server 4004 get query", function(done) {
 
   //测试入口
   run4004.ready(() => {
-    // restGet(() => {
-    //   testGet(() => {
-    //     restPost(() => {
-    //       testPost(() => {
+    restGet(() => {
+      testGet(() => {
+        restPost(() => {
+          testPost(() => {
             restBinaryPost((loop) => {
               testBinaryPost(loop);
             },3)
-    //       })
-    //     })
-    //   });
-    // })
+          })
+        })
+      });
+    })
   })
 
 }, 1000000)
