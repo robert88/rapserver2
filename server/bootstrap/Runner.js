@@ -19,6 +19,7 @@ module.exports = class Runner {
     options = options || {};
 
     this.pipe = new AsyncSeriesWaterfallHook(["request", "response"]);
+    this.update = new AsyncSeriesWaterfallHook(["file"]);
     this.error = new AsyncSeriesWaterfallHook(["err", "response", "comeFrom"]);
 
     this.error.tapAsync({
