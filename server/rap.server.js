@@ -13,16 +13,18 @@ localRequire("@/server/lib/rap/rap.js");
 const Runner = localRequire("@/server/bootstrap/Runner.js");
 // const Cluser = localRequire("@/server/bootstrap/Cluser.js");
 // const Sockie = localRequire("@/server/bootstrap/Sockie.js");
-// let config = localRequire("@/server/config.js");
+let config = localRequire("@/server/config.js");
 
 let run = new Runner();
 localRequire("@/server/pipe/query.js")(run);
+localRequire("@/server/pipe/cache.js")(run,config.staticMap);
+localRequire("@/server/pipe/staticFile.js")(run,config.staticMap);
 // localRequire("@/server/pipe/filter/action")(run);
 // localRequire("@/server/pipe/filter/action")(run);
 // localRequire("@/server/pipe/filter/proxy")(run);
 // localRequire("@/server/pipe/filter/permision")(run);
-// localRequire("@/server/pipe/filter/getRealFile")(run);
-// localRequire("@/server/pipe/filter/getCache")(run);
+
+
 // localRequire("@/server/pipe/filter/responseEnd")(run);
 
 // new Cluser(run);
