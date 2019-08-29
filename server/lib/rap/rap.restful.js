@@ -9,7 +9,10 @@ const https = require("https");
 const http = require("http");
 const { URL } = require('url');
 const querystring = require('querystring');
-
+const zlib = require("zlib");
+const m3 = 3 * 1024 * 1024; //3mb大小
+// const gunzip = zlib.createGunzip
+// "deflate": zlib.createInflate
 //提供toUri
 localRequire("@/server/lib/global/extention.String.js")
 
@@ -64,20 +67,33 @@ rap.rest =function(options) {
 	if ( urlOptions.protocol  == "https:") {
 		protocol = https;
 	}
-
+    var error;
 	var req = protocol.request(opt, function (res) {
 
-		var buffer = Buffer.alloc(0);
+        var buffer = Buffer.alloc(0);
 		res.on('data', function (data) {
-            buffer = Buffer.concat([buffer,data]);
+            if(buffer.length>m3){
+                res.destroy(new Error("rest data too large"));
+            }else{
+                buffer = Buffer.concat([buffer,data]);
+            }
 		}).on('end', function () {
+            if(error){
+                buffer = null;
+                return;
+            }
             if(typeof options.success == "function"){
-                options.success(buffer.toString("utf8"),res);
+                if(res.headers["content-encoding"] && (~res.headers["content-encoding"].indexOf("gzip"))){
+                    options.success(zlib.unzipSync(buffer).toString("utf8"),res);
+                }else{
+                    options.success(buffer.toString("utf8"),res);
+                }
             }
             buffer = null;
 		});
 //
 	}).on('error', function (e) {
+        error = true;
         if(typeof options.error == "function"){
             options.error(e);
         }
