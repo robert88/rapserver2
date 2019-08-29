@@ -89,77 +89,36 @@ function paramsTypeConvert(params) {
 }
 
 module.exports = function(run) {
-  run.pipe.tapAsync({
+  run.inPipe.tapAsync({
     name: "query",
     fn(request, response, next) {
+      /**
+       * 也可使用var query=qs.parse(url.parse(req.url).query);
+       * 区别就是url.parse的arguments[1]为true：
+       * ...也能达到‘querystring库’的解析效果，而且不使用querystring
+       */
 
-      var obj = {
-        url(set) {
-          let url = set.url.replace(/\?.*$/, "").replace(/#.*$/, "");
-          url = decodeURIComponent(url.trim());
-          return url;
-        },
-        query(set) {
-          /**
-           * 也可使用var query=qs.parse(url.parse(req.url).query);
-           * 区别就是url.parse的arguments[1]为true：
-           * ...也能达到‘querystring库’的解析效果，而且不使用querystring
-           */
-          return nodeUrl.parse(set.url, true).query;
-        },
-        method(set) {
-          return set.method.toUpperCase();
-        },
-        // isXMLHttpRequest(set) {
-        //   var xReq = set.headers['x-requested-with']
-        //   return (xReq && (xReq.toLowerCase() == "XMLHttpRequest".toLowerCase()))
-        // },
-        ip(set) {
-          var ip = set.client.localAddress;
-          return ip && ip.replace("::ffff:", "");
-        },
-        port: function(set) {
-          return set.client.localPort;
-        },
-        orgUrl(set) {
-          return set.url;
-        },
-        //二进制文件
-        binaryData(set) {
-          return set.headers['x-binary-data'];
-        },
-        //续点
-        range(set) {
-          return set.headers['x-binary-range'];
-        }
-      };
+      request.rap.query = nodeUrl.parse(request.url, true).query;
 
-      //得到属性
-      for (var i in obj) {
-        obj[i] = obj[i](request);
-      }
-
-      switch (obj.method) {
+      switch (request.rap.method) {
         case "POST":
-          parsePostParams(obj, request, () => {
-            paramsTypeConvert(obj.query);;
-            request.rap = obj;
+          parsePostParams(request.rap, request, () => {
+            paramsTypeConvert(request.rap.query);;
             next();
           });
           break;
         default: //get，delete
-          obj.binaryData = false;
-          paramsTypeConvert(obj.query);
-          request.rap = Object.assign(request.rap || {}, obj);
+          request.rap.binaryData = false;
+          paramsTypeConvert(request.rap.query);
+
           next();
       }
 
     }
   });
 
-  run.pipe.tapAsync({
-    name: "queryResponse",
-    before: "ResponseFinish",
+  run.outPipe.tapAsync({
+    name: "query",
     fn(request, response, next) {
       let query = request.rap.query;
       if (query.response && query.response["x-binary-range"]) {

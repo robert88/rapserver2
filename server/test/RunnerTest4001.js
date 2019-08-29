@@ -9,7 +9,7 @@ const Runner = localRequire("@/server/bootstrap/Runner.js");
 
 let run = new Runner({port:4001});
 
-run.pipe.tap({
+run.inPipe.tap({
     name:"requestCount",
     fn(request,response){
         console.clear();
@@ -18,7 +18,7 @@ run.pipe.tap({
 });
 
 // 异步测试
-// run.pipe.tapAsync({
+// run.inPipe.tapAsync({
 //   name:"asyncThrowError",
 //   fn(request,response,callback) {
 //     setTimeout(()=>{

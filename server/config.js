@@ -6,7 +6,7 @@
 * */
 require("./lib/global/global.localRequire");
 module.exports = {
-    staticMap={rapserver:localRequire("@/server/static",true)}
+    staticMap:{rapserver:localRequire("@/server/static",true)}
 }
 
 

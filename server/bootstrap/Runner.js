@@ -18,29 +18,30 @@ module.exports = class Runner {
 
     options = options || {};
 
-    this.pipe = new AsyncSeriesWaterfallHook(["request", "response"]);
+    this.inPipe = new AsyncSeriesWaterfallHook(["request", "response"]);
+    this.outPipe = new AsyncSeriesWaterfallHook(["request", "response"]);
     this.update = new AsyncSeriesWaterfallHook(["file"]);
     this.error = new AsyncSeriesWaterfallHook(["err", "response", "comeFrom"]);
 
     this.error.tapAsync({
-      name: "normalErrorHandle",
+      name: "end",
+      stage: 4,
       fn(err, response, comeFrom) {
         //默认错误response
         if (response && response.finished == false) {
-          response.end(comeFrom + ":" + err && err.message);
+          response.end(comeFrom + ":" + (err && err.stack));
         }
       }
     })
 
-        //默认response
-    this.pipe.tapAsync({
-      name: "ResponseFinish",
-      stage:1,
+    //默认response
+    this.outPipe.tapAsync({
+      name: "end",
+      stage: 4,
       fn(request, response, next) {
-          if (response && response.finished == false) {
+        if (response && response.finished == false) {
           response.end("helloworld");
         }
-        next();
       }
     })
 
@@ -85,8 +86,10 @@ module.exports = class Runner {
     if (this.serverHttps) {
       this.serverHttps.close();
     }
-    this.pipe.taps = [];
-    this.pipe._resetCompilation();
+    this.inPipe.taps = [];
+    this.inPipe._resetCompilation();
+    this.outPipe.taps = [];
+    this.outPipe._resetCompilation();
   }
   middleware(request, response) {
     //清除无用的response
@@ -140,9 +143,15 @@ module.exports = class Runner {
   //处理请求
   handler(request, response) {
 
-    this.pipe.callAsync(request, response, (err, request, response) => {
+    this.inPipe.callAsync(request, response, (err, request, response) => {
       if (err) {
-        this.error(err, response, "pipeException");
+        this.error(err, response, "inPipeException");
+      }else{
+        this.outPipe.callAsync(request, response, (err, request, response) => {
+          if (err) {
+            this.error(err, response, "outPipeException");
+          }
+        })
       }
     });
 

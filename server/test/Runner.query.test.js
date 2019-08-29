@@ -5,10 +5,11 @@ localRequire("@/server/lib/rap/rap.js");
 const Runner = localRequire("@/server/bootstrap/Runner.js");
 let run4004 = new Runner({ port: 4004 });
 
+localRequire("@/server/pipe/common.js")(run4004);
 localRequire("@/server/pipe/query.js")(run4004);
 
 let req;
-run4004.pipe.tapAsync({
+run4004.inPipe.tapAsync({
   name: "querytest",
   after: "query",
   fn(request, response, next) {

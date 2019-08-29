@@ -26,14 +26,10 @@ module.exports = function(run, staticMap) {
   })
 
   //request
-  run.pipe.tapAsync({
+  run.inPipe.tapAsync({
     name: "cache",
     fn(request, response, next) {
       var obj = {
-        cookies(set) {
-          var cookies = set.headers["cookie"];
-          return cookies && qs.parse(cookies.replace(";", "&")) || {}
-        },
         modify(set) {
           var modify = set.headers["if-modified-single"];
           return modify;
@@ -71,9 +67,8 @@ module.exports = function(run, staticMap) {
   })
 
   //response
-  run.pipe.tapAsync({
-    name: "cacheResponse",
-    after: ["staticFile","ResponseFinish"],
+  run.outPipe.tapAsync({
+    name: "cache",
     fn(request, response, next) {
       let realStat = request.rap.realStat;
       if (realStat) {
@@ -81,6 +76,8 @@ module.exports = function(run, staticMap) {
         
         response.setHeader("Last-Modified", realStat["Last-Modified"])
         response.setHeader("ETag", realStat["ETag"])
+        response.setHeader("Content-Length", realStat["size"]);
+      
 
         if (cache.etag) {
           if (cache.etag == realStat["ETag"]) {

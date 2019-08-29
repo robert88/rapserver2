@@ -4,7 +4,7 @@ localRequire("@/server/lib/rap/rap.js");
 
 const Runner = localRequire("@/server/bootstrap/Runner.js");
 let run4005 = new Runner({ port: 4005 });
-
+localRequire("@/server/pipe/common.js")(run4005);
 localRequire("@/server/pipe/cache.js")(run4005, { rapserver: localRequire("@/server/test/testCache", true) });
 
 const testPath1 = localRequire("@/server/test/testCache/index.html", true)
@@ -15,7 +15,7 @@ rap.system.output.writeSync(testPath2, "hello world1!");
 rap.system.output.writeSync(testPath3, "hello world1!");
 
 let req;
-run4005.pipe.tapAsync({
+run4005.inPipe.tapAsync({
   name: "cacheTest",
   before: "cache",
   fn(request, response, next) {
