@@ -11,10 +11,6 @@ module.exports = function(run) {
           var xReq = set.headers['x-requested-with']
           return (xReq && (xReq.toLowerCase() == "XMLHttpRequest".toLowerCase()))
         },
-        cookies(set) {
-          var cookies = set.headers["cookie"];
-          return cookies && qs.parse(cookies.replace(";", "&")) || {}
-        },
         ip(set) {
           var ip = set.client.localAddress;
           return ip && ip.replace("::ffff:", "");
@@ -41,6 +37,10 @@ module.exports = function(run) {
         //续点
         range(set) {
           return set.headers['x-binary-range'];
+        },
+        //请求时间
+        date(){
+          return new Date().getTime();
         }
       };
       //得到属性
@@ -49,6 +49,7 @@ module.exports = function(run) {
       }
       //定义request的rap
       request.rap = obj;
+      response.rap = {}
       next();
     }
 
