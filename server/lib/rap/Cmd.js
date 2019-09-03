@@ -152,8 +152,4 @@ class Cmd {
 
 module.exports = Cmd;
 
-localRequire("@/server/lib/rap/rap.js");
-var cmd = new Cmd(rap.system)
-cmd.execApi("nslookup && calc").then((ret)=>{
-console.log(11)
-});
+
