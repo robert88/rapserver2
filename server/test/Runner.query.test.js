@@ -11,7 +11,6 @@ localRequire("@/server/pipe/query.js")(run4004);
 let req;
 run4004.inPipe.tapAsync({
   name: "querytest",
-  after: "query",
   fn(request, response, next) {
     req = request.rap;
     next();
