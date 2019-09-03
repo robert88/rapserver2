@@ -5,6 +5,13 @@ const Cmd = localRequire("@/server/lib/rap/Cmd.js");
 var cmd = new Cmd(rap.system)
 
 
+test(`cmd osk`, (done) => {
+	rap.exec("osk").then((ret)=>{
+		expect(1).toBe(1);
+		done();
+	});
+},90000);
+
 test(`cmd nslookup`, (done) => {
 	cmd.execApi("nslookup").then((ret)=>{
 		expect(ret.indexOf("Address")!=-1).toBe(true);
@@ -156,3 +163,22 @@ test(`svn status`, (done) => {
 	});
 },90000);
 // //svn查看状态 svn add ${file}
+
+//设备管理器
+test(`设备管理器`, (done) => {
+	cmd.execApi("control.exe  /name Microsoft.DeviceManager ").then((ret)=>{
+		expect(1).toBe(1);
+		done();
+	});
+},90000);
+
+//防火墙
+test(`防火墙`, (done) => {
+	cmd.execApi("control.exe  /name Microsoft.WindowsFirewall ").then((ret)=>{
+		expect(1).toBe(1);
+		done();
+	});
+},90000);
+
+
+
