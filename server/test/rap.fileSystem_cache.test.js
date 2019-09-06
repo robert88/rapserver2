@@ -1,8 +1,10 @@
 require("../lib/global/global.localRequire");
 var FileSystemInput = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/FileSystemInput.js");
+var FileSystemOutput = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/FileSystemOutput.js");
 const pt = require("path");
 const cacheInputFileSystem = new FileSystemInput(5000);
 const system = cacheInputFileSystem.getSystem();
+const output = new FileSystemOutput(cacheInputFileSystem);
 const fs = require("fs");
 // readdir
 test(`rap cacheInputFileSystem readdir cache`, (done) => {
@@ -57,7 +59,7 @@ test(`rap cacheInputFileSystem readFile cache`, (done) => {
 	  done();
 	}
 	var dir = pt.resolve(__dirname, "./readDir/testCache.txt");
-
+	output.writeSync(dir,"LINE1\r\nLINE2\r\nLINE3\r\nLINE4");
   var readFile =  jest.fn();
   var readFileSync =     jest.fn();
   system.readFile = function(){

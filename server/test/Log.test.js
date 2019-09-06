@@ -2,8 +2,6 @@
 require("../lib/global/global.localRequire");
 localRequire("@/server/lib/rap/rap.js");
 
-const Log = localRequire("@/server/lib/rap/Log.js");
-
 var logPath = localRequire("@/server/test/log",true);
 
 //重新定义路径

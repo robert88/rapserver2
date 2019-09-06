@@ -7,6 +7,7 @@ let run4006 = new Runner({ port: 4006 });
 
 localRequire("@/server/pipe/common.js")(run4006);
 localRequire("@/server/pipe/query.js")(run4006);
+localRequire("@/server/pipe/cookie.js")(run4006);
 let setIdMap = { setFileId: localRequire("@/server/test/testStaticFileSetId", true),rapserver: localRequire("@/server/test/testStaticFile", true)  }
 localRequire("@/server/pipe/staticFile.setId.js")(run4006,setIdMap );
 

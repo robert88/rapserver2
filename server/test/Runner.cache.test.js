@@ -1,7 +1,7 @@
 //测试
 require("../lib/global/global.localRequire");
 localRequire("@/server/lib/rap/rap.js");
-
+const fs =require("fs");
 const Runner = localRequire("@/server/bootstrap/Runner.js");
 let run4005 = new Runner({ port: 4005 });
 localRequire("@/server/pipe/common.js")(run4005);
@@ -28,6 +28,23 @@ run4005.inPipe.tapAsync({
     next();
   }
 })
+
+run4005.outPipe.tapAsync({
+  name: "cacheTest",
+  fn(request, response, next) {
+    var filePath = request.rap.realFile;
+    //存在静态文件
+    if (!filePath) {
+      next();
+      return;
+    }
+    response.writeHead(200);
+
+    let inp = fs.createReadStream(filePath);
+    inp.pipe(response);
+  }
+})
+
 
 
 // //错误信息会被启动的服务捕获
@@ -60,7 +77,7 @@ function restCache(callback, time, loop) {
       }
     },
     error(e) {
-      expect("rest error").toBe(1)
+      expect(e).toBe(1)
       done();
     }
 
