@@ -52,29 +52,28 @@ module.exports = class Log {
   }
 
   //添加全局的log变量
-  init(rap, callback) {
+  init(rap, iniCallback,type) {
     ["log", "warn", "error"].forEach((type) => {
       this.initActive(type);
       let uuid = "uuid-log-" + type;
-      let fn = () => {
-        let args = []
-        let callback = arguments[arguments.length - 1];
+      //箭头函数没有arguments
+      let fn = (...argsVar)=> {
+        let callback = argsVar[argsVar.length-1];
         if (typeof callback == "function") {
-          args = Array.prototype.slice.call(arguments, 0, arguments.length - 1)
-        } else {
-          args = Array.prototype.slice.call(arguments, 0, arguments.length);
-          callback = null;
+          argsVar = argsVar.slice(0,argsVar.length-1)
         }
-        let message = Log.format(log, type, args);
 
-        let hanlder = (messageStack, uuid) => {
+        let message = Log.format(this, type, argsVar);
+        let log = this;
+        let hanlder = function(messageStack, uuid) {
           let logType = uuid.replace("uuid-log-", "");
-          this.save(messageStack, logType, callback);
+          log.save(messageStack, logType, callback);
         }
+
         //10s不会写入log数据
         rap.debounce(hanlder, 10000, uuid, message);
       }
-      callback(type, fn);
+      iniCallback(type, fn);
 
     });
     return this;
@@ -90,6 +89,7 @@ module.exports = class Log {
         message = message.join("\n") + "\n";
       }
       this.system.output.write(filename, message, true).finally(() => {
+        this.system.input.purge("all",filename)
         if (typeof callback == "function") {
           callback(filename);
         }
