@@ -2,6 +2,7 @@ const AsyncSeries = localRequire("@/server/lib/node_modules/enhanced-resolve/lib
 const zlib = require("zlib");
 const path = require("path");
 const fs = require("fs");
+const m1 = 1 * 1024 * 1024; //3mb大小
 /**
  *如果存在就返回一个真实的地址
  * */
@@ -87,11 +88,26 @@ module.exports = function(run, staticMap) {
       //这些文件已经经过了高度压缩,所以不需要压缩
       var fileNotZip = /(jpg)|(ppt)|(doc)|(ico)|(gif)|(png)|(mp3)|(mp4)|(wav)/.test(path.extname(filePath));
       let zip;
+      let realStat = request.rap.realStat;
       //文件是否需要压缩，且客户端是否支持压缩,只支持gzip压缩
       if (!fileNotZip && clientSupportGzip) {
         zip = zipType();
         response.setHeader("Content-Encoding", "gzip");
+        
+        //保持连接，设置错了报错HPE_INVALID_CONSTANT
+        response.setHeader("Transfer-Encoding", "chunked");
+        response.removeHeader("Content-Length")
+      }else if(realStat&&realStat["size"]){
+        //这两个是对立的如果设置Transfer-Encoding，那么就会报错，HPE_UNEXPECTED_CONTENT_LENGTH
+        if(realStat["size"]<m1){
+          response.setHeader("Content-Length", realStat["size"]);
+          response.removeHeader("Transfer-Encoding")
+        }else{
+          response.setHeader("Transfer-Encoding", "chunked");
+        }
       }
+
+
 
       response.writeHead(200);
 

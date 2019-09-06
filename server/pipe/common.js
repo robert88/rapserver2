@@ -50,6 +50,7 @@ module.exports = function(run) {
       //定义request的rap
       request.rap = obj;
       response.rap = {}
+
       next();
     }
 
@@ -70,9 +71,6 @@ module.exports = function(run) {
             
       //分块传输
       response.setHeader("Connection", "keep-alive");
-
-      //保持连接
-      response.setHeader("Transfer-Encoding", "chunked");
 
       next();
     }

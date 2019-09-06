@@ -70,23 +70,26 @@ module.exports = function(run, staticMap) {
   run.outPipe.tapAsync({
     name: "cache",
     fn(request, response, next) {
+      //依赖于staticFile
       let realStat = request.rap.realStat;
       if (realStat) {
         let cache = request.rap.cache;
         
         response.setHeader("Last-Modified", realStat["Last-Modified"])
         response.setHeader("ETag", realStat["ETag"])
-        response.setHeader("Content-Length", realStat["size"]);
-      
 
         if (cache.etag) {
           if (cache.etag == realStat["ETag"]) {
+            response.removeHeader("Transfer-Encoding")
+            response.removeHeader("Content-Length")
             response.writeHead(304);
             response.end();
             return;
           }
         } else if (cache.modify) {
           if (cache.modify == realStat["Last-Modified"]) {
+            response.removeHeader("Transfer-Encoding")
+            response.removeHeader("Content-Length")
             response.writeHead(304);
             response.end();
             return;
