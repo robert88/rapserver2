@@ -29,6 +29,10 @@ module.exports = class Runner {
       fn(err, response, comeFrom) {
         //默认错误response
         if (response && response.finished == false) {
+          response._header = null;
+          response.removeHeader("Content-Length");
+          response.setHeader("Content-Type","text/plain");
+          response.writeHead(500);
           response.end(comeFrom + ":" + (err && err.stack));
         }
       }
@@ -40,6 +44,10 @@ module.exports = class Runner {
       stage: 4,
       fn(request, response, next) {
         if (response && response.finished == false) {
+          response._header = null;
+          response.removeHeader("Content-Length");
+          response.setHeader("Content-Type","text/plain");
+          response.writeHead(200);
           response.end("helloworld");
         }
       }
