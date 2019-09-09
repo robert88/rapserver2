@@ -45,9 +45,9 @@ module.exports = class Log {
     //将参数解析出来
     let time = new Date().format(log.dateFormat.message)
     let ret = `[${type}][${time}][${localCallerName}]\n${callerParamsStr}`;
-    if (type == "error") {
-      console.log(`[${type}]`.error + `[${time}][${localCallerName}]\n${callerParamsStr}`);
-    }
+    // if (type == "error") {
+      // console.log(`[${type}]`.error + `[${time}][${localCallerName}]\n${callerParamsStr}`);
+    // }
     return ret;
   }
 
