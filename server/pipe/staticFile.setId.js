@@ -34,7 +34,7 @@ module.exports = function(run, staticMap) {
         return;
       }
       //获取特殊根地址
-      let cookiesRootId = request.rap.cookies && request.rap.cookies["serverRootId"];
+      let cookiesRootId = request.rap.cookie && request.rap.cookie["serverRootId"];
       let queryRootId = request.rap.query && request.rap.query["serverRootId"];
       //query优先
       responseRootId = queryRootId || cookiesRootId;
