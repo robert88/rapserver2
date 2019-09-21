@@ -1,7 +1,7 @@
 
 
 const qs = require("querystring");
-module.exports = function(run) {
+module.exports = function(run,timeout) {
   //获取公共信息
   run.inPipe.tapAsync({
     name: "init",
@@ -50,7 +50,10 @@ module.exports = function(run) {
       //定义request的rap
       request.rap = obj;
       response.rap = {}
-
+      //异步才会超时
+      request.rap.timer = setTimeout(()=>{
+        throw Error("request timeout");
+      },timeout||120000);
       next();
     }
 
@@ -71,7 +74,7 @@ module.exports = function(run) {
             
       //分块传输
       response.setHeader("Connection", "keep-alive");
-
+      clearTimeout(request.rap.timer)
       next();
     }
   })
