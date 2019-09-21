@@ -153,11 +153,11 @@ module.exports = class Runner {
 
     this.inPipe.callAsync(request, response, (err, request, response) => {
       if (err) {
-        this.error(err, response, "inPipeException");
+        this.error.callAsync(err, response, "inPipeException");
       }else{
         this.outPipe.callAsync(request, response, (err, request, response) => {
           if (err) {
-            this.error(err, response, "outPipeException");
+            this.error.callAsync(err, response, "outPipeException");
           }
         })
       }
