@@ -19,7 +19,7 @@ let run = new Runner();
 
 //数组中顺序代表执行顺序
 var inStagMap = {};
-["init","cache", "query","cookie","session","staticFileSetId", "staticFile","end"].forEach((val, idx) => {
+["init","cache", "query","cookie","session","action","staticFileSetId", "staticFile","end"].forEach((val, idx) => {
   inStagMap[val] = idx;
 })
 run.inPipe.interceptors.push({
@@ -29,9 +29,9 @@ run.inPipe.interceptors.push({
   })
   
 
-//数组中顺序代表执行顺序
+//数组中顺序代表执行顺序,actionEnd会把end给覆盖掉
 var outStagMap = {};
-["init", "cache", "query","cookie","staticFile", "end"].forEach((val, idx) => {
+["init", "cache", "query","cookie","staticFile","actionEnd", "end"].forEach((val, idx) => {
   outStagMap[val] = idx;
 })
 run.outPipe.interceptors.push({
@@ -46,16 +46,11 @@ localRequire("@/server/pipe/cache.js")(run, config.staticMap);
 localRequire("@/server/pipe/query.js")(run);
 localRequire("@/server/pipe/cookie.js")(run);
 localRequire("@/server/pipe/session.js")(run);
-localRequire("@/server/pipe/permission.js")(run);
+localRequire("@/server/pipe/loginIntercept.js")(run,);
+localRequire("@/server/pipe/filter/action")(run,config.actionPath);
 localRequire("@/server/pipe/staticFile.setId.js")(run4006,config.staticMap);
 localRequire("@/server/pipe/staticFile.js")(run, config.staticMap);
-// localRequire("@/server/pipe/filter/action")(run);
-// localRequire("@/server/pipe/filter/action")(run);
-// localRequire("@/server/pipe/filter/proxy")(run);
 
-
-
-// localRequire("@/server/pipe/filter/responseEnd")(run);
 
 // new Cluser(run);
 // new Sockie(run);
