@@ -5,8 +5,17 @@
 * @author：尹明
 * */
 require("./lib/global/global.localRequire");
-module.exports = {
-    staticMap:{rapserver:localRequire("@/server/static",true)}
+const portfinder = require("portfinder")
+
+
+
+module.exports = function(callback){
+    portfinder.getPortPromise().then(port=>{
+        callback({
+            staticMap:{rapserver:localRequire("@/server/static",true)},
+            port:port
+        })
+    });
 }
 
 

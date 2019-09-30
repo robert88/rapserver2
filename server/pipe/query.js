@@ -92,6 +92,11 @@ module.exports = function(run) {
   run.inPipe.tapAsync({
     name: "query",
     fn(request, response, next) {
+      //提前解析了
+      if(request.rap.query){
+        next();
+	return
+      }
       /**
        * 也可使用var query=qs.parse(url.parse(req.url).query);
        * 区别就是url.parse的arguments[1]为true：

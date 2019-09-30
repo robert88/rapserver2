@@ -48,7 +48,11 @@ module.exports = function(run,timeout) {
         obj[i] = obj[i](request);
       }
       //定义request的rap
-      request.rap = obj;
+      if(!request.rap ){
+        request.rap = obj;
+      }else{
+        request.rap = Object.assign(request.rap,obj);
+      }
       response.rap = {}
       //异步才会超时
       request.rap.timer = setTimeout(()=>{
