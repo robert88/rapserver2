@@ -7,7 +7,13 @@ const pt = require("path")
 var apis = ["readdir", "stat", "readFile", "readlink", "exists", "readJson", "readData", "findFile", "findDir", "getSize", "getModify", "isDir", "isFile"];
 
 const cacheInputFileSystem = rap.system.input;
-
+const output = rap.system.output;
+var dir = pt.resolve(__dirname, "./readDir/testReaddir");
+output.writeSync(toPath(dir + "/deep1/deep2/file6.txt"),"")
+output.writeSync(toPath(dir + "/deep1/file5.txt"),"LINE1\r\nLINE2\r\nLINE3\r\nLINE4")
+output.writeSync(toPath(dir + "/file2.txt"),"LINE1\r\nLINE2\r\nLINE3\r\nLINE4")
+output.writeSync(toPath(dir + "/file3.js"),"LINE1\r\nLINE2\r\nLINE3\r\nLINE4")
+output.writeSync(toPath(dir + "/file4.json"),JSON.stringify({"testname":"robert"}))
 //必须提供以下api
 test('rap cacheInputFileSystem api', () => {
   apis.forEach(type => {
@@ -18,7 +24,7 @@ test('rap cacheInputFileSystem api', () => {
 
 //测试readdir操作，读取当前文件夹全部信息
 test(`rap cacheInputFileSystem api readdir`, (done) => {
-  var dir = pt.resolve(__dirname, "./readDir/testReaddir");
+
 
   cacheInputFileSystem.readdir(dir,function(err, data) {
     //toBe不能比较对象
@@ -33,7 +39,7 @@ test(`rap cacheInputFileSystem api readdir`, (done) => {
 
 //测试readdir操作，读取当前文件夹全部信息,可以深度调用
 test(`rap cacheInputFileSystem api findDir`, (done) => {
-  var dir = pt.resolve(__dirname, "./readDir/testReaddir");
+
   let data = cacheInputFileSystem.findDirSync(dir, "", true);
   expect(data).toEqual([
     toPath(dir + "/deep1"),
@@ -61,7 +67,7 @@ test(`rap cacheInputFileSystem api findDir`, (done) => {
 
 //测试findFile操作，读取当前文件夹全部信息
 test(`rap cacheInputFileSystem api findFile`, (done) => {
-  var dir = pt.resolve(__dirname, "./readDir/testReaddir");
+
   let data = cacheInputFileSystem.findFileSync(dir, "txt", true);
   expect(data).toEqual([
     toPath(dir + "/deep1/deep2/file6.txt"),
@@ -97,7 +103,7 @@ test(`rap cacheInputFileSystem api findFile`, (done) => {
 
 //测试findFile操作，读取当前文件夹全部信息
 test(`rap cacheInputFileSystem api findAll`, (done) => {
-  var dir = pt.resolve(__dirname, "./readDir/testReaddir");
+
   let data = cacheInputFileSystem.findAllSync(dir, "txt", true);
   expect(data).toEqual([
     toPath(dir + "/deep1/deep2/file6.txt"),

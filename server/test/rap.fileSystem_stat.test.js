@@ -2,7 +2,7 @@ require("../lib/global/global.localRequire");
 localRequire("@/server/lib/rap/rap.system.js");
 
 const cacheInputFileSystem = rap.system.input;
-
+const output = rap.system.output;
 const pt = require("path")
 
 //stat
@@ -63,6 +63,7 @@ test(`rap cacheInputFileSystem api stat`, (done) => {
 test(`rap cacheInputFileSystem api getSize`, (done) => {
 	var dir = localRequire("@/server/test/readDir",true);
 	var dir2 = localRequire("@/server/test/readDir/testGetSize.json",true);
+	output.writeSync(dir2,JSON.stringify({"testname":"robert"}))
 	let data = cacheInputFileSystem.getSizeSync(dir);
 	let data2 = cacheInputFileSystem.getSizeSync(dir2);
 	expect(data).toBe(0);
@@ -81,14 +82,15 @@ test(`rap cacheInputFileSystem api getSize`, (done) => {
 test(`rap cacheInputFileSystem api getModify`, (done) => {
     //最后修改时间20190719 8:56
     var dir = localRequire("@/server/test/readDir/testmodify.txt",true);
-
+	output.writeSync(dir,"");
+	var time = new Date().getTime()
 	cacheInputFileSystem.getModify(dir,(err,data)=>{
-		expect(data).toBe(1563497806932);
+		expect(Math.floor(data/100)).toBe(Math.floor(time/100));
 		done();
     });
     
     let data = cacheInputFileSystem.getModifySync(dir);
-	expect(data).toBe(1563497806932);
+	expect(Math.floor(data/100)).toBe(Math.floor(time/100));
 });
 
 //isDir
@@ -127,6 +129,7 @@ test(`rap cacheInputFileSystem api isDir`, (done) => {
 test(`rap cacheInputFileSystem api isFile`, (done) => {
 	var dir = localRequire("@/server/test/readDir",true);
 	var dir2 = localRequire("@/server/test/readDir/testIsFile.json",true);
+	output.writeSync(dir2,JSON.stringify({"testname":"robert"}))
 	let data = cacheInputFileSystem.isFileSync(dir);
 	let data2 = cacheInputFileSystem.isFileSync(dir2);
 	expect(data).toBe(false);
