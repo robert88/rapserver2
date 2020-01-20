@@ -21,7 +21,7 @@ let serverConfig = localRequire("@/server/config.js");
 var cluser = Cluser(
   serverConfig(config => {
 
-    let run = new Runner({port:config.port});
+    let run = new Runner({ port: config.port });
 
     //数组中顺序代表执行顺序
     var inStagMap = {};
@@ -60,4 +60,4 @@ var cluser = Cluser(
   })
 );
 
-cluser&&cluser.fork().send("start");
+cluser && cluser.fork().send("start");
