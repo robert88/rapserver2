@@ -54,3 +54,26 @@ rap.unAES = (str) =>{
   dec+=decipher.final("utf8");
   return dec;
 }
+
+/**
+ * 获取端口号
+ */
+function getPort(startPort,callback){
+  if(typeof startPort=="function"){
+      callback = startPort;
+      startPort = 3000;
+  }
+  startPort = startPort||3000;
+  rap.cmd.execApi(`netstat -aon | findstr "${startPort}"`).then((str)=>{
+      if(str){
+        getPort(++startPort,callback)
+      }else{
+          callback(startPort)
+      }
+  }).catch(e=>{
+    callback(startPort);
+  })
+}
+
+rap.getPort = getPort;
+
