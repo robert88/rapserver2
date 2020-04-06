@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Marked in the browser</title>
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link href="http://cdn.bootcss.com/highlight.js/8.0/styles/monokai_sublime.min.css" rel="stylesheet">  
+<script src="http://cdn.bootcss.com/highlight.js/8.0/highlight.min.js"></script>  
+<script >hljs.initHighlightingOnLoad();</script> 
+  <style>
+  .md_source{
+    display: none
+  }
+  </style>
+</head>
+<body>
+    <div>
+        <pre>
+            <code class="lang-javascript">
+    function init(){
+        $scope.req.getArticle();
+        $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+        });
+    }
+            </code>
+        </pre>
+    </div>
+<pre class="md_source">
+# Marked in the browser
+Rendered by **marked**.
+*斜体*
+**粗体**
+***加粗斜体***
+~~删除线~~
+
+ # 一级标题
+ ## 二级标题
+ ### 三级标题
+ #### 四级标题
+ ##### 五级标题
+ ###### 六级标题
+
+ 这是[超链接](https://www.baidu.com "超链接")
+
+自动链接
+ <address@example.com>
+
+ 跳转到[目录](#index)
+
++ 无序列表项 二
+
+![美丽花儿](http://upload-images.jianshu.io/upload_images/7973237-581e2f071ef21881.jpg?imageMogr2/auto-orient/
+strip%7CimageView2/2/w/1240 "美丽花儿")
+
+表格
+| 项目 | 价格 | 数量 |
+| --------  | -----:  | :----:  |
+| 计算机 | $1600  |  5    |
+| 手机     |  $12  |  12  |
+| 管线     |    $1    |  234  |
+</pre>
+<div class="md_render">
+</div>
+  <script>
+    $('.md_render').html(marked($('.md_source').html()));
+    //$('.markdown-container').html(marked('# Marked in the browser\n\nRendered by **marked**.'));
+  </script>
+</body>
+</html>
