@@ -1,0 +1,17 @@
+.makedown{
+    table{
+        padding: 0;
+        margin: 0;  
+        border-collapse:collapse;
+        td,th{
+            border: 1px solid #C1DAD7;  
+            background: #fff;
+            font-size:11px;
+            padding: 6px 6px 6px 12px;
+            color: #4f6b72;
+        }
+    }
+    .tl{text-align: left;}
+    .tr{text-align: right;}
+    .tc{text-align: center;}
+}
