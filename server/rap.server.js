@@ -23,7 +23,12 @@ var cluser = Cluser(
 
     let run = new Runner({ port: config.port });
 
-    //数组中顺序代表执行顺序
+    //sockie
+  var sockie = new Sockie(run,rap.console.log,port=>{
+      console.log("web sockie listen:"+port);
+  });
+
+    //request数组中顺序代表执行顺序
     var inStagMap = {};
     ["init", "cache", "query", "cookie", "session", "action", "staticFileSetId", "staticFile", "end"].forEach((val, idx) => {
       inStagMap[val] = idx;
@@ -35,7 +40,7 @@ var cluser = Cluser(
     })
 
 
-    //数组中顺序代表执行顺序,actionEnd会把end给覆盖掉
+    //response数组中顺序代表执行顺序,actionEnd会把end给覆盖掉
     var outStagMap = {};
     ["init", "cache", "query", "cookie", "staticFile", "actionEnd", "end"].forEach((val, idx) => {
       outStagMap[val] = idx;
@@ -60,4 +65,5 @@ var cluser = Cluser(
   })
 );
 
+//启动开一个实例
 cluser && cluser.fork().send("start");
