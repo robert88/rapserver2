@@ -20,3 +20,49 @@
 .makedown .tc {
   text-align: center;
 }
+.makedown .col:after,
+.makedown .col::before {
+  clear: both;
+  content: "";
+  display: block;
+}
+.makedown .col .col1 {
+  width: 8.33333333%;
+  float: left;
+}
+.makedown .col .col2 {
+  width: 16.66666667%;
+  float: left;
+}
+.makedown .col .col3 {
+  width: 25%;
+  float: left;
+}
+.makedown .col .col4 {
+  width: 33.33333333%;
+  float: left;
+}
+.makedown .col .col5 {
+  width: 41.66666667%;
+  float: left;
+}
+.makedown .col .col6 {
+  width: 50%;
+  float: left;
+}
+.makedown .col .col7 {
+  width: 58.33333333%;
+  float: left;
+}
+.makedown .col .col8 {
+  width: 66.66666667%;
+  float: left;
+}
+.makedown .col .col9 {
+  width: 66.66666667%;
+  float: left;
+}
+.makedown .col .col11 {
+  width: 91.66666667%;
+  float: left;
+}

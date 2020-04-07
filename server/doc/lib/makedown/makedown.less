@@ -1,4 +1,6 @@
+
 .makedown{
+
     table{
         padding: 0;
         margin: 0;  
@@ -14,4 +16,51 @@
     .tl{text-align: left;}
     .tr{text-align: right;}
     .tc{text-align: center;}
+    .col{
+        &:after,&::before{
+            clear: both;
+            content: "";
+            display: block;
+        }
+        .col1{
+            width: percentage(1/12);
+            float: left;
+        }
+        .col2{
+            width: percentage(2/12);
+            float: left;
+        }
+        .col3{
+            width: percentage(3/12);
+            float: left;
+        }
+        .col4{
+            width: percentage(4/12);
+            float: left;
+        }
+        .col5{
+            width: percentage(5/12);
+            float: left;
+        }
+        .col6{
+            width: percentage(6/12);
+            float: left;
+        }
+        .col7{
+            width: percentage(7/12);
+            float: left;
+        }
+        .col8{
+            width: percentage(8/12);
+            float: left;
+        }
+        .col9{
+            width: percentage(8/12);
+            float: left;
+        }
+        .col11{
+            width: percentage(11/12);
+            float: left;
+        }
+    }
 }

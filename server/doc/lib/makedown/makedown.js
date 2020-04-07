@@ -5,13 +5,13 @@ var tagMap = {
   ib: "i,strong"
 }
 //入口
-var makedown = function(str) {
+var makedown = function (str) {
 
   if (!str) {
     return "";
   }
-
-  var strs = str.split(/\n|\r/);
+  str = str.replace(/(\n|\r)+/g,"\n");
+  var strs = str.split(/\n/);
   var token = [];
   for (var i = 0; i < strs.length; i++) {
     var s = htmlToString(strs[i]);
@@ -22,20 +22,20 @@ var makedown = function(str) {
       var rule = RegExp.$1;
       token.push({ str: s.replace(rule, ""), type: "tag", tag: "H" + rule.length });
     } else if (/^\+\s/.test(s)) {
-      var endInfo = findEnd(strs, i, function(val) {
+      var endInfo = findEnd(strs, i, function (val) {
         return /^[^\+]/.test(val);
       }, true);
       token.push({ str: endInfo.str, type: "list" });
       i = endInfo.index - 1;
     } else if (/^```\s*(\w*)$/.test(s)) {
       var code = RegExp.$1;
-      var endInfo = findEnd(strs, i, function(val) {
+      var endInfo = findEnd(strs, i, function (val) {
         return /^```/.test(val);
       }, false);
       token.push({ str: endInfo.str, type: "code", code: code });
       i = endInfo.index;
     } else if (/^\|/.test(s)) {
-      var endInfo = findEnd(strs, i, function(val) {
+      var endInfo = findEnd(strs, i, function (val) {
         return val == "" || /^[^\|]/.test(val);
       }, true);
       token.push({ str: endInfo.str, type: "table" });
@@ -81,26 +81,26 @@ var makedown = function(str) {
 
 function parseImg(ret) {
   //.*?惰性匹配
-  return ret.replace(/\!\[(.*?)\]\((.*?)\)/gm, function(m, m1, m2) {
+  return ret.replace(/\!\[(.*?)\]\((.*?)\)/gm, function (m, m1, m2) {
     var text = m1 || "";
-    var splitStr = m2.indexOf("'") > m1.indexOf("\"")?"'":"\""
+    var splitStr = m2.indexOf("'") > m1.indexOf("\"") ? "'" : "\""
     m2 = m2.split(splitStr)
-    var src = m2[0] ? ('src="' + m2[0]  + '"') : "";
-    var title = m2.slice(1,m2.length-1).join(splitStr)||text;
+    var src = m2[0] ? ('src="' + m2[0] + '"') : "";
+    var title = m2.slice(1, m2.length - 1).join(splitStr) || text;
     return "<img " + src + " alt='" + text + "' title='" + title + "' >";
   })
 }
 
 function parseButton(ret) {
   //.*?惰性匹配
-  return ret.replace(/\[\^(.*?)\]\((.*?)\)/gm, function(m, m1, m2) {
+  return ret.replace(/\[\^(.*?)\]\((.*?)\)/gm, function (m, m1, m2) {
     var text = m1 || "";
-    var splitStr = m2.indexOf("'") > m1.indexOf("\"")?"'":"\""
+    var splitStr = m2.indexOf("'") > m1.indexOf("\"") ? "'" : "\""
     m2 = m2.split(splitStr)
-    var src = m2[0] ? ('href="' + m2[0]  + '"') : "";
-    var className = m2.slice(1,m2.length-1).join(splitStr)||text;
+    var src = m2[0] ? ('href="' + m2[0] + '"') : "";
+    var className = m2.slice(1, m2.length - 1).join(splitStr) || text;
     return "<a " + src + " class='" + className + " btn' title='" + text + "' >" + text + "</a>";
-  }).replace(/\[\^(.*?)\]/gm, function(m, m1) {
+  }).replace(/\[\^(.*?)\]/gm, function (m, m1) {
     var text = m1 || "";
     return "<a class='btn' title='" + text + "' >" + text + "</a>";
   })
@@ -108,20 +108,20 @@ function parseButton(ret) {
 
 function parseLink(ret) {
   //.*?惰性匹配
-  return ret.replace(/\[(.*?)\]\((.*?)\)/gm, function(m, m1,m2) {
+  return ret.replace(/\[(.*?)\]\((.*?)\)/gm, function (m, m1, m2) {
     var text = m1 || "";
-    var splitStr = m2.indexOf("'") > m1.indexOf("\"")?"'":"\""
+    var splitStr = m2.indexOf("'") > m1.indexOf("\"") ? "'" : "\""
     m2 = m2.split(splitStr)
-    var src = m2[0] ? ('href="' + m2[0]  + '"') : "";
-    var title = m2.slice(1,m2.length-1).join(splitStr)||text;
+    var src = m2[0] ? ('href="' + m2[0] + '"') : "";
+    var title = m2.slice(1, m2.length - 1).join(splitStr) || text;
     return "<a " + src + "  title='" + title + "' >" + text + "</a>";
-  }).replace(/\((.*?)\)/gm, function(m,m1,index) {
-      //当前为括号
-    if(ret[index-1]=="\\"){
-        return m;
+  }).replace(/\((.*?)\)/gm, function (m, m1, index) {
+    //当前为括号
+    if (ret[index - 1] == "\\") {
+      return m;
     }
     if (/[-A-Za-z0-9+&@#\/%?=~_|!:,\.;]+[-A-Za-z0-9+&@#/%=~_|]/.test(m1)) {
-      return "<a " + m1 + " >" + m1 + "</a>";
+      return "<a href='" + m1 + "' >" + m1 + "</a>";
     }
     return m;
   })
@@ -130,37 +130,44 @@ function parseLink(ret) {
 function parseSlash(ret) {
 
   //.*?惰性匹配
-  return ret.replace(/\*([^\s,\.。，‘’“”"'\?？\}\{]+)\*/gm, function(m, m1) {
-            //当前为括号
-    if(ret[index-1]=="\\"){
-        return m;
+  return ret.replace(/\*([^\s,\.。，‘’“”"'\?？\}\{]+)\*/gm, function (m, m1, index) {
+    //当前为括号
+    if (ret[index - 1] == "\\") {
+      return m;
     }
-    
-    return  "<i>" + m1+ "</i>"
+
+    return "<i>" + m1 + "</i>"
   })
 }
 
 function parseBlod(ret) {
   //.*?惰性匹配
-  return ret.replace(/_([^\s,\.。，‘’“”"'\?？\}\{]+)_/gm, function(m, m1) {
-    return  "<strong>" + m1+ "</strong>"
+  return ret.replace(/_([^\s,\.。，‘’“”"'\?？\}\{]+)_/gm, function (m, m1, index) {
+    //当前为括号
+    if (ret[index - 1] == "\\") {
+      return m;
+    }
+    return "<strong>" + m1 + "</strong>"
   })
 }
 
 function parseDel(ret) {
   //.*?惰性匹配
-  return ret.replace(/\~([^\s,\.。，‘’“”"'\?？\}\{]+)\~/gm, function(m, m1) {
-
-    return  "<del>" + m1+ "</del>"
+  return ret.replace(/\~([^\s,\.。，‘’“”"'\?？\}\{]+)\~/gm, function (m, m1, index) {
+    //当前为括号
+    if (ret[index - 1] == "\\") {
+      return m;
+    }
+    return "<del>" + m1 + "</del>"
   })
 }
 
 //生成table
 function parseTable(item) {
-  var trs = item.str.split(/\n|\r/);
+  var trs = item.str.split(/\n/);
   var str = "";
   var tdClass = [];
-  trs.forEach(function(tr, i) {
+  trs.forEach(function (tr, i) {
     var tds = tr.split(/\|/);
     var tdstr = "";
 
@@ -186,7 +193,7 @@ function parseTable(item) {
       }
     }
     //td，th
-    tds.forEach(function(td, j) {
+    tds.forEach(function (td, j) {
       if (td == "") {
         len++;
       } else {
@@ -219,7 +226,7 @@ function parseTag(item) {
   var tags = item.tag.split(",");
   var start = [];
   var end = [];
-  tags.forEach(function(tag) {
+  tags.forEach(function (tag) {
     if (!item.className) {
       start.push("<" + tag + ">");
     } else {
@@ -237,10 +244,10 @@ function parseCode(item) {
   strs = strs.slice(1, strs.length - 1);
 
   if (item.code.indexOf("col") != -1) {
-    var strP = strs.join("\n").split(/\n[-]+\n[-]+\n/);
+    var strP = strs.join("\n").split(/\n[\-]+\n[\-]+\n/);
     var strLen = strP.length;
     var ret = "<ul class='col max" + strLen + "'>";
-    strP.forEach(function(val) {
+    strP.forEach(function (val) {
       ret += '<li class="' + item.code + '">' + val + '</li>'
     })
     return ret + "</ul>"
@@ -254,20 +261,21 @@ function parseList(item) {
   var strs = item.str.split(/\n/);
   var len = 0;
   var ret = "";
-  strs.forEach(function(val) {
+  strs.forEach(function (val) {
     if (/^\s*(\++)/.test(val)) {
       var plus = RegExp.$1;
       if (plus.length > len) {
-        ret += "<ul>"
+        ret += "<ul>\n"+"<li>" + val.replace(plus, "")
       } else if (plus.length < len) {
-        ret += "</ul>"
+        ret += "</li>\n</ul></li>\n"+"<li>" + val.replace(plus, "")
+      }else{
+        ret += "</li><li>" + val.replace(plus, "") + "\n"
       }
-      ret += "<li>" + val.replace(plus, "") + "</li>"
       len = plus.length;
     }
   })
   if (ret) {
-    ret = "</ul>"
+    ret += "</li>\n</ul>"
   }
 
   return ret;
@@ -298,89 +306,89 @@ function findEnd(strs, i, reg, include, endInfo) {
 
 }
 
-var teststr = `
-通用
+// var teststr = `
+// 通用
 
-# 一级标题
-## 二级标题
-### 三级标题
-#### 四级标题
-##### 五级标题
-###### 六级标题
-
-
-表格
-| 项目 | 价格 | 数量 |
-| --  | --:  | :--:  |
-| 计算机 | $1600  |  5    |
-| 手机     |  $12  |  12  |
-| 管线     |    $1    |  234  |
+// # 一级标题
+// ## 二级标题
+// ### 三级标题
+// #### 四级标题
+// ##### 五级标题
+// ###### 六级标题
 
 
-\`\`\` css
-.a{color:1}
-\`\`\`
-
-\`\`\` html
-<div></div>
-\`\`\`
-
-\`\`\` javascript
- var a=1;
-\`\`\`
+// 表格
+// | 项目 | 价格 | 数量 |
+// | --  | --:  | :--:  |
+// | 计算机 | $1600  |  5    |
+// | 手机     |  $12  |  12  |
+// | 管线     |    $1    |  234  |
 
 
-规则不一样
+// \`\`\` css
+// .a{color:1}
+// \`\`\`
 
-新增
+// \`\`\` html
+// <div></div>
+// \`\`\`
 
-<!--浮动 布局 -->
-\`\`\` col3
-
-col1
--------
--------
-col2
--------
--------
-col3
-
-\`\`\`
-
-规则不一样
-
-[超链接](https://www.baidu.com "超链接")
-[^RUNOOB](https://www.baidu.com "btn-danger")
-[^RUNOOB]
-![美丽花儿alt](http://upload-images.jianshu.io/upload_images/7973237-581e2f071ef21881.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240 "美丽花儿title")
-
-*斜体文本*
-_粗体文本_
-*_粗体文本_*
-_*粗斜体文*_
-~删除线~
-~_*删除线粗斜体文*_~
+// \`\`\` javascript
+//  var a=1;
+// \`\`\`
 
 
-分割线
-***
+// 规则不一样
+
+// 新增
+
+// <!--浮动 布局 -->
+// \`\`\` col3
+
+// col1
+// -------
+// -------
+// col2
+// -------
+// -------
+// col3
+
+// \`\`\`
+
+// 规则不一样
+
+// [超链接](https://www.baidu.com "超链接")
+// [^RUNOOB](https://www.baidu.com "btn-danger")
+// [^RUNOOB]
+// ![美丽花儿alt](http://upload-images.jianshu.io/upload_images/7973237-581e2f071ef21881.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240 "美丽花儿title")
+
+// *斜体文本*
+// _粗体文本_
+// *_粗体文本_*
+// _*粗斜体文*_
+// ~删除线~
+// ~_*删除线粗斜体文*_~
 
 
-无序列表使用星号(+)
+// 分割线
+// ***
 
-+ 无序列表项 二
-   ++ 无序列表项 sub
-   ++ 无序列表项 sub
-+ 无序列表项 3
-+ 无序列表项 4
 
-没有块规则
+// 无序列表使用星号(+)
 
-链接没有
-<https://www.runoob.com>改位\\(https://www.runoob.com)
+// + 无序列表项 二
+//    ++ 无序列表项 sub
+//    ++ 无序列表项 sub
+// + 无序列表项 3
+// + 无序列表项 4
 
-目前还不支持流程图的绘制
+// 没有块规则
 
-`
+// 链接没有
+// <https://www.runoob.com>改位\\(https://www.runoob.com)
 
-console.log(makedown(teststr))
+// 目前还不支持流程图的绘制
+
+// `
+
+// console.log(makedown(teststr))

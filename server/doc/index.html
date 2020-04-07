@@ -9,24 +9,100 @@
   <link rel="stylesheet" href="./lib/makedown/makedown.css">
   <link href="http://cdn.bootcss.com/highlight.js/8.0/styles/monokai_sublime.min.css" rel="stylesheet">
   <script src="http://cdn.bootcss.com/highlight.js/8.0/highlight.min.js"></script>
+  <style>
+    html,body{
+      height: 100%;
+    }
+    .wrap{
+      min-height: 100%;
+      position: relative;
+    }
+    .nav {
+      position: absolute;
+      width: 200px;
+      left:0;
+      top:0;
+      height: 100%;
+      overflow: auto;
+    }
+    #app{
+      padding-left:210px
+    }
+  </style>
 </head>
+
 <body>
-  <pre class="makeText" style="background:#f2f2f2;padding: 30px;"></pre>
-  <hr>
-  效果如下
-  <hr>
-  <div class="makedown"></div>
+  <div class="wrap">
+    <nav class="nav">
+      <pre>
+       + ./配置说明.md
+       + ./makedown规则.md
+    </pre>
+    </nav>
+    <div id="app"></div>
+  </div>
 </body>
 <script>
-  $.ajax({
-    url:"./readme.md",
-    success:function(data){
-      $(".makeText").html(data);
-      $(".makedown").html(makedown(data));
+  //去html化
+  function htmlToString(str) {
+    return str.replace(/>/gm, "&gt;")
+      .replace(/</gm, "&lt;")
+  }
+  //makedown
+  function renderMakedown(data) {
+    var template = ['<pre class="makeText" style="background:#f2f2f2;padding: 30px;"></pre>',
+      '<hr>',
+      ' 效果如下',
+      '<hr>',
+      ' <div class="makedown"></div>'].join("")
+    $("#app").html(template);
+    $(".makeText").html(htmlToString(data));
+    $(".makedown").html(makedown(data));
+    hljs.initHighlightingOnLoad();
+  }
+  //render
+  function render(data) {
+    var template = ['<div class="makedown"></div>'].join("")
+    $("#app").html(template);
+    $(".makedown").html(makedown(data));
+    hljs.initHighlightingOnLoad();
+  }
+  //nav
+  $(".nav").html(makedown($(".nav pre").html()))
+  hljs.initHighlightingOnLoad();
+
+  var currentUrl;
+  $(".nav").find("li").each(function () {
+    var path = $.trim($(this).html());
+    var name = path.slice(path.lastIndexOf("/") == -1 ? 0 :( path.lastIndexOf("/")+1), path.length)
+    name = name.slice(0, name.lastIndexOf(".") == -1 ? name.length : (name.lastIndexOf(".")));
+    $(this).html(name);
+    $(this).click(function () {
+      if (currentUrl == path) {
+        return;
+      }
+      loadPage(path, name);
+    })
+    //第一次
+    if (!currentUrl) {
+      loadPage(path, name)
     }
   })
+  //loadpage
+  function loadPage(path, name) {
+    $.ajax({
+      url: path,
+      success: function (data) {
+        currentUrl = path;
+        if (name == "makedown规则") {
+          renderMakedown(data);
+        } else {
+          render(data)
+        }
+      }
+    })
+  }
+
 </script>
-<script>
-  hljs.initHighlightingOnLoad();
-</script>
+
 </html>
