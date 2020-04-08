@@ -292,7 +292,11 @@ var makedown;;
       }
     })
     if (ret) {
-      ret += "</li>\n</ul>"
+      if(len>1){
+        ret += "</li></ul></li>\n</ul>"
+      }else{
+        ret += "</li>\n</ul>"
+      }
     }
 
     return ret;

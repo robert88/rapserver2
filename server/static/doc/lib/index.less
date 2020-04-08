@@ -18,6 +18,30 @@ body {
 
     .list {
       padding: 10px;
+      &.open {
+        .more {
+            transform: rotate(-135deg) translate(0px, -12px);
+        }
+
+        >ul {
+          display: block;
+          margin-top:0px;
+        }
+      }
+
+      .more {
+        -webkit-transition: all 0.4s ease;
+        -o-transition: all 0.4s ease;
+        transition: all 0.4s ease;
+        position: absolute;
+        top: 10px;
+        width: 7px;
+        height: 7px;
+        border-bottom: 1px solid #4D4D4D;
+        border-right: 1px solid #4D4D4D;
+        transform: rotate(45deg);
+        right: 20px;
+      }
 
       li {
         padding-bottom: 10px;

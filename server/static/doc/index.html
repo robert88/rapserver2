@@ -19,8 +19,11 @@
       <div class="nav-btn">+ 写文章</div>
       <div class="nav-list">
         <pre>
-          + ./配置说明.md
           + ./makedown规则.md
+          + ./配置说明.md
+          + ./启动服务.md
+          - 源码分析
+           ++ ./@别名.md
        </pre>
       </div>
 
@@ -40,7 +43,7 @@
   </div>
 </body>
 <script>
-  $(function() {
+  $(function () {
     //去html化
     function htmlToString(str) {
       return str.replace(/>/gm, "&gt;")
@@ -57,7 +60,7 @@
       $("#app").html(template);
       $(".makeText").html(htmlToString(data));
       $(".makedown").html(makedown(data));
-      $("pre code").each(function() {
+      $("pre code").each(function () {
         hljs.highlightBlock(this);
       })
     }
@@ -66,25 +69,28 @@
       var template = ['<div class="makedown"></div>'].join("")
       $("#app").html(template);
       $(".makedown").html(makedown(data));
-      $("pre code").each(function() {
+      $("pre code").each(function () {
         hljs.highlightBlock(this);
       })
 
     }
     //nav
     $(".nav .nav-list").html(makedown($(".nav pre").html()))
-    $("pre code").each(function() {
+    $("pre code").each(function () {
       hljs.highlightBlock(this);
     })
 
     var currentUrl, currentData, currentRender;
-    $(".nav").find("li").each(function() {
+    $(".nav").find("li").each(function () {
       var path = $.trim($(this).html());
+      if($(this).find("ul").length){
+        return;
+      }
       $(this).attr("title", path);
       var name = path.slice(path.lastIndexOf("/") == -1 ? 0 : (path.lastIndexOf("/") + 1), path.length)
       name = name.slice(0, name.lastIndexOf(".") == -1 ? name.length : (name.lastIndexOf(".")));
       $(this).html(name);
-      $(this).click(function() {
+      $(this).click(function () {
         if (currentUrl == path) {
           return;
         }
@@ -103,7 +109,7 @@
       currentUrl = path;
       $.ajax({
         url: path,
-        success: function(data) {
+        success: function (data) {
           if (name == "makedown规则") {
             currentRender = 1;
             renderMakedown(data);
@@ -118,14 +124,14 @@
     }
 
     //写文章
-    $(".nav-btn").click(function() {
+    $(".nav-btn").click(function () {
       $(".dialog").show();
     })
-    $(".dialog-close").click(function() {
+    $(".dialog-close").click(function () {
       $(".dialog").hide();
     })
     var preVal;
-    $(".dialog textarea").on("keyup", function() {
+    $(".dialog textarea").on("keyup", function () {
       var val = $(this).val();
 
       if (val == "" || val != preVal) {
