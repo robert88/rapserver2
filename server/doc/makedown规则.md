@@ -1,7 +1,8 @@
 ### makedown使用说明
 
-网上的makedown使用不是特别满意，为此定义如下规则的makedown
-通用
+rapserver makedown 规则如下
+
+<!--标题 -->
 
 # 一级标题
 ## 二级标题
@@ -10,14 +11,17 @@
 ##### 五级标题
 ###### 六级标题
 
+<!--表格 -->
 
-表格
+#### 表格
+
 | 项目 | 价格 | 数量 |
 | --  | --:  | :--:  |
 | 计算机 | $1600  |  5    |
 | 手机     |  $12  |  12  |
 | 管线     |    $1    |  234  |
 
+<!--代码-->
 
 ``` css
 .a{color:1}
@@ -32,29 +36,44 @@
 ```
 
 
-规则不一样
-
-新增
-
 <!--浮动 布局 -->
-``` col3
 
-col1
+``` col3
+| 项目 | 价格 | 数量 |
+| --  | --:  | :--:  |
+| 计算机 | $1600  |  5    |
+| 手机     |  $12  |  12  |
+| 管线     |    $1    |  234  |
 -------
 -------
-col2
+![美丽花儿alt](//e-file.huawei.com/-/media/EBG/Images/publication/content/ICT-27-cn/ict-27-list/list-02.jpg?h=259&la=zh&w=460 "美丽花儿title")
 -------
 -------
-col3
+| 项目 | 价格 | 数量 |
+| --  | --:  | :--:  |
+| 计算机 | $1600  |  5    |
+| 手机     |  $12  |  12  |
+| 管线     |    $1    |  234  |
+-------
+-------
+![美丽花儿alt](//e-file.huawei.com/-/media/EBG/Images/publication/content/ICT-27-cn/ict-27-list/list-02.jpg?h=259&la=zh&w=460 "美丽花儿title")
 
 ```
 
-规则不一样
+<!--链接相关-->
 
 [超链接](https://www.baidu.com "超链接")
 [^RUNOOB](https://www.baidu.com "btn-danger")
 [^RUNOOB]
-![美丽花儿alt](http://upload-images.jianshu.io/upload_images/7973237-581e2f071ef21881.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240 "美丽花儿title")
+![美丽花儿alt](//e-file.huawei.com/-/media/EBG/Images/publication/content/ICT-27-cn/ict-27-list/list-02.jpg?h=259&la=zh&w=460 "美丽花儿title")
+
+单独链接
+(https://www.runoob.com)
+
+取消单独链接
+\\(https://www.runoob.com)
+
+<!--文本相关-->
 
 *斜体文本*
 _粗体文本_
@@ -64,21 +83,24 @@ _*粗斜体文*_
 ~_*删除线粗斜体文*_~
 
 
+<!--分割线-->
+
 分割线
 ***
 
+<!--折叠菜单-->
 
 无序列表使用星号(+)
 
 + 无序列表项 二
-   ++ 无序列表项 sub
+   -- 无序列表项 sub
    ++ 无序列表项 sub
 + 无序列表项 3
 + 无序列表项 4
 
-没有块规则
 
-链接没有
-<https://www.runoob.com>改位\\(https://www.runoob.com) (https://www.runoob.com)
 
-目前还不支持流程图的绘制
+<!--没有块规则 使用code模式-->
+
+<!--目前还不支持流程图的绘制-->
+

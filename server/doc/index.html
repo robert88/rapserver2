@@ -7,102 +7,144 @@
   <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
   <script src="./lib/makedown/makedown.js"></script>
   <link rel="stylesheet" href="./lib/makedown/makedown.css">
-  <link href="http://cdn.bootcss.com/highlight.js/8.0/styles/monokai_sublime.min.css" rel="stylesheet">
-  <script src="http://cdn.bootcss.com/highlight.js/8.0/highlight.min.js"></script>
-  <style>
-    html,body{
-      height: 100%;
-    }
-    .wrap{
-      min-height: 100%;
-      position: relative;
-    }
-    .nav {
-      position: absolute;
-      width: 200px;
-      left:0;
-      top:0;
-      height: 100%;
-      overflow: auto;
-    }
-    #app{
-      padding-left:210px
-    }
-  </style>
+  <link rel="stylesheet" href="./lib/index.css">
+  <link href="https://highlightjs.org/static/demo/styles/solarized-light.css" rel="stylesheet">
+  <script src="https://highlightjs.org/static/highlight.site.pack.js"></script>
+
 </head>
 
 <body>
   <div class="wrap">
     <nav class="nav">
-      <pre>
-       + ./配置说明.md
-       + ./makedown规则.md
-    </pre>
+      <div class="nav-btn">+ 写文章</div>
+      <div class="nav-list">
+        <pre>
+          + ./配置说明.md
+          + ./makedown规则.md
+       </pre>
+      </div>
+
     </nav>
     <div id="app"></div>
   </div>
+
+  <div class="dialog">
+    <div class="dialog-wrap">
+      <div class="dialog-close">×</div>
+      <div class="ipt-item">路径</div>
+      <div class="ipt-item"><input type="text" name="path"></div>
+      <div class="ipt-item">makedown内容</div>
+      <div class="ipt-item"><textarea></textarea></div>
+      <div class="ipt-item"><input type="submit" value="提交"></div>
+    </div>
+  </div>
 </body>
 <script>
-  //去html化
-  function htmlToString(str) {
-    return str.replace(/>/gm, "&gt;")
-      .replace(/</gm, "&lt;")
-  }
-  //makedown
-  function renderMakedown(data) {
-    var template = ['<pre class="makeText" style="background:#f2f2f2;padding: 30px;"></pre>',
-      '<hr>',
-      ' 效果如下',
-      '<hr>',
-      ' <div class="makedown"></div>'].join("")
-    $("#app").html(template);
-    $(".makeText").html(htmlToString(data));
-    $(".makedown").html(makedown(data));
-    hljs.initHighlightingOnLoad();
-  }
-  //render
-  function render(data) {
-    var template = ['<div class="makedown"></div>'].join("")
-    $("#app").html(template);
-    $(".makedown").html(makedown(data));
-    hljs.initHighlightingOnLoad();
-  }
-  //nav
-  $(".nav").html(makedown($(".nav pre").html()))
-  hljs.initHighlightingOnLoad();
-
-  var currentUrl;
-  $(".nav").find("li").each(function () {
-    var path = $.trim($(this).html());
-    var name = path.slice(path.lastIndexOf("/") == -1 ? 0 :( path.lastIndexOf("/")+1), path.length)
-    name = name.slice(0, name.lastIndexOf(".") == -1 ? name.length : (name.lastIndexOf(".")));
-    $(this).html(name);
-    $(this).click(function () {
-      if (currentUrl == path) {
-        return;
-      }
-      loadPage(path, name);
-    })
-    //第一次
-    if (!currentUrl) {
-      loadPage(path, name)
+  $(function() {
+    //去html化
+    function htmlToString(str) {
+      return str.replace(/>/gm, "&gt;")
+        .replace(/</gm, "&lt;")
     }
-  })
-  //loadpage
-  function loadPage(path, name) {
-    $.ajax({
-      url: path,
-      success: function (data) {
-        currentUrl = path;
-        if (name == "makedown规则") {
-          renderMakedown(data);
+    //makedown
+    function renderMakedown(data) {
+      var template = ['<pre class="makeText" style="background:#f8fafa;padding: 30px;"></pre>',
+        '<hr>',
+        ' 效果如下',
+        '<hr>',
+        ' <div class="makedown"></div>'
+      ].join("")
+      $("#app").html(template);
+      $(".makeText").html(htmlToString(data));
+      $(".makedown").html(makedown(data));
+      $("pre code").each(function() {
+        hljs.highlightBlock(this);
+      })
+    }
+    //render
+    function render(data) {
+      var template = ['<div class="makedown"></div>'].join("")
+      $("#app").html(template);
+      $(".makedown").html(makedown(data));
+      $("pre code").each(function() {
+        hljs.highlightBlock(this);
+      })
+
+    }
+    //nav
+    $(".nav .nav-list").html(makedown($(".nav pre").html()))
+    $("pre code").each(function() {
+      hljs.highlightBlock(this);
+    })
+
+    var currentUrl, currentData, currentRender;
+    $(".nav").find("li").each(function() {
+      var path = $.trim($(this).html());
+      $(this).attr("title", path);
+      var name = path.slice(path.lastIndexOf("/") == -1 ? 0 : (path.lastIndexOf("/") + 1), path.length)
+      name = name.slice(0, name.lastIndexOf(".") == -1 ? name.length : (name.lastIndexOf(".")));
+      $(this).html(name);
+      $(this).click(function() {
+        if (currentUrl == path) {
+          return;
+        }
+        $(this).parent().find(">li").removeClass("active")
+        $(this).addClass("active")
+        loadPage(path, name);
+      })
+      //第一次
+      if (!currentUrl) {
+        $(this).addClass("active")
+        loadPage(path, name)
+      }
+    })
+    //loadpage
+    function loadPage(path, name) {
+      currentUrl = path;
+      $.ajax({
+        url: path,
+        success: function(data) {
+          if (name == "makedown规则") {
+            currentRender = 1;
+            renderMakedown(data);
+            currentData = data;
+          } else {
+            currentRender = 0;
+            render(data);
+            currentData = data;
+          }
+        }
+      })
+    }
+
+    //写文章
+    $(".nav-btn").click(function() {
+      $(".dialog").show();
+    })
+    $(".dialog-close").click(function() {
+      $(".dialog").hide();
+    })
+    var preVal;
+    $(".dialog textarea").on("keyup", function() {
+      var val = $(this).val();
+
+      if (val == "" || val != preVal) {
+        if (currentRender == 1) {
+          renderMakedown(currentData);
         } else {
-          render(data)
+          render(currentData);
         }
       }
-    })
-  }
 
+      if (val == null || val == "" || val == preVal) {
+        return
+      }
+      preVal = val;
+
+      render(preVal);
+
+    })
+  })
 </script>
 
 </html>
