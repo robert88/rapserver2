@@ -66,12 +66,22 @@ function getPort(startPort,callback){
   startPort = startPort||3000;
   rap.cmd.execApi(`netstat -aon | findstr "${startPort}"`).then((str)=>{
       if(str){
-        getPort(++startPort,callback)
+        if(startPort<65535){
+          getPort(++startPort,callback)
+        }else{
+          console.error("没有可用的端口号来监听http");
+        }
       }else{
           callback(startPort)
       }
   }).catch(e=>{
-    callback(startPort);
+    //Command failed,表示没有查到信息,即端口号没有被占用
+    if(~e.message.indexOf("Command failed:")&&e.code==1){
+      callback(startPort);
+    }else{
+      console.error(e.stack)
+    }
+
   })
 }
 

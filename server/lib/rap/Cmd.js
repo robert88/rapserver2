@@ -62,7 +62,8 @@ class Cmd {
   }
 
   //执行命令,exec并不会退出
-  async exec(cmd) {
+  //执行错误时可以跳出lock
+  async exec(cmd,errorOut) {
     return new Promise((resolve, reject) => {
     let child = cp.exec(cmd,
         {  shell:shell,
@@ -72,8 +73,10 @@ class Cmd {
         },
         function(e, stdout, stderr) {
           if (e) {
+            (typeof errorOut=="function")&&errorOut();
             reject(e);
           } else if(stderr&&stderr.length) {
+            (typeof errorOut=="function")&&errorOut();
             stderr = iconvGBK.decode(stderr);//使用GBK解码
             reject(stderr);
           }else{
@@ -137,14 +140,16 @@ class Cmd {
       lock[cmd] = true;
     }
 
-    cmd = cmd.split("&&");
+    let cmds = cmd.split("&&");
 
     let ret = [];
-   for(var i=0;i<cmd.length;i++){
-     ret.push(await this.exec(cmd[i]));
+   for(var i=0;i<cmds.length;i++){
+     ret.push(await this.exec(cmds[i],()=>{
+      lock[cmd] = false
+     }));
    }
     
-    lock[cmd] = false
+   lock[cmd] = false
 
     return ret.join("");
   }
