@@ -4,29 +4,43 @@
  * 用于构建通用的web程序
  * @author：尹明
  * */
+global.ENV = process.argv[2] == "dev" ? "dev" : "product"
+
 require("./lib/global/global.localRequire");
 
-localRequire("@/server/lib/global/global.js");
 
-localRequire("@/server/lib/rap/rap.js");
+//启动开一个worker
+if (ENV == "product") {
+  const Clter = localRequire("@/server/bootstrap/Cluster.js");
+  let cluster = Clter(webServerWorker);
+  cluster && cluster.fork().send("start");
+} else {
+  webServerWorker();
+}
 
-const Runner = localRequire("@/server/bootstrap/Runner.js");
+/*
+ * web server worker
+ */
 
-const Cluser = localRequire("@/server/bootstrap/Cluser.js");
+function webServerWorker() {
 
-const Sockie = localRequire("@/server/bootstrap/Sockie.js");
+  const Sockie = localRequire("@/server/bootstrap/Sockie.js");
 
-let serverConfig = localRequire("@/server/config.js");
+  let serverConfig = localRequire("@/server/config.js");
 
-var cluser = Cluser(
+  localRequire("@/server/lib/global/global.js");
+
+  localRequire("@/server/lib/rap/rap.js");
+
+  const Runner = localRequire("@/server/bootstrap/Runner.js");
   serverConfig(config => {
 
     let run = new Runner({ port: config.port });
 
     //sockie
-  var sockie = new Sockie(run,rap.console.log,port=>{
-      console.log("web sockie listen:"+port);
-  });
+    var sockie = new Sockie(run, rap.console.log, port => {
+      console.log("web sockie listen:" + port);
+    });
 
     //request数组中顺序代表执行顺序
     var inStagMap = {};
@@ -63,7 +77,4 @@ var cluser = Cluser(
     localRequire("@/server/pipe/staticFile.js")(run, config.staticMap);
 
   })
-);
-
-//启动开一个实例
-cluser && cluser.fork().send("start");
+}
