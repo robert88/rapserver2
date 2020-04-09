@@ -10,19 +10,22 @@
   <link rel="stylesheet" href="./lib/index.css">
   <link href="https://highlightjs.org/static/demo/styles/solarized-light.css" rel="stylesheet">
   <script src="https://highlightjs.org/static/highlight.site.pack.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 </head>
 
 <body>
   <div class="wrap">
     <nav class="nav">
+      <div class="nav-wap-close">&lt;&lt;</div>
       <div class="nav-btn">+ 写文章</div>
       <div class="nav-list">
         <pre>
           + ./makedown规则.md
           + ./配置说明.md
-          + ./启动服务.md
-          - 源码分析
+          + ./启动服务器.md
+          + 源码分析
            ++ ./@别名.md
        </pre>
       </div>
@@ -33,9 +36,11 @@
 
   <div class="dialog">
     <div class="dialog-wrap">
+      <div class="dialog-drag"></div>
       <div class="dialog-close">×</div>
-      <div class="ipt-item">路径</div>
-      <div class="ipt-item"><input type="text" name="path"></div>
+      <div class="ipt-item">存档地址</div>
+      <div class="ipt-item"><input type="text" name="path" placeholder="如完整路径：/server/static/doc/customise/学习笔记.md"></div>
+      <p style="color:#ccc;padding:0 10px;">当前路径：/server/static/doc</p>
       <div class="ipt-item">makedown内容</div>
       <div class="ipt-item"><textarea></textarea></div>
       <div class="ipt-item"><input type="submit" value="提交"></div>
@@ -94,8 +99,8 @@
         if (currentUrl == path) {
           return;
         }
-        $(this).parent().find(">li").removeClass("active")
-        $(this).addClass("active")
+        $(".nav").find("li").removeClass("active")
+        $(this).addClass("active").parents(".nav li").addClass("active")
         loadPage(path, name);
       })
       //第一次
@@ -106,6 +111,9 @@
     })
     //loadpage
     function loadPage(path, name) {
+      if(path.indexOf(".md")==-1){
+        return;
+      }
       currentUrl = path;
       $.ajax({
         url: path,
@@ -150,6 +158,18 @@
       render(preVal);
 
     })
+
+    if($(window).width()>992){
+      $(".dialog .dialog-wrap").draggable({handle:".dialog-drag"})
+    }else{
+      $(".nav").addClass("hide")
+      $(".nav-wap-close").click(function(){
+        $(".nav").toggleClass("hide")
+      })
+    }
+
+
+
   })
 </script>
 

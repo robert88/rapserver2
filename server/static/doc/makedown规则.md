@@ -62,16 +62,22 @@ rapserver makedown 规则如下
 
 <!--链接相关-->
 
-[超链接](https://www.baidu.com "超链接")
-[^RUNOOB](https://www.baidu.com "btn-danger")
-[^RUNOOB]
-![美丽花儿alt](//e-file.huawei.com/-/media/EBG/Images/publication/content/ICT-27-cn/ict-27-list/list-02.jpg?h=259&la=zh&w=460 "美丽花儿title")
+[超链接](http://www.rapserver.cn "超链接")
 
 单独链接
-(https://www.runoob.com)
+(http://www.rapserver.cn)
 
 取消单独链接
-\\(https://www.runoob.com)
+\\(http://www.rapserver.cn)
+
+<!-- 图片 -->
+
+![美丽花儿alt](//e-file.huawei.com/-/media/EBG/Images/publication/content/ICT-27-cn/ict-27-list/list-02.jpg?h=259&la=zh&w=460 "美丽花儿title")
+
+
+<!-- 按钮 -->
+带链接 [^RUNOOB](http://www.rapserver.cn "btn-danger")
+[^RUNOOB]
 
 <!--文本相关-->
 
