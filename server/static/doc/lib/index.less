@@ -9,43 +9,54 @@ body {
 
   .nav {
     background: #f2f2f2;
-    position: absolute;
+    position: fixed;
     width: 200px;
     left: 0;
     top: 0;
     height: 100%;
     overflow: auto;
+    transition: all 0.4s ease;
+
+    &.hide {
+      left: -180px;
+    }
 
     .list {
       padding: 10px;
-      &.open {
-        .more {
-            transform: rotate(-135deg) translate(0px, -12px);
-        }
 
-        >ul {
-          display: block;
-          margin-top:0px;
-        }
-      }
-
-      .more {
-        -webkit-transition: all 0.4s ease;
-        -o-transition: all 0.4s ease;
-        transition: all 0.4s ease;
-        position: absolute;
-        top: 10px;
-        width: 7px;
-        height: 7px;
-        border-bottom: 1px solid #4D4D4D;
-        border-right: 1px solid #4D4D4D;
-        transform: rotate(45deg);
-        right: 20px;
-      }
 
       li {
         padding-bottom: 10px;
         cursor: pointer;
+        position: relative;
+
+        &.open {
+          .more {
+            transform: translate(0px, 2px) rotate(-135deg);
+          }
+
+          >ul {
+            display: block;
+            margin-top: 0px;
+          }
+        }
+
+        >ul {
+          display: none;
+          list-style: none;
+        }
+
+        .more {
+          transition: all 0.4s ease;
+          position: absolute;
+          top: 6px;
+          width: 7px;
+          height: 7px;
+          border-bottom: 1px solid #4D4D4D;
+          border-right: 1px solid #4D4D4D;
+          transform: translate(0px, 0px) rotate(45deg);
+          right: 20px;
+        }
 
         &:hover {
           color: #333
@@ -60,19 +71,43 @@ body {
         }
       }
     }
+
+    .nav-btn {
+      cursor: pointer;
+      border-radius: 3px;
+      border-bottom: none;
+      text-align: center;
+      display: block;
+      margin: 10px;
+      padding: 5px 8px;
+      color: rgb(20, 102, 20);
+      border: 1px solid rgb(20, 102, 20);
+    }
+
+    &.hide .nav-wap-close {
+      @media (max-width: 992px) {
+        text-align: left;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+      }
+    }
+
+    .nav-wap-close {
+      display: none;
+      color: red;
+      text-align: right;
+      font-size: 12px;
+
+      @media (max-width: 992px) {
+        display: block;
+      }
+    }
   }
 
-  .nav-btn {
-    cursor: pointer;
-    border-radius: 3px;
-    border-bottom: none;
-    text-align: center;
-    display: block;
-    margin: 10px;
-    padding: 5px 8px;
-    color: rgb(20, 102, 20);
-    border: 1px solid rgb(20, 102, 20);
-  }
 
   #app {
     padding-left: 210px;
@@ -91,6 +126,11 @@ body {
     }
   }
 
+  @media (max-width: 992px) {
+    #app {
+      padding-left: 30px;
+    }
+  }
 
 }
 
@@ -105,16 +145,6 @@ body {
   background-color: rgba(0, 0, 0, 0.5);
   display: none;
 
-  .dialog-close {
-    color: #666;
-    cursor: pointer;
-    position: absolute;
-    right:10px;
-    top:10px;
-    font-size: 18px;
-    line-height: 18px;
-  }
-
   .dialog-wrap {
     background: #fff;
     position: relative;
@@ -125,6 +155,25 @@ body {
     position: relative;
     top: 50%;
     transform: translate(0, -50%);
+
+    .dialog-close {
+      color: #666;
+      cursor: pointer;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 18px;
+      line-height: 18px;
+    }
+
+    .dialog-drag {
+      position: absolute;
+      width: 80%;
+      height: 30px;
+      left: 0;
+      top: 0;
+      cursor: crosshair;
+    }
 
     >.ipt-item {
       padding: 10px;
@@ -137,13 +186,34 @@ body {
         display: block;
         border: 1px solid #eee;
         outline: none;
+        padding: 5px;
+        font-size: inherit;
+        font-family: inherit;
+        // 必须单独设置 必须：：
+        &::placeholder{
+          .placeholder
+        }
+        &::-webkit-input-placeholder{
+          .placeholder
+        }
+        &::-moz-placeholder{
+          .placeholder
+        }
+        &::-moz-placeholder{
+          .placeholder
+        }
+        &::-ms-input-placeholder {
+          .placeholder
+        }
       }
+
 
       input[type='submit'] {
         background: #c50000;
         color: #fff;
         border-radius: 4px;
         cursor: pointer;
+        padding: 0px;
 
         &:hover {
           background: #f30404;
@@ -154,6 +224,7 @@ body {
 
       textarea {
         width: 100%;
+        padding: 5px;
         height: 400px;
         border: none;
         display: block;
@@ -163,4 +234,10 @@ body {
       }
     }
   }
+}
+
+.placeholder{
+  color: #ccc;
+  font-size: inherit;
+  font-family: inherit;
 }

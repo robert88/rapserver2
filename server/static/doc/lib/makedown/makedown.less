@@ -57,6 +57,11 @@ body {
   color: #666;
   font-size: 14px;
 }
+pre{
+  overflow-x: auto;
+}
+
+@wap: 992px;
 
 .makedown {
   pre {
@@ -66,12 +71,42 @@ body {
     padding: 0;
   }
 
+  .h(1, 6);
+
+  hr {
+    border: none;
+    border-bottom: 1px solid #C1DAD7;
+    margin-top: 10px;
+  }
+
+  a {
+    display: inline;
+    color: #666;
+    border-bottom: 1px solid #666;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      color: #72b5ad;
+      border-bottom: 1px solid #72b5ad;
+    }
+  }
+
+  p {
+    padding-top: 10px;
+  }
+
+  img {
+    max-width: 100%;
+  }
+
   .list {
     border: 1px solid #CCC;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
-    margin-top:10px;
+    margin-top: 10px;
+
     li {
       cursor: pointer;
       display: block;
@@ -91,12 +126,12 @@ body {
 
       &.open {
         .more {
-            transform: rotate(-135deg) translate(0px, -12px);
+          transform: rotate(-135deg) translate(0px, -12px);
         }
 
         >ul {
           display: block;
-          margin-top:0px;
+          margin-top: 0px;
         }
       }
 
@@ -130,41 +165,6 @@ body {
 
   }
 
-  .h(1, 6);
-
-  hr {
-    border: none;
-    border-bottom: 1px solid #C1DAD7;
-    margin-top: 10px;
-  }
-
-  a {
-    display: inline;
-    color: #666;
-    border-bottom: 1px solid #666;
-    text-decoration: none;
-    cursor: pointer;
-
-    &:hover {
-      color: #72b5ad;
-      border-bottom: 1px solid #72b5ad;
-    }
-  }
-
-  .btn {
-    cursor: pointer;
-    border-radius: 3px;
-    border-bottom: none;
-    display: inline-block;
-    padding: 5px 8px;
-    border: 1px solid #666;
-
-    &:hover {
-      border: 1px solid #333;
-      color: #333;
-    }
-  }
-
   table {
     padding: 0;
     margin: 0;
@@ -182,8 +182,18 @@ body {
     }
   }
 
-  p {
-    padding-top: 10px;
+  .btn {
+    cursor: pointer;
+    border-radius: 3px;
+    border-bottom: none;
+    display: inline-block;
+    padding: 5px 8px;
+    border: 1px solid #666;
+
+    &:hover {
+      border: 1px solid #333;
+      color: #333;
+    }
   }
 
   .tl {
@@ -204,8 +214,8 @@ body {
     display: flex;
     margin: -5px;
 
-    img {
-      max-width: 100%;
+    @media (max-width: @wap) {
+      display: block;
     }
 
     &:after,
@@ -223,17 +233,23 @@ body {
 .col(@i, @n) when (@i <@n) {
   .col@{i} {
     width: percentage(@i / @n);
+
+    @media (max-width: @wap) {
+      width: 100%;
+    }
+
     padding: 5px;
-    .first-inner{
-        padding-top:0;
-        margin-top: 0;
+
+    .first-inner {
+      padding-top: 0;
+      margin-top: 0;
     }
   }
 
   .col((@i + 1), @n);
 }
 
-.h(@i, @n) when (@i <= @n) {
+.h(@i, @n) when (@i <=@n) {
   h@{i} {
     padding-top: 10px;
     color: #000;

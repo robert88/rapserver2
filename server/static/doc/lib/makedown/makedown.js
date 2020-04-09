@@ -131,7 +131,14 @@ var makedown;;
   function parseSlash(ret) {
 
     //.*?惰性匹配
-    return ret.replace(/\*([^\s,\.。，‘’“”"'\?？\}\{]+)\*/gm, function(m, m1, index) {
+    return ret.replace(/\s\*([^\s,\.。，‘’“”"'\?？\}\{]+)\*\s/gm, function(m, m1, index) {
+      //当前为括号
+      if (ret[index - 1] == "\\") {
+        return m;
+      }
+
+      return "<i>" + m1 + "</i>"
+    }).replace(/^\*([^\s,\.。，‘’“”"'\?？\}\{]+)\*\s/gm, function(m, m1, index) {
       //当前为括号
       if (ret[index - 1] == "\\") {
         return m;
@@ -143,7 +150,13 @@ var makedown;;
 
   function parseBlod(ret) {
     //.*?惰性匹配
-    return ret.replace(/_([^\s,\.。，‘’“”"'\?？\}\{]+)_/gm, function(m, m1, index) {
+    return ret.replace(/\s_([^\s,\.。，‘’“”"'\?？\}\{]+)_\s/gm, function(m, m1, index) {
+      //当前为括号
+      if (ret[index - 1] == "\\") {
+        return m;
+      }
+      return "<strong>" + m1 + "</strong>"
+    }).replace(/^_([^\s,\.。，‘’“”"'\?？\}\{]+)_\s/gm, function(m, m1, index) {
       //当前为括号
       if (ret[index - 1] == "\\") {
         return m;
@@ -154,7 +167,13 @@ var makedown;;
 
   function parseDel(ret) {
     //.*?惰性匹配
-    return ret.replace(/\~([^\s,\.。，‘’“”"'\?？\}\{]+)\~/gm, function(m, m1, index) {
+    return ret.replace(/\s\~([^\s,\.。，‘’“”"'\?？\}\{]+)\~\s/gm, function(m, m1, index) {
+      //当前为括号
+      if (ret[index - 1] == "\\") {
+        return m;
+      }
+      return "<del>" + m1 + "</del>"
+    }).replace(/^\~([^\s,\.。，‘’“”"'\?？\}\{]+)\~\s/gm, function(m, m1, index) {
       //当前为括号
       if (ret[index - 1] == "\\") {
         return m;
@@ -292,9 +311,9 @@ var makedown;;
       }
     })
     if (ret) {
-      if(len>1){
+      if (len > 1) {
         ret += "</li></ul></li>\n</ul>"
-      }else{
+      } else {
         ret += "</li>\n</ul>"
       }
     }
