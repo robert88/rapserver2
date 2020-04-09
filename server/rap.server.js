@@ -33,6 +33,7 @@ function webServerWorker() {
   localRequire("@/server/lib/rap/rap.js");
 
   const Runner = localRequire("@/server/bootstrap/Runner.js");
+  
   serverConfig(config => {
 
     let run = new Runner({ port: config.port });
