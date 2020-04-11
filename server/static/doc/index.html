@@ -20,15 +20,7 @@
     <nav class="nav">
       <div class="nav-wap-close">&lt;&lt;</div>
       <div class="nav-btn">+ 写文章</div>
-      <div class="nav-list">
-        <pre>
-          + ./makedown规则.md
-          + ./配置说明.md
-          + ./启动服务器.md
-          + 源码分析
-           ++ ./@别名.md
-       </pre>
-      </div>
+      <div class="nav-list"> </div>
 
     </nav>
     <div id="app"></div>
@@ -72,15 +64,23 @@
     //render
     function render(data) {
       var template = ['<div class="makedown"></div>'].join("")
-      $("#app").html(template);
-      $(".makedown").html(makedown(data));
+      $("#app").html(makedown(data));
+  
       $("pre code").each(function () {
         hljs.highlightBlock(this);
       })
 
     }
     //nav
-    $(".nav .nav-list").html(makedown($(".nav pre").html()))
+    var navHtml = ""
+    $.ajax({
+        url: "./nav.txt",
+        async:false,
+        success: function (data) {
+          navHtml = data;
+        }
+      })
+    $(".nav .nav-list").html(makedown(navHtml,true))
     $("pre code").each(function () {
       hljs.highlightBlock(this);
     })
@@ -127,6 +127,8 @@
             render(data);
             currentData = data;
           }
+        },error:function(){
+          $("#app").html("<h1 style='padding-top:60px;text-align:center'>404</h1>");
         }
       })
     }
