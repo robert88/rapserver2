@@ -1,13 +1,25 @@
-var makedown;;
-(function() {
 
-  //入口
-  makedown = function(str) {
+! function(factory) {
+  // CommonJS
+  if (typeof require === 'function' && typeof exports === 'object' && typeof module === 'object') {
+    var target = module['exports'] || exports; 
+    factory(target);
+    // AMD 规范 
+  } else if (typeof define === 'function' && define['amd']) {
+    define(['exports'], factory);
+  } else {
+    factory(window);
+  }
+}(function(g) {
+
+  /*
+   *得到makedown 的html
+   **/
+  function getMakedown(str) {
 
     if (!str) {
       return "";
     }
-
     str = str.replace(/(\n|\r)+/g, "\n").replace(/<!--[\u0000-\uFFFF]*?-->/gm, "\n");
     var strs = str.split(/\n/);
     var token = [];
@@ -80,6 +92,7 @@ var makedown;;
     return tokenStr.join("\n");
   }
 
+  //生成img
   function parseImg(ret) {
     //.*?惰性匹配
     return ret.replace(/\!\[(.*?)\]\((.*?)\)/gm, function(m, m1, m2) {
@@ -92,6 +105,7 @@ var makedown;;
     })
   }
 
+  //生成按钮
   function parseButton(ret) {
     //.*?惰性匹配
     return ret.replace(/\[\^(.*?)\]\((.*?)\)/gm, function(m, m1, m2) {
@@ -107,6 +121,7 @@ var makedown;;
     })
   }
 
+  //生成parseLink
   function parseLink(ret) {
     //.*?惰性匹配
     return ret.replace(/\[(.*?)\]\((.*?)\)/gm, function(m, m1, m2) {
@@ -128,6 +143,7 @@ var makedown;;
     })
   }
 
+  //生成slash
   function parseSlash(ret) {
 
     //.*?惰性匹配
@@ -148,6 +164,7 @@ var makedown;;
     })
   }
 
+  //生成bold
   function parseBlod(ret) {
     //.*?惰性匹配
     return ret.replace(/\s_([^\s,\.。，‘’“”"'\?？\}\{]+)_\s/gm, function(m, m1, index) {
@@ -165,6 +182,7 @@ var makedown;;
     })
   }
 
+  //生成del
   function parseDel(ret) {
     //.*?惰性匹配
     return ret.replace(/\s\~([^\s,\.。，‘’“”"'\?？\}\{]+)\~\s/gm, function(m, m1, index) {
@@ -269,7 +287,7 @@ var makedown;;
       var strLen = strP.length;
       var ret = "<ul class='col max" + strLen + " " + className + "'>";
       strP.forEach(function(val) {
-        ret += '<li class="' + item.code + '">' + makedown(val) + '</li>'
+        ret += '<li class="' + item.code + '">' + getMakedown(val) + '</li>'
       })
       return ret + "</ul>"
     } else {
@@ -373,4 +391,16 @@ var makedown;;
     }
   })
 
-})()
+  //入口
+  g.makedown = function(str,flag) {
+    if(flag){
+      return  getMakedown(str) ;
+    }else{
+      return " <div class='makedown'>" + getMakedown(str) + "</div>"
+    }
+
+  }
+
+});
+
+//[3]中情况的调用

@@ -1,6 +1,65 @@
+a,
+abbr,
+address,
+blockquote,
+body,
+caption,
+cite,
+code,
+dd,
+del,
+dfn,
+div,
+dl,
+dt,
+em,
+fieldset,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+html,
+iframe,
+img,
+ins,
+label,
+legend,
+li,
+object,
+ol,
+p,
+pre,
+q,
+small,
+span,
+strong,
+sub,
+sup,
+table,
+tbody,
+td,
+tfoot,
+th,
+thead,
+tr,
+ul {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
 html,
 body {
   height: 100%;
+}
+body {
+  color: #666;
+  font-size: 14px;
 }
 .wrap {
   min-height: 100%;
@@ -24,11 +83,11 @@ body {
   padding: 10px;
 }
 .wrap .nav .list li {
-  padding-bottom: 10px;
+  padding: 10px;
   cursor: pointer;
   position: relative;
 }
-.wrap .nav .list li.open .more {
+.wrap .nav .list li.open > .more {
   -webkit-transform: translate(0px, 2px) rotate(-135deg);
       -ms-transform: translate(0px, 2px) rotate(-135deg);
           transform: translate(0px, 2px) rotate(-135deg);
@@ -36,6 +95,9 @@ body {
 .wrap .nav .list li.open > ul {
   display: block;
   margin-top: 0px;
+  margin-top: 10px;
+  padding-top: 0;
+  border-top: 1px solid #cac4c4;
 }
 .wrap .nav .list li > ul {
   display: none;
@@ -45,7 +107,7 @@ body {
   -webkit-transition: all 0.4s ease;
   transition: all 0.4s ease;
   position: absolute;
-  top: 6px;
+  top: 17px;
   width: 7px;
   height: 7px;
   border-bottom: 1px solid #4D4D4D;
@@ -63,6 +125,9 @@ body {
 }
 .wrap .nav .list li.active:hover {
   color: #f00a0a;
+}
+.wrap .nav .list li + li {
+  border-top: 1px solid #cac4c4;
 }
 .wrap .nav .nav-btn {
   cursor: pointer;
