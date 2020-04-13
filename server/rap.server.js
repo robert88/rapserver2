@@ -73,8 +73,8 @@ function webServerWorker() {
     localRequire("@/server/pipe/cookie.js")(run);
     localRequire("@/server/pipe/session.js")(run);
     localRequire("@/server/pipe/login.js")(run);
-    localRequire("@/server/pipe/filter/action")(run, config.actionPath);
-    localRequire("@/server/pipe/staticFile.setId.js")(run4006, config.staticMap);
+    localRequire("@/server/pipe/action")(run, config.actionPath);
+    localRequire("@/server/pipe/staticFile.setId.js")(run, config.staticMap);
     localRequire("@/server/pipe/staticFile.js")(run, config.staticMap);
 
   })
