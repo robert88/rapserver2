@@ -1,3 +1,82 @@
+
+
+require("./lib/global/global.localRequire");
+
+localRequire("@/server/lib/global/global.js");
+
+localRequire("@/server/lib/rap/rap.js");
+
+
+const wake = rap.systems;
+
+//默认配置
+rap.buildConfig = { watchDirs: [localRequire("/@/server/static")] }
+
+//入口文件为打包文件必须是全路径
+rap.build = function (entryPath, options) {
+
+  options = Object.assign({}, rap.buildConfig, {});
+
+  entryPath = entryPath.toURI();
+
+  var relativeFileMap = {}//依赖收集
+  if (wake.isFile(entryPath)) {
+    hanlderHtml(entryPath, relativeFileMap, options);
+  } else {
+    var htmlArr = wake.findFile(entryPath, "html", true);
+
+    //过滤掉template目录下的文件
+    htmlArr = htmlArr.filter(file => toPath(file).indexOf("/template/") == -1);
+
+    htmlArr.forEach(function (file) {
+      file = file.toURI();
+      hanlderHtml(file, relativeFileMap, options);
+    });
+  }
+  //监听
+  options.watchDirs.forEach(item => {
+    rap.watch(item.toURI(), function (changeFiles) {
+      handleChange(changeFiles)
+    });
+  })
+
+};
+
+//从change文件是否命中相关文件
+function handleChange(changeFiles, relativeFileMap, options) {
+  var handleChangeFile = {};
+  changeFiles.forEach(function (file) {
+    file = file.toURI();
+    if (wake.isExist(file) && wake.isFile(file)) {
+      for (var relativeFile in relativeFileMap) {
+        relativeFile = relativeFile.toURI();
+        if (relativeFileMap[relativeFile][file]) {
+          handleChangeFile[relativeFile] = file;
+        }
+      }
+    }
+  })
+
+  for (var relativeFile in handleChangeFile) {
+    console.log("----".bgYellow + "change file:".green, handleChangeFile[relativeFile]);
+    console.log("----".bgYellow + "triggle pack:".yellow, relativeFile, options.lang);
+    hanlderHtml(relativeFile.toURI(), relativeFileMap, options);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const { resolve } = require("./rapserver/rap.alias.js");
 require("@/lib/rap.prototype.js");
 const { handleUseTemplate } = require("@/compiler/rap.parse.useTemplate.js");
@@ -5,7 +84,7 @@ const { tool, setNamespace } = require("@/compiler/rap.findFileData.js");
 const { sortCss, sortJs } = require("@/compiler/rap.sort.cssAndJs.js");
 const { packHtml } = require("@/compiler/rap.packHtml.js");
 const wake = require("@/lib/rap.filesystem.js");
-const watch = require("@/lib/rap.watch.js");
+
 require("@/lib/rap.tool.js");
 require("@/lib/rap.color.js");
 var image = require("./images.js");
@@ -20,14 +99,14 @@ const pt = require("path");
 //当前文件相对根目录的位置
 var toPath = tool.toPath.bind(tool);
 var toServerPath = tool.toServerPath.bind(tool);
-global.href = function(value) {
+global.href = function (value) {
   return value ? ('href="' + value + '"') : '';
 }
 
 function searchFile(fileName, dir) {
   var addr = "";
   var fileList = wake.findFile(dir, pt.extname(fileName).replace(".", ""), true);
-  fileList.forEach(function(val) {
+  fileList.forEach(function (val) {
     if (pt.basename(fileName) == pt.basename(val)) {
       addr = val;
       return false;
@@ -35,7 +114,7 @@ function searchFile(fileName, dir) {
   })
   return addr;
 }
-global.scaleImage = function(value, sizeAttr) {
+global.scaleImage = function (value, sizeAttr) {
   if (value) {
     var localFile = searchFile(value, "../images");
     console.log(localFile.red)
@@ -114,8 +193,8 @@ function hanlderHtml(entryFile, relativeFile, options) {
     outFile = toPath(rootpath + "/{0}/" + pt.relative(rootpath, entryFile.replace("." + lang[la].lang + ".html", ".html")).replace(/^(\\|\/)?build\d?(\\|\/)/g, ""))
 
 
-    if (typeof options.outpath=="function") {
-      outFile = options.outpath(outFile,out, entryFile);
+    if (typeof options.outpath == "function") {
+      outFile = options.outpath(outFile, out, entryFile);
     }
 
     outFileByEnv(out, outFile, relativeWatch);
@@ -136,7 +215,7 @@ function outFileByEnv(out, outFile) {
 }
 
 
-global.pack = function(entryPath, options) {
+global.pack = function (entryPath, options) {
   options = options || {};
   entryPath = toServerPath(entryPath);
 
@@ -151,24 +230,24 @@ global.pack = function(entryPath, options) {
     //过滤掉template目录下的文件
     htmlArr = htmlArr.filter(file => toPath(file).indexOf("/template/") == -1);
 
-    htmlArr.forEach(function(file) {
+    htmlArr.forEach(function (file) {
       file = toPath(file);
       hanlderHtml(file, relativeFile, options);
     });
   }
   //监听buid2
-  watch(pt.resolve(__dirname, ".."), function(changeFiles) {
+  watch(pt.resolve(__dirname, ".."), function (changeFiles) {
     handleChange(changeFiles)
   });
 
   //监听buid
-  watch(pt.resolve(__dirname, "../../build"), function(changeFiles) {
+  watch(pt.resolve(__dirname, "../../build"), function (changeFiles) {
     handleChange(changeFiles)
   });
 
   function handleChange(changeFiles) {
     var handleChangeFile = {};
-    changeFiles.forEach(function(file) {
+    changeFiles.forEach(function (file) {
       file = toPath(file);
       if (wake.isExist(file) && wake.isFile(file)) {
         for (var orgHtmlFile in relativeFile) {
@@ -190,6 +269,6 @@ global.pack = function(entryPath, options) {
 };
 
 
-global.href = function(value) {
+global.href = function (value) {
   return value ? ('href="' + value + '"') : '';
 }

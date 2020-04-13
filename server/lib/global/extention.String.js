@@ -38,7 +38,7 @@
 	 *
 	 * */
 	String.prototype.toReg = function () {
-		return this.replace(/(\/|\.|\)|\(|\]|\[|\}|\{|\||\?|\+|\*|\^|\$)/, "\\$1");
+		return this.replace(/(\/|\.|\)|\(|\]|\[|\}|\{|\||\?|\+|\*|\^|\$)/g, "\\$1");
     };
     	/*
 	 * 转url
@@ -48,7 +48,10 @@
 		return this.replace(/^\s+|\s+$/g, "")
 			.replace(/\/$/g, "")
 			.replace(/\\/g, "/")
-	        .replace(/([^\/])\/+/g, "$1/")
+			.replace(/([^\/])\/+/g, "$1/")
+			.replace(/^(\w:)/,function (m, m1) {
+				return m1.toLowerCase()
+			})
 			.replace(/(^http:|^https:)/g,
 			function (m, m1) {
 				return m1 + "/"

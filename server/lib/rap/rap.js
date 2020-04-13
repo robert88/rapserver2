@@ -7,6 +7,7 @@ localRequire("@/server/lib/rap/rap.system");
 localRequire("@/server/lib/rap/rap.restful.js");
 localRequire("@/server/lib/rap/rap.userAgent.js");
 localRequire("@/server/lib/rap/rap.cookie.js");
+localRequire("@/server/lib/rap/rap.watch.js");
 
 /*cmd*/
 const Cmd = localRequire("@/server/lib/rap/Cmd.js");
