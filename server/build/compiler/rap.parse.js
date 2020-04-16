@@ -1,6 +1,19 @@
 const wake = rap.system.input;
 const { clearNoteTag, parseTag } = require("./parse");
 const parseTeample = require("./template");
+const pt = require("path");
+
+var root = __dirname.toURI().replace("/server/build/compiler", "");
+
+//默认的
+function resolve(templatePath, resolvePath) {
+  if (resolvePath.trim().toURI().indexOf("/") == 0) {
+    return root + resolvePath.trim().toURI();
+  } else {
+    return pt.resolve(pt.dirname(templatePath), resolvePath);
+  }
+}
+
 
 rap.parse = rap.parse || {}
 
@@ -124,7 +137,9 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
 
   unique = unique || {};
 
-  var suffix = config.suffix;
+  var suffix = config.suffix || "cn";
+
+  config.resolve = config.resolve || resolve;
 
   //获取文件的模板
   var noSuffixFile = entryFile.replace("." + suffix + ".html", ".html"); //没有后缀的html文件
@@ -138,7 +153,7 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
     orgHtml = wake.readDataSync(noSuffixFile);
     __templateFile__ = noSuffixFile;
   } else {
-    console.log("error:".error,"not find entry file", entryFile, " and ", noSuffixFile)
+    console.log("error:".error, "not find entry file", entryFile, " and ", noSuffixFile)
     return "";
   }
 
@@ -178,6 +193,89 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
 
   return orgHtml;
 
+}
+
+function sortTag(tag, html) {
+  var sortArr = {};
+  var notSortArr = {};
+  var sortTags = parseTag(tag, html);
+  sortTags.forEach(function(tag) {
+    var notSort = tag.template.indexOf("notSort") != -1;
+    var src = tag.attrs["src"];
+    if (src && !notMove) {
+      jsArr[src] = scriptFile.template;
+      html = html.replace(scriptFile.template, "");
+    } else if (notMove && notSort[src]) {
+      console.log("warn:".warn,)
+      html = html.replace(scriptFile.template, "");
+    } else {
+      notSortArr[src] = 1
+    }
+  });
+
+}
+/**
+ * 解析将js重新排序
+ * */
+rap.parse.sortJs = function(html) {
+  var sortArr = {};
+  var sortTags = parseTag("script", html);
+  scripts.forEach(function(scriptFile) {
+    var notSort = scriptFile.template.indexOf("notSort") != -1;
+    var src = scriptFile.attrs["src"];
+    if (src && !notMove) {
+      jsArr[src] = scriptFile.template;
+      html = html.replace(scriptFile.template, "");
+    } else if (notMove && jsArr[src]) {
+
+    }
+  });
+
+  // jsArr = rap.unique(jsArr);
+  var jsstrArr = []
+  Object.keys(jsArr).forEach(key => {
+    jsstrArr.push(jsArr[key])
+  })
+
+  if (~html.indexOf("</body>")) {
+    html = html.slice(0, html.lastIndexOf("</body>")) + jsstrArr.join("\n") + html.slice(html.lastIndexOf("</body>"), html.length)
+  } else {
+    console.log("error:html is not has </body>");
+  }
+  return html;
+}
+/**
+ * 解析将css添加到head后面
+ * */
+rap.parse.sortCss = function(html) {
+  var cssArr = {};
+  var scripts = parseTag("link", html, true);
+  scripts.forEach(function(scriptFile) {
+    var notMove = scriptFile.template.indexOf("notsort") != -1;
+    var src = scriptFile.attrs["href"];
+    var rel = scriptFile.attrs["rel"];
+    if (src && !notMove && rel == "stylesheet") {
+      cssArr[src.split("?")[0]] = scriptFile.template;
+      html = html.replace(scriptFile.template, "");
+    }
+  });
+  var cssstrArr = []
+  Object.keys(cssArr).forEach(key => {
+    cssstrArr.push(cssArr[key])
+  })
+
+  // cssArr = rap.unique(cssArr);
+  // var cssSrc = [];
+  // cssArr.forEach(function (src) {
+  //     cssSrc.push("<link href='"+src+"' rel='stylesheet'/>");
+  // });
+
+  if (~html.indexOf("</head>")) {
+    html = html.replace(/<\/head>/i, function() { return (cssstrArr.join("\n") + "</head>") })
+  } else {
+    console.log("error:html is not has </head>");
+  }
+  return html;
 }
 
 
