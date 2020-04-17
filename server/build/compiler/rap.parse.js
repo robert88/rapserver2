@@ -2,8 +2,13 @@ const wake = rap.system.input;
 const { clearNoteTag, parseTag } = require("./parse");
 const parseTeample = require("./template");
 const pt = require("path");
+const URL = require("url");
 
 var root = __dirname.toURI().replace("/server/build/compiler", "");
+
+const babel = require("@babel/core");
+
+
 
 //默认的
 function resolve(templatePath, resolvePath) {
@@ -195,45 +200,86 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
 
 }
 
-function sortTag(tag, html) {
-  var sortArr = {};
-  var notSortArr = {};
-  var sortTags = parseTag(tag, html);
-  sortTags.forEach(function(tag) {
-    var notSort = tag.template.indexOf("notSort") != -1;
-    var src = tag.attrs["src"];
-    if (src && !notMove) {
-      jsArr[src] = scriptFile.template;
-      html = html.replace(scriptFile.template, "");
-    } else if (notMove && notSort[src]) {
-      console.log("warn:".warn,)
-      html = html.replace(scriptFile.template, "");
-    } else {
-      notSortArr[src] = 1
+/*
+*解析tag
+*/
+function replaceTag(tag, html) {
+  var tags = parseTag(tag, html);
+  tags.forEach(function(tag,idx) {
+    var url = tag.attrs["src"];
+    if (url) {
+      tag.src = url.split("?")[0].trim().toURI();
+      tag.param =URL.parse( url.split("?")[1] );
+      tag.index = idx;
+      html = html.replace(tag.template, "__Rap"+tag+idx+"SORT__");
     }
   });
 
+  return { tags: tags, html: html }
 }
 /**
  * 解析将js重新排序
  * */
-rap.parse.sortJs = function(html) {
-  var sortArr = {};
-  var sortTags = parseTag("script", html);
-  scripts.forEach(function(scriptFile) {
-    var notSort = scriptFile.template.indexOf("notSort") != -1;
-    var src = scriptFile.attrs["src"];
-    if (src && !notMove) {
-      jsArr[src] = scriptFile.template;
-      html = html.replace(scriptFile.template, "");
-    } else if (notMove && jsArr[src]) {
+rap.parse.handlerJs = function(html, config) {
 
+  var ret = replaceTag("script", html);
+
+  if (typeof config.filter == "function") {
+    config.filter(ret);
+  }
+
+  var sortMap = {};
+  var groupMap = {};
+  var staticMap = {};
+  ret.tags.forEach(tag=>{
+    var sort = tag.attrs.sort?tag.attrs.sort.trim():""
+    var group = tag.attrs.group?tag.attrs.group.trim():""
+
+    if(tag.src){
+      if(group){
+        groupMap[group]=groupMap[tag.attrs.group]||{};
+        groupMap[group][tag.src] = tag;
+        ret.html =  ret.html.replace("__Rap"+"script"+tag.index+"SORT__","");
+      }else if(sort=="false"){
+
+        if(!staticMap[tag.src] ){
+          staticMap[tag.src] = tag;
+          ret.html =  ret.html.replace("__Rap"+"script"+tag.index+"SORT__",tag.template);
+        }else{
+          console.log("warn:".warn,tag.src,"set not sort but number>1");
+        }
+
+      }else{
+        ret.html = ret.html.replace("__Rap"+"script"+tag.index+"SORT__","");
+        sortMap[tag.src] = tag;
+      }
+    }else{
+      //es6
+      if(type=="module"&&global.ENV=="dev"){
+        ret.html = ret.html.replace("__Rap"+"script"+tag.index+"SORT__",ret.innerHTML);
+      }else{
+        ret.html = ret.html.replace("__Rap"+"script"+tag.index+"SORT__",babel.transform(ret.innerHTML,config.babel));
+      }
     }
-  });
+
+  })
+
+  //合并js代码
+
+    Object.keys(groupMap).forEach(groupName => {
+      if(!config.group){
+        console.log("error".error,"cant find config group ")
+      }
+      if(config.group[groupName]){}else{
+        console.log("error".error,"cant find config group name:",groupName)
+      }
+    })
+
+
 
   // jsArr = rap.unique(jsArr);
   var jsstrArr = []
-  Object.keys(jsArr).forEach(key => {
+  Object.keys(groupMap).forEach(key => {
     jsstrArr.push(jsArr[key])
   })
 
