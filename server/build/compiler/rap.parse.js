@@ -1,28 +1,21 @@
 const wake = rap.system.input;
+const wakeout = rap.system.output;
 const { clearNoteTag, parseTag } = require("./parse");
 const parseTeample = require("./template");
 const pt = require("path");
 const URL = require("url");
 
-var root = __dirname.toURI().replace("/server/build/compiler", "");
+
 
 const babel = require("@babel/core");
+var less = require('less');
 
 
-
-//默认的
-function resolve(templatePath, resolvePath) {
-  if (resolvePath.trim().toURI().indexOf("/") == 0) {
-    return root + resolvePath.trim().toURI();
-  } else {
-    return pt.resolve(pt.dirname(templatePath), resolvePath);
-  }
-}
 
 
 rap.parse = rap.parse || {}
 
-rap.parse.byTag = function(tag, orgHtml, config, parentData, relativeWatch, unique) {
+function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
 
   orgHtml = clearNoteTag(tag, orgHtml);
 
@@ -103,13 +96,13 @@ rap.parse.byTag = function(tag, orgHtml, config, parentData, relativeWatch, uniq
 解析useSlot 标签
 */
 rap.parse.useSlot = function(orgHtml, config, parentData, relativeWatch, unique) {
-  return rap.parse.byTag("useSlot", orgHtml, config, parentData, relativeWatch, unique)
+  return byTag("useSlot", orgHtml, config, parentData, relativeWatch, unique)
 }
 /*
 解析include 标签
 */
 rap.parse.byInclude = function(orgHtml, config, parentData, relativeWatch, unique) {
-  return rap.parse.byTag("include", orgHtml, config, parentData, relativeWatch, unique)
+  return byTag("include", orgHtml, config, parentData, relativeWatch, unique)
 }
 
 /*
@@ -144,7 +137,7 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
 
   var suffix = config.suffix || "cn";
 
-  config.resolve = config.resolve || resolve;
+  config.resolve = config.resolve || inputResolve;
 
   //获取文件的模板
   var noSuffixFile = entryFile.replace("." + suffix + ".html", ".html"); //没有后缀的html文件
@@ -200,131 +193,282 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
 
 }
 
-/*
-*解析tag
-*/
-function replaceTag(tag, html) {
-  var tags = parseTag(tag, html);
-  tags.forEach(function(tag,idx) {
-    var url = tag.attrs["src"];
-    if (url) {
-      tag.src = url.split("?")[0].trim().toURI();
-      tag.param =URL.parse( url.split("?")[1] );
-      tag.index = idx;
-      html = html.replace(tag.template, "__Rap"+tag+idx+"SORT__");
-    }
-  });
-
-  return { tags: tags, html: html }
-}
 /**
- * 解析将js重新排序
+ * 解析js
  * */
-rap.parse.handlerJs = function(html, config) {
+rap.parse.handleJs = function(html, config) {
 
-  var ret = replaceTag("script", html);
+  mergeDefaultConfig(config,function(code){
+    var babelT = babel.transformSync(code,{
+      "presets": [
+        "@babel/preset-env"
+      ]
+    })
+    return babelT.code
+  },"body")
 
-  if (typeof config.filter == "function") {
-    config.filter(ret);
-  }
+  var tags = parseTag("script", html);
 
-  var sortMap = {};
-  var groupMap = {};
-  var staticMap = {};
-  ret.tags.forEach(tag=>{
-    var sort = tag.attrs.sort?tag.attrs.sort.trim():""
-    var group = tag.attrs.group?tag.attrs.group.trim():""
-
-    if(tag.src){
-      if(group){
-        groupMap[group]=groupMap[tag.attrs.group]||{};
-        groupMap[group][tag.src] = tag;
-        ret.html =  ret.html.replace("__Rap"+"script"+tag.index+"SORT__","");
-      }else if(sort=="false"){
-
-        if(!staticMap[tag.src] ){
-          staticMap[tag.src] = tag;
-          ret.html =  ret.html.replace("__Rap"+"script"+tag.index+"SORT__",tag.template);
-        }else{
-          console.log("warn:".warn,tag.src,"set not sort but number>1");
-        }
-
-      }else{
-        ret.html = ret.html.replace("__Rap"+"script"+tag.index+"SORT__","");
-        sortMap[tag.src] = tag;
-      }
+  tags = tags.filter(item=>{
+    var type = item.attrs.type;
+    var src = item.attrs.src;
+    if(type&&(type!="text/javascript"||type!="text/ecmascript"||type!="application/ecmascript"||type!="application/javascript"||type!="text/vbscript")){
+      return false;
     }else{
-      //es6
-      if(type=="module"&&global.ENV=="dev"){
-        ret.html = ret.html.replace("__Rap"+"script"+tag.index+"SORT__",ret.innerHTML);
+      if(src){
+        item.codeType="file";
       }else{
-        ret.html = ret.html.replace("__Rap"+"script"+tag.index+"SORT__",babel.transform(ret.innerHTML,config.babel));
+        item.codeType ="code";
       }
+      return true;
     }
-
   })
 
-  //合并js代码
+  return compilerSource(html,tags,config);
 
-    Object.keys(groupMap).forEach(groupName => {
-      if(!config.group){
-        console.log("error".error,"cant find config group ")
+}
+
+/**
+ * 解析css,默认使用less编译
+ * */
+rap.parse.handleCSS = function(html,config) {
+
+  mergeDefaultConfig(config,function(code){
+    var output = less.renderSync(code);
+    return output.css;
+  },"head")
+
+  var tags = parseTag("link", html);
+
+  tags = tags.filter(item=>{
+    var rel = item.attrs.rel;
+    item.codeType="file";
+    item.sort = html.indexOf(item.template);
+    if(rel=="stylesheet"){
+      return true;
+    }
+  })
+
+  var styleTags = parseTag("style", html);
+
+  styleTags.every(item=>{
+    item.codeType="code";
+    item.sort = html.indexOf(item.template);
+  });
+
+  var sourceTags = tags.concat(styleTags).sort(function(a,b){
+    return a.sort>b.sort?1:-1;
+  })
+
+  return  compilerSource(html,sourceTags,config);
+}
+
+/*
+源路径转源路径的物理路径
+*/
+var root = __dirname.toURI().replace("/server/build/compiler", "");
+function inputResolve(templatePath, resolvePath) {
+  if (resolvePath.trim().toURI().indexOf("/") == 0) {
+    return root + resolvePath.trim().toURI();
+  } else if (/^\w:/i.test(resolvePath) || (/^https?:/i.test(resolvePath))) {
+    return resolvePath;
+  } else {
+    return pt.resolve(pt.dirname(templatePath), resolvePath);
+  }
+}
+/*
+源路径转目标路径的物理路径
+*/
+function outputResolve(templatePath, resolvePath) {
+  if (resolvePath.trim().toURI().indexOf("/") == 0) {
+    return root+"/dirt/" + resolvePath.trim().toURI();
+  } else if (/^\w:/i.test(resolvePath) || (/^https?:/i.test(resolvePath))) {
+    return resolvePath;
+  } else {
+    return pt.resolve(pt.dirname(templatePath), resolvePath).toURI().replace(root,root+"/dirt/");
+  }
+}
+/*
+源路径转浏览器地址
+*/
+function browserResolve( resolvePath){
+  if (resolvePath.trim().toURI().indexOf("/") == 0) {
+    return "/dirt"+ resolvePath.trim().toURI();
+  } else if (/^\w:/i.test(resolvePath) || (/^https?:/i.test(resolvePath))) {
+    return resolvePath;
+  } else {
+    return resolvePath;
+  }
+}
+/**
+ * 配置信息
+ * */
+function mergeDefaultConfig(config,build,location){
+
+  config.resolve = config.resolve || {};
+  config.code = config.code || {};
+
+  config.resolve.input =  config.resolve.input || inputResolve;
+  config.resolve.output =  config.resolve.output || outputResolve;
+  config.resolve.browser =   config.resolve.browser || browserResolve;
+
+  config.code.build = config.code.build || build;
+  config.code.location = config.code.location || location;
+
+}
+/**
+ * 提取资源文件
+ * */
+function compilerSource(html,tags,config){
+
+
+  var tagMap = {};
+  var groupMap = {};
+  var codeStack = []; //标签内部的代码
+
+
+  //清除html中的script标签，得到script标签的信息
+  tags.forEach(function(tag, idx) {
+    var url = tag.attrs.src||tag.attrs.href;
+    var src;
+    var param;
+    var sort = tag.attrs.sort;
+    var group = tag.attrs.group;
+    var id = tag.attrs.id;
+    var clear = true;
+    var uuid = "__RAP"+tag.startTag.replace(/\W+/g,"").toUpperCase() + (id || idx) + "SORT__";
+
+    if (tag.codeType=="file") {
+      src = url.split("?")[0].trim().toURI();
+      param = URL.parse(url).query;
+      uuid = src;
+    }
+
+    //需要合并打包的必须清除
+    if (group) {
+      clear = true;
+    } else if (sort === "false") { //固定位置，且没有设置打包对象
+      clear = false;
+    }
+
+    if (clear) {
+      html = html.replace(tag.template, "");
+    }
+
+    //重复的代码需要清除掉
+    if (tagMap[uuid]) {
+      if(!clear){
+        console.log("warning:".warn,src," repeat but not clear");
       }
-      if(config.group[groupName]){}else{
-        console.log("error".error,"cant find config group name:",groupName)
+      if(group){
+        console.log("warning:".warn,src," repeat in group:",group)
+      }
+      return;
+    }
+
+    if (group) {
+      groupMap[group] = groupMap[group] || [];
+      groupMap[group].push(uuid);
+    } else {
+      codeStack.push(uuid);
+    }
+
+    tagMap[uuid] = {
+      src: src,
+      param: param,
+      code: tag.innerHTML,
+      codeType: tag.codeType
+    };
+
+  });
+
+  //处理合并
+  Object.keys(groupMap).forEach(name => {
+    item = groupMap[name]
+    if (!config.code.group || !config.code.group[name] || !config.code.group[name].src) {
+      console.log("error".error, " config  -> code.group['" + name + "'].src not set");
+      return;
+    }
+
+    var groupTag = config.code.group[name];
+
+    var groupCode = [];
+    item.forEach(uuid => {
+      var tag = tagMap[uuid];
+      if (tag.codeType == "file") {
+        var realFile = config.resolve.input(config.code.templatePath,tag.src);
+        if (wake.existsSync(realFile)) {
+          groupCode.push(wake.readDataSync(realFile));
+        } else {
+          console.log("error:".error, "group merge not find :", realFile);
+        }
+      } else if (tag.codeType == "code") {
+        groupCode.push(tag.code);
       }
     })
 
+    groupTag.codeType = "file";
+    groupTag.location = groupTag.location || config.code.location
 
+    html = insetScript(html, groupTag, groupCode.join("\n\n"), config);
 
-  // jsArr = rap.unique(jsArr);
-  var jsstrArr = []
-  Object.keys(groupMap).forEach(key => {
-    jsstrArr.push(jsArr[key])
   })
 
-  if (~html.indexOf("</body>")) {
-    html = html.slice(0, html.lastIndexOf("</body>")) + jsstrArr.join("\n") + html.slice(html.lastIndexOf("</body>"), html.length)
-  } else {
-    console.log("error:html is not has </body>");
-  }
+  codeStack.forEach(uuid => {
+    html = insetScript(html, tagMap[uuid], null, config);
+  })
+
+  codeStack = null;
+  tagMap = null;
+  groupMap = null;
   return html;
 }
+
 /**
- * 解析将css添加到head后面
+ * 解析html引入资源，和解析编译code
  * */
-rap.parse.sortCss = function(html) {
-  var cssArr = {};
-  var scripts = parseTag("link", html, true);
-  scripts.forEach(function(scriptFile) {
-    var notMove = scriptFile.template.indexOf("notsort") != -1;
-    var src = scriptFile.attrs["href"];
-    var rel = scriptFile.attrs["rel"];
-    if (src && !notMove && rel == "stylesheet") {
-      cssArr[src.split("?")[0]] = scriptFile.template;
-      html = html.replace(scriptFile.template, "");
+function insetScript(html, item, code, config) {
+
+  var param = URL.format(item.param||{});
+  var src = item.src;
+  var template;
+  var location = item.location;
+  if (item.codeType == "file") {
+    var realFile = config.resolve.input(config.code.templatePath,src);//源文件
+    var realWriteFile = config.resolve.output(config.code.templatePath,src);//目标文件
+    if (!code) {
+      if (!wake.existsSync(realFile)) {
+        console.log("error:".error, "insertScript not find file:", src, "->".error, realFile);
+        return html;
+      }
+      code = wake.readDataSync(realFile);
     }
-  });
-  var cssstrArr = []
-  Object.keys(cssArr).forEach(key => {
-    cssstrArr.push(cssArr[key])
-  })
-
-  // cssArr = rap.unique(cssArr);
-  // var cssSrc = [];
-  // cssArr.forEach(function (src) {
-  //     cssSrc.push("<link href='"+src+"' rel='stylesheet'/>");
-  // });
-
-  if (~html.indexOf("</head>")) {
-    html = html.replace(/<\/head>/i, function() { return (cssstrArr.join("\n") + "</head>") })
+    //目标文件不能覆盖源文件
+    if (realFile == realWriteFile) {
+      console.log("error:".error, "in file is out file", src, "->".error, realFile);
+      return html;
+    } else {
+      wakeout.writeSync(realWriteFile, config.code.build(code))
+    }
+    template = "<script src='" + config.resolve.browser(src) + (param ? ("?" + param) : "") + "'></script>"
   } else {
-    console.log("error:html is not has </head>");
+    template = "<script>\n" + config.code.build(code) + "\n</script>"
   }
+
+  if (location && (~html.indexOf("</" + location + ">"))) {
+    html = html.slice(0, html.lastIndexOf("</" + location + ">")) + template + "\n" + html.slice(html.lastIndexOf("</" + location + ">"), html.length)
+  } else {
+
+    //设置了location，但是找不到location的位置
+    if(location){
+      console.log("warning:".warn, "html is not has </" + location + ">");
+    }
+
+    html = html + "\n" + template + "\n";
+  }
+
   return html;
 }
-
-
 
 /*
     ### 解析模板文件
@@ -363,6 +507,8 @@ rap.parse.sortCss = function(html) {
         unique：防止递归循环解析
 
     ###### rap.parse.byHtml
+
+    解析对象为html代码
 
 #### 后缀文件
 
