@@ -1,0 +1,36 @@
+<script>
+let test4="4"
+</script>
+<div id=1></div>
+<script type="text/rapTemplate">
+{{#if}}
+let test3="3"
+{{#endIf}}
+</script>
+<div id=2></div>
+<!-- <script>
+let test5="5"
+<slot></slot>
+<useSlot></useSlot>
+</script> -->
+<script>
+let test5="5"
+</script>
+<div id=3></div>
+<script group="base.js">
+    let test1="1"
+</script>
+<div id=4></div>
+<script group="base.js">
+    let test2="2"
+</script>
+<div id=5></div>
+<script src="/server/test/compiler/source/test2.js"></script>
+<div id=6></div>
+<script src="./test1.js"></script>
+<div id=7></div>
+<script src="./test1.js" group="base.js"></script>
+<div id=8></div>
+<script src="/server/test/compiler/source/test2.js"></script>
+<div id=9></div>
+<script src="./test1.js"></script>
