@@ -83,15 +83,11 @@ function hanlderHtml(relativeFile, relativeWatch, config) {
 
   var orgHTML = rap.parse.byHtmlFile(relativeFile, config, config.data, relativeWatch, {});
 
-  orgHTML = rap.parse.sortCss(relativeFile, config, config.data, relativeWatch, {});
-
-  orgHTML = rap.parse.sortJs(relativeFile, config, config.data, relativeWatch, {});
-  
-  if (global.ENV == "product") {
-
-    orgHTML = rap.parse.MergeCss(relativeFile, config, config.data, relativeWatch, {});
-
-    orgHTML = rap.parse.MergeJs(relativeFile, config, config.data, relativeWatch, {});
-  }
-
+  rap.parse.handleJs(orgHTML,config.js).then(ret=>{
+    return rap.parse.handleCSS(ret, config.css)
+  })
+  .then(ret=>{
+   var outHtmlFile = config.html.out(relativeFile)
+    wake.writeSync(outHtmlFile,ret);
+  })
 }
