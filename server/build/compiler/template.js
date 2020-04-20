@@ -95,14 +95,17 @@ function parseTeample(orgHtml,orgConfigData){
     });
 
     orgHtml =  templ(orgHtml,orgConfigData);
-
+    
     //还原
-    includeRegArr.forEach(function (str,idx) {
-        orgHtml = orgHtml.replace(new RegExp("_____RAPSCRIPTTAG_____"+idx),str); 
-    });
     noteRegArr.forEach(function (str,idx) {
         orgHtml = orgHtml.replace(new RegExp("______RAPREPLACENOTETAG______"+idx),str); 
     });
+
+
+    includeRegArr.forEach(function (str,idx) {
+        orgHtml = orgHtml.replace(new RegExp("_____RAPSCRIPTTAG_____"+idx),str); 
+    });
+
     return orgHtml;
 }
 

@@ -161,8 +161,6 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
   parentRelativeWatch[mapFileName][noSuffixFile.toURI()] = 1; //同时添加两个监听，删除和添加也可以被监听到
   parentRelativeWatch[mapFileName][entryFile.toURI()] = 1;
 
-
-
   //获取数据文件的数据
   var dataFile = noSuffixFile.replace(".html", "." + suffix + ".js");
   var localData;
@@ -192,81 +190,115 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
   return orgHtml;
 
 }
+/**
+ * 清除注释的干扰
+ * */
+async function clearNoteWrap(orgHtml, wrap) {
+  //过滤掉注释
+  var noteReg = /<!--[\u0000-\uFFFF]*?-->/gmi;
+  var noteRegReplaceString = "______RAPREPLACENOTETAG______"
+  var noteRegArr = [];
+  orgHtml = orgHtml.replace(noteReg, function(val) {
+    noteRegArr.push(val);
+    return noteRegReplaceString + (noteRegArr.length - 1)
+  });
 
+  orgHtml = await wrap(orgHtml);
+
+  noteRegArr.forEach(function(str, idx) {
+    orgHtml = orgHtml.replace(new RegExp(noteRegReplaceString + idx), str);
+  });
+
+  return orgHtml;
+}
 /**
  * 解析js
  * */
-rap.parse.handleJs = function(html, config) {
+rap.parse.handleJs = async function(orgHtml, config) {
 
-  mergeDefaultConfig(config,function(code){
-    var babelT = babel.transformSync(code,{
-      "presets": [
-        "@babel/preset-env"
-      ]
-    })
-    return babelT.code
-  },"body")
+  return await clearNoteWrap(orgHtml, async function(html) {
 
-  var tags = parseTag("script", html);
+    mergeDefaultConfig(config, async function(code) {
+      var babelT = babel.transformSync(code, {
+        "presets": [
+          "@babel/preset-env"
+        ]
+      })
+      return babelT.code.replace(/^\s*\"use\sstrict\";\s+/, "")
+    }, "body")
 
-  tags = tags.filter(item=>{
-    var type = item.attrs.type;
-    var src = item.attrs.src;
-    if(type&&(type!="text/javascript"||type!="text/ecmascript"||type!="application/ecmascript"||type!="application/javascript"||type!="text/vbscript")){
-      return false;
-    }else{
-      if(src){
-        item.codeType="file";
-      }else{
-        item.codeType ="code";
+    var tags = parseTag("script", html);
+
+    tags = tags.filter(item => {
+      var type = item.attrs.type;
+      var src = item.attrs.src;
+      if (type && (type != "text/javascript" || type != "text/ecmascript" || type != "application/ecmascript" || type != "application/javascript" || type != "text/vbscript")) {
+        return false;
+      } else {
+        if (src) {
+          item.codeType = "file";
+        } else {
+          item.codeType = "code";
+          item.attrs.sort = (item.attrs.sort == "true") ? true : "false"; //默认不用排序
+        }
+        return true;
       }
-      return true;
-    }
-  })
+    })
 
-  return compilerSource(html,tags,config);
+    return await compilerSource(html, tags, config, "js");
+  })
 
 }
 
 /**
  * 解析css,默认使用less编译
  * */
-rap.parse.handleCSS = function(html,config) {
+rap.parse.handleCSS = async function(orgHtml, config) {
 
-  mergeDefaultConfig(config,function(code){
-    var output = less.renderSync(code);
-    return output.css;
-  },"head")
+  return await clearNoteWrap(orgHtml, async function(html) {
 
-  var tags = parseTag("link", html);
+    //需要将less文件转css文件
+    mergeDefaultConfig(config, async function(code, callback) {
+        var output = await less.render(code);
+        return output.css
+      }, "head",
+      function(resolvePath) {
+       return browserResolve(resolvePath, "css");
+      },function(templatePath, resolvePath) {
+        return outputResolve(templatePath,resolvePath, "css");
+       })
 
-  tags = tags.filter(item=>{
-    var rel = item.attrs.rel;
-    item.codeType="file";
-    item.sort = html.indexOf(item.template);
-    if(rel=="stylesheet"){
-      return true;
-    }
+    var tags = parseTag("link", html,"single");
+
+    tags = tags.filter(item => {
+      var rel = item.attrs.rel;
+      item.codeType = "file";
+      if (rel == "stylesheet") {
+        return true;
+      }
+    })
+
+    var styleTags = parseTag("style", html);
+
+    styleTags.forEach(item => {
+      item.codeType = "code";
+      item.attrs.sort = (item.attrs.sort == "true") ? true : "false"; //默认不用排序
+
+    });
+
+    var sourceTags = tags.concat(styleTags).sort(function(a, b) {
+      return a.mapIndex > b.mapIndex ? 1 : -1;
+    })
+
+    return await compilerSource(html, sourceTags, config, "css");
   })
-
-  var styleTags = parseTag("style", html);
-
-  styleTags.every(item=>{
-    item.codeType="code";
-    item.sort = html.indexOf(item.template);
-  });
-
-  var sourceTags = tags.concat(styleTags).sort(function(a,b){
-    return a.sort>b.sort?1:-1;
-  })
-
-  return  compilerSource(html,sourceTags,config);
 }
 
 /*
 源路径转源路径的物理路径
 */
 var root = __dirname.toURI().replace("/server/build/compiler", "");
+
 function inputResolve(templatePath, resolvePath) {
   if (resolvePath.trim().toURI().indexOf("/") == 0) {
     return root + resolvePath.trim().toURI();
@@ -279,21 +311,27 @@ function inputResolve(templatePath, resolvePath) {
 /*
 源路径转目标路径的物理路径
 */
-function outputResolve(templatePath, resolvePath) {
+function outputResolve(templatePath, resolvePath,type) {
+  if (type) {
+    resolvePath = resolvePath.replace(/\.\w+$/, "." + type);
+  }
   if (resolvePath.trim().toURI().indexOf("/") == 0) {
-    return root+"/dirt/" + resolvePath.trim().toURI();
+    return root + "/dirt/" + resolvePath.trim().toURI();
   } else if (/^\w:/i.test(resolvePath) || (/^https?:/i.test(resolvePath))) {
     return resolvePath;
   } else {
-    return pt.resolve(pt.dirname(templatePath), resolvePath).toURI().replace(root,root+"/dirt/");
+    return pt.resolve(pt.dirname(templatePath), resolvePath).toURI().replace(root, root + "/dirt/");
   }
 }
 /*
-源路径转浏览器地址
+源路径转浏览器地址,可以指定后缀名
 */
-function browserResolve( resolvePath){
+function browserResolve(resolvePath, type) {
+  if (type) {
+    resolvePath = resolvePath.replace(/\.\w+$/, "." + type);
+  }
   if (resolvePath.trim().toURI().indexOf("/") == 0) {
-    return "/dirt"+ resolvePath.trim().toURI();
+    return "/dirt" + resolvePath.trim().toURI();
   } else if (/^\w:/i.test(resolvePath) || (/^https?:/i.test(resolvePath))) {
     return resolvePath;
   } else {
@@ -303,14 +341,14 @@ function browserResolve( resolvePath){
 /**
  * 配置信息
  * */
-function mergeDefaultConfig(config,build,location){
+function mergeDefaultConfig(config, build, location, brResolve,opResolve) {
 
   config.resolve = config.resolve || {};
   config.code = config.code || {};
 
-  config.resolve.input =  config.resolve.input || inputResolve;
-  config.resolve.output =  config.resolve.output || outputResolve;
-  config.resolve.browser =   config.resolve.browser || browserResolve;
+  config.resolve.input = config.resolve.input || inputResolve;
+  config.resolve.output = config.resolve.output || opResolve|| outputResolve;
+  config.resolve.browser = config.resolve.browser || brResolve || browserResolve;
 
   config.code.build = config.code.build || build;
   config.code.location = config.code.location || location;
@@ -319,7 +357,7 @@ function mergeDefaultConfig(config,build,location){
 /**
  * 提取资源文件
  * */
-function compilerSource(html,tags,config){
+async function compilerSource(html, tags, config, type) {
 
 
   var tagMap = {};
@@ -329,16 +367,18 @@ function compilerSource(html,tags,config){
 
   //清除html中的script标签，得到script标签的信息
   tags.forEach(function(tag, idx) {
-    var url = tag.attrs.src||tag.attrs.href;
+    var url = tag.attrs.src || tag.attrs.href;
     var src;
     var param;
     var sort = tag.attrs.sort;
     var group = tag.attrs.group;
     var id = tag.attrs.id;
     var clear = true;
-    var uuid = "__RAP"+tag.startTag.replace(/\W+/g,"").toUpperCase() + (id || idx) + "SORT__";
+    var uuid = "__RAP" + tag.startTag.replace(/\W+/g, "").toUpperCase() + (id || idx) + "SORT__";
 
-    if (tag.codeType=="file") {
+    var replaceUuid = "__RAP" + idx + "REPLACE__";
+
+    if (tag.codeType == "file") {
       src = url.split("?")[0].trim().toURI();
       param = URL.parse(url).query;
       uuid = src;
@@ -351,17 +391,21 @@ function compilerSource(html,tags,config){
       clear = false;
     }
 
+    //用于还原位置
     if (clear) {
       html = html.replace(tag.template, "");
+    } else {
+      html = html.replace(tag.template, replaceUuid);
+      tag.replaceUuid = replaceUuid;
     }
 
     //重复的代码需要清除掉
     if (tagMap[uuid]) {
-      if(!clear){
-        console.log("warning:".warn,src," repeat but not clear");
+      if (!clear) {
+        console.log("warning:".warn, src, " repeat but not clear");
       }
-      if(group){
-        console.log("warning:".warn,src," repeat in group:",group)
+      if (group) {
+        console.log("warning:".warn, src, " repeat in group:", group)
       }
       return;
     }
@@ -376,6 +420,8 @@ function compilerSource(html,tags,config){
     tagMap[uuid] = {
       src: src,
       param: param,
+      clear: clear,
+      replaceUuid: replaceUuid,
       code: tag.innerHTML,
       codeType: tag.codeType
     };
@@ -383,41 +429,20 @@ function compilerSource(html,tags,config){
   });
 
   //处理合并
-  Object.keys(groupMap).forEach(name => {
-    item = groupMap[name]
-    if (!config.code.group || !config.code.group[name] || !config.code.group[name].src) {
-      console.log("error".error, " config  -> code.group['" + name + "'].src not set");
-      return;
+  for (var name in groupMap) {
+    html = await hanlderGroupMap(name, groupMap, config, html, tagMap,type);
+  }
+
+  for (var uuidIndex in codeStack) {
+    html = await insetCode(html, tagMap[codeStack[uuidIndex]], null, config, type);
+  }
+
+  //还原
+  tags.forEach(function(tag, idx) {
+    if (tag.replaceUuid) {
+      html = html.replace(tag.replaceUuid, tag.template);
     }
-
-    var groupTag = config.code.group[name];
-
-    var groupCode = [];
-    item.forEach(uuid => {
-      var tag = tagMap[uuid];
-      if (tag.codeType == "file") {
-        var realFile = config.resolve.input(config.code.templatePath,tag.src);
-        if (wake.existsSync(realFile)) {
-          groupCode.push(wake.readDataSync(realFile));
-        } else {
-          console.log("error:".error, "group merge not find :", realFile);
-        }
-      } else if (tag.codeType == "code") {
-        groupCode.push(tag.code);
-      }
-    })
-
-    groupTag.codeType = "file";
-    groupTag.location = groupTag.location || config.code.location
-
-    html = insetScript(html, groupTag, groupCode.join("\n\n"), config);
-
   })
-
-  codeStack.forEach(uuid => {
-    html = insetScript(html, tagMap[uuid], null, config);
-  })
-
   codeStack = null;
   tagMap = null;
   groupMap = null;
@@ -425,17 +450,52 @@ function compilerSource(html,tags,config){
 }
 
 /**
+ *处理合并
+ * */
+async function hanlderGroupMap(name, groupMap, config, html, tagMap,type) {
+  var item = groupMap[name]
+  if (!config.code.group || !config.code.group[name] || !config.code.group[name].src) {
+    console.log("error".error, " config  -> code.group['" + name + "'].src not set");
+    return;
+  }
+
+  var groupTag = config.code.group[name];
+
+  var groupCode = [];
+  item.forEach(uuid => {
+    var tag = tagMap[uuid];
+    if (tag.codeType == "file") {
+      var realFile = config.resolve.input(config.code.templatePath, tag.src);
+      if (wake.existsSync(realFile)) {
+        groupCode.push(wake.readDataSync(realFile));
+      } else {
+        console.log("error:".error, "group merge not find :", realFile);
+      }
+    } else if (tag.codeType == "code") {
+      groupCode.push(tag.code);
+    }
+  })
+
+  groupTag.codeType = "file";
+  groupTag.location = groupTag.location || config.code.location
+
+  return await insetCode(html, groupTag, groupCode.join("\n\n"), config, type);
+}
+
+/**
  * 解析html引入资源，和解析编译code
  * */
-function insetScript(html, item, code, config) {
+async function insetCode(html, item, code, config, type) {
 
-  var param = URL.format(item.param||{});
+  code = code || item.code;
+
+  var param = URL.format(item.param || {});
   var src = item.src;
   var template;
   var location = item.location;
   if (item.codeType == "file") {
-    var realFile = config.resolve.input(config.code.templatePath,src);//源文件
-    var realWriteFile = config.resolve.output(config.code.templatePath,src);//目标文件
+    var realFile = config.resolve.input(config.code.templatePath, src); //源文件
+    var realWriteFile = config.resolve.output(config.code.templatePath, src); //目标文件
     if (!code) {
       if (!wake.existsSync(realFile)) {
         console.log("error:".error, "insertScript not find file:", src, "->".error, realFile);
@@ -448,23 +508,42 @@ function insetScript(html, item, code, config) {
       console.log("error:".error, "in file is out file", src, "->".error, realFile);
       return html;
     } else {
-      wakeout.writeSync(realWriteFile, config.code.build(code))
+      wakeout.writeSync(realWriteFile, await config.code.build(code))
     }
-    template = "<script src='" + config.resolve.browser(src) + (param ? ("?" + param) : "") + "'></script>"
+    if (type == "css") {
+      template = "<link rel='stylesheet' src='" + config.resolve.browser(src) + (param ? ("?" + param) : "") + "'/>"
+    } else {
+      template = "<script src='" + config.resolve.browser(src) + (param ? ("?" + param) : "") + "'></script>"
+    }
   } else {
-    template = "<script>\n" + config.code.build(code) + "\n</script>"
+    if (type == "css") {
+      template = "<style>\n" + await config.code.build(code) + "\n</style>"
+    } else {
+      template = "<script>\n" + await config.code.build(code) + "\n</script>"
+    }
+
   }
 
-  if (location && (~html.indexOf("</" + location + ">"))) {
-    html = html.slice(0, html.lastIndexOf("</" + location + ">")) + template + "\n" + html.slice(html.lastIndexOf("</" + location + ">"), html.length)
-  } else {
-
-    //设置了location，但是找不到location的位置
-    if(location){
-      console.log("warning:".warn, "html is not has </" + location + ">");
+  //需要清除原来的位置
+  if (item.clear) {
+    if (item.replaceUuid) {
+      html = html.replace(item.replaceUuid, "");
     }
+    if (location && (~html.indexOf("</" + location + ">"))) {
+      html = html.slice(0, html.lastIndexOf("</" + location + ">")) + template + "\n" + html.slice(html.lastIndexOf("</" + location + ">"), html.length)
+    } else {
 
-    html = html + "\n" + template + "\n";
+      //设置了location，但是找不到location的位置
+      if (location) {
+        console.log("warning:".warn, "html is not has </" + location + ">");
+      }
+
+      html = html + "\n" + template + "\n";
+    }
+  } else {
+    if (item.replaceUuid) {
+      html = html.replace(item.replaceUuid, template);
+    }
   }
 
   return html;
