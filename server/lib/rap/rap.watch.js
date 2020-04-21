@@ -4,7 +4,7 @@ const fs = require("fs");
 localRequire("@/server/lib/global/extention.String.js")
 
 const domain = require('domain');
-
+const wake = rap.system.input
 /**
  *
  * 添加监听文件
@@ -14,12 +14,13 @@ const domain = require('domain');
 var timer;
 var changeMsg = new Set();
 var watchCallback = {};
+var watchCache = {};
 
 rap.watch = function(orgDir,callback){
 
     orgDir = orgDir.toURI();
     //监听文件夹，可以多次监听
-     if(wake.isExist(orgDir) && wake.isDir(orgDir)){
+     if(wake.existsSync(orgDir) && wake.isDirSync(orgDir)){
         watchCallback[orgDir] = watchCallback[orgDir]||[];
         watchCallback[orgDir].push(callback);
          bindWatch(orgDir);
