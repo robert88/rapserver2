@@ -1,4 +1,4 @@
-require("./lib/global/global.localRequire");
+require("../lib/global/global.localRequire");
 
 localRequire("@/server/lib/global/global.js");
 
@@ -8,6 +8,7 @@ localRequire("@/server/build/compiler/rap.parse.js");
 
 
 const wake = rap.system.input;
+const wakeout = rap.system.output;
 
 //默认配置
 
@@ -19,10 +20,11 @@ rap.build = function(entryPath, config) {
 
   entryPath = entryPath.toURI();
 
-  var relativeWatch = {} //依赖收集
+  var relativeWatch = {} //顶层依赖收集
 
   if (wake.isFileSync(entryPath)) {
-    hanlderHtml(entryPath, relativeWatch, config);
+    relativeWatch[entryPath] = {};
+    hanlderHtml(entryPath, relativeWatch[entryPath], config);
   } else {
     var htmlArr = wake.findFileSync(entryPath, "html", true);
 
@@ -30,16 +32,23 @@ rap.build = function(entryPath, config) {
     htmlArr = htmlArr.filter(file => toPath(file).indexOf("/template/") == -1);
 
     htmlArr.forEach(function(file) {
-      hanlderHtml(file, relativeWatch, config);
+      file = file.toURI();
+      relativeWatch[file] = {};
+      hanlderHtml(file, relativeWatch[file], config);
     });
   }
 
   //开发环境需要监听文件变化，实时更新
   if (global.ENV == "dev") {
-    config.watchDirs = config.watchDirs || [localRequire("/@/server/static")];
+    config.watchDirs = config.watchDirs || [localRequire("@/server/static", true)];
+
     config.watchDirs.forEach(item => {
+      if (!wake.existsSync(item)) {
+        console.log("error:".error, "watch ", item, " not find");
+        return;
+      }
       rap.watch(item.toURI(), function(changeFiles) {
-        handleChange(changeFiles)
+        handleChange(changeFiles, relativeWatch, config)
       });
     })
   }
@@ -51,43 +60,56 @@ function handleChange(changeFiles, relativeWatch, config) {
   var handleChangeFile = {};
   changeFiles.forEach(function(file) {
     file = file.toURI();
-    if (wake.existSync(file) && wake.isFileSync(file)) {
-      for (var relativeFile in relativeWatch) {
-        relativeFile = relativeFile.toURI();
-        if (relativeWatch[relativeFile][file]) {
-          handleChangeFile[relativeFile] = file;
-        }
+    for (var relativeFile in relativeWatch) {
+      relativeFile = relativeFile.toURI();
+      if (relativeWatch[relativeFile][file]) {
+        handleChangeFile[relativeFile] = file;
       }
     }
   })
 
   //已命中的文件进行更新
   for (var relativeFile in handleChangeFile) {
-    console.log("----".bgYellow + "change file:".green, handleChangeFile[relativeFile]);
-    console.log("----".bgYellow + "triggle pack:".yellow, relativeFile, config.lang);
+    console.log("----".warn + "change file:".green, handleChangeFile[relativeFile]);
+    console.log("----".warn + "triggle pack:".yellow, relativeFile, config.html.data.suffix.warn);
     hanlderHtml(relativeFile, relativeWatch, config);
   }
 }
 
 /*处理html*/
 function hanlderHtml(relativeFile, relativeWatch, config) {
-
+  //将config带入css和js里面
+  config.html = config.html || {}
+  config.html.output = config.html.output || rap.parse.output;
   relativeFile = relativeFile.toURI();
-
   //过滤文件
-  if (typeof config.filter == "function") {
-    if (config.filter(relativeFile) === false) {
+  if (typeof config.html.filter == "function") {
+    if (config.html.filter(relativeFile) === false) {
       return;
     }
   }
 
-  var orgHTML = rap.parse.byHtmlFile(relativeFile, config, config.data, relativeWatch, {});
+  var orgHTML = rap.parse.byHtmlFile(relativeFile, config.html, config.data, relativeWatch, {});
+  handlerResource(orgHTML, relativeFile, config, function(ret) {
+    var outHtmlFile = config.html.output(relativeFile, relativeFile);
+    wakeout.writeSync(outHtmlFile, ret);
+    console.log("----".warn + "pack file:".green, outHtmlFile);
+  });
+}
 
-  rap.parse.handleJs(orgHTML,config.js).then(ret=>{
-    return rap.parse.handleCSS(ret, config.css)
-  })
-  .then(ret=>{
-   var outHtmlFile = config.html.out(relativeFile)
-    wake.writeSync(outHtmlFile,ret);
-  })
+/*处理resource*/
+function handlerResource(orgHTML, relativeFile, config, callback) {
+  var fileConfig = Object.assign({ templatePath: relativeFile }, config.file)
+  var jsConfig = Object.assign({ fileConfig: fileConfig, templatePath: relativeFile }, config.js)
+  var cssConfig = Object.assign({ fileConfig: fileConfig, templatePath: relativeFile }, config.css)
+
+  rap.parse.handleJs(orgHTML, jsConfig).then(ret => {
+      return rap.parse.handleCSS(ret, cssConfig)
+    })
+    .then(ret => {
+      return rap.parse.handleFile(ret, fileConfig);
+    }).then(ret => {
+      callback(ret);
+    })
+
 }
