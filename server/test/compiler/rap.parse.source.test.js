@@ -19,13 +19,10 @@ var config = {}
 var orgHTML = rap.parse.byHtmlFile(pt.resolve(__dirname, "./source/testjs.html"), config, parentData, parentRelativeWatch, unique)
 
  rap.parse.handleJs(orgHTML, {
-  code: {
-    templatePath:pt.resolve(__dirname, "./source/testjs.html"),
-    group: {
-      'base.js': { src: "./base.js", location: "head" }
-    }
+  templatePath:pt.resolve(__dirname, "./source/testjs.html"),
+  group: {
+    'base.js': { src: "./base.js", location: "head" }
   }
-
 }).then(ret=>{
     console.log(ret)
 })

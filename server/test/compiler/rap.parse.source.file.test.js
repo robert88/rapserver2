@@ -16,11 +16,9 @@ var unique = {};
 
 var config = {}
 
-var orgHTML = rap.parse.byHtmlFile(pt.resolve(__dirname, "./source/testcss.html"), config, parentData, parentRelativeWatch, unique)
+var orgHTML = rap.parse.byHtmlFile(pt.resolve(__dirname, "./source/testFile.html"), config, parentData, parentRelativeWatch, unique)
 
-rap.parse.handleCSS(orgHTML, {
-    templatePath:pt.resolve(__dirname, "./source/testcss.html")
-}).then(ret=>{
+rap.parse.handleFile(orgHTML,{templatePath:pt.resolve(__dirname, "./source/testFile.html")}).then(ret=>{
   console.log(ret)
 })
 
