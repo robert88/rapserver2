@@ -49,10 +49,43 @@ function parseSrc(obj, requireCode, importReg) {
   obj.params = src.split("?")[1];
 }
 
+function parseTagByReg(tag,regStr,attrRegStr,fileData,single){
+  var arr = [];
+  if (/^\w+$/.test(tag)) {
+    var reg = new RegExp(regStr, "gmi");
+
+    var noteInfo = getNoteArr(fileData);
+
+    fileData = noteInfo[0];
+    //替代match，来获取mapindex
+    fileData.replace(reg, function(tagStr) {
+
+      var obj = { template: replaceNote(tagStr, noteInfo[1]), attrs: {} };
+      obj.startTag = tagStr.replace(new RegExp(regStr, "i"), "$1");
+      if (!single) {
+        obj.innerHTML = replaceNote(tagStr.replace(new RegExp(regStr, "i"), "$2"), noteInfo[1]);
+
+        obj.endTag = "</" + tag + ">";
+      }
+      var attrStrOrg = tagStr.replace(new RegExp(attrRegStr, "i"), "$1")
+      var attrArr1 = attrStrOrg.match(/[^='"\s]+="[^"]+"/g) || [];
+      var attrArr2 = attrStrOrg.match(/[^='"\s]+='[^']+'/g) || [];
+      var attrArr3 = attrStrOrg.match(/[^='"\s]+=[^"'\s]+/g) || [];
+      var attrArr = attrArr1.concat(attrArr2).concat(attrArr3);
+      parseAttrs(attrArr, obj);
+      obj.mapIndex = arguments[arguments.length - 2];
+      arr.push(obj);
+    });
+  } else {
+    console.error("tag must is word");
+  }
+  return arr;
+}
+
 exports = module.exports = {
   //只能解析单个tag
   parseTag(tag, fileData, single) {
-    var arr = [];
+
     var regStr, attrRegStr;
     if (single) {
       regStr = "(<" + tag + "[^>]*>)";
@@ -62,59 +95,56 @@ exports = module.exports = {
       attrRegStr = "<" + tag + "([^>]*)>([\\u0000-\\uFFFF]*?)<\\/" + tag + ">";
     }
 
-    if (/^\w+$/.test(tag)) {
-      var reg = new RegExp(regStr, "gmi");
-
-      var noteInfo = getNoteArr(fileData);
-
-      fileData = noteInfo[0];
-      //替代match，来获取mapindex
-      fileData.replace(reg, function(tagStr) {
-
-        var obj = { template: replaceNote(tagStr, noteInfo[1]), attrs: {} };
-        obj.startTag = tagStr.replace(new RegExp(regStr, "i"), "$1");
-        if (!single) {
-          obj.innerHTML = replaceNote(tagStr.replace(new RegExp(regStr, "i"), "$2"), noteInfo[1]);
-
-          obj.endTag = "</" + tag + ">";
-        }
-        var attrStrOrg = tagStr.replace(new RegExp(attrRegStr, "i"), "$1")
-        var attrArr1 = attrStrOrg.match(/[^='"\s]+="[^"]+"/g) || [];
-        var attrArr2 = attrStrOrg.match(/[^='"\s]+='[^']+'/g) || [];
-        var attrArr3 = attrStrOrg.match(/[^='"\s]+=[^"'\s]+/g) || [];
-        var attrArr = attrArr1.concat(attrArr2).concat(attrArr3);
-        parseAttrs(attrArr, obj);
-        obj.mapIndex = arguments[arguments.length - 2];
-        arr.push(obj);
-      });
-    } else {
-      console.error("tag must is word");
-    }
-    return arr;
+    return parseTagByReg(tag,regStr,attrRegStr,fileData,single);
   },
-  parseHtmlMergeTag(tag, code) {
-    var regStr = "(<!--\\s*start\\s" + tag + "\\s+[^>]*\\s*-->)([\u0000-\uFFFF]*?)<!--\\s*end\\s+" + tag + "\\s*-->";
-    var attrRegStr = "<!--\\s*start\\s" + tag + "\\s+([^>]*)\\s*-->([\u0000-\uFFFF]*?)<!--\\s*end\\s+" + tag + "\\s*-->";
-    var arr = [];
-    if (/^\w+$/.test(tag)) {
-      var reg = new RegExp(regStr, "gmi");
-      var tags = code.match(reg);
-      if (tags) {
-        tags.forEach(function(tagStr) {
-          var obj = { template: tagStr, attrs: {} };
-          obj.startTag = tagStr.replace(new RegExp(regStr, "i"), "$1");
-          obj.innerHTML = tagStr.replace(new RegExp(regStr, "i"), "$2");
-          obj.endTag = "<!--end " + tag + "-->";
-          var attrArr = tagStr.replace(new RegExp(attrRegStr, "i"), "$1").match(/[^='"\s]+="?'?[^"']+"?'?/g);
-          parseAttrs(attrArr, obj);
-          arr.push(obj);
+  //闭合标签
+  parseTree(tag, html,level,parenttags) {
+
+     level=level||{count:0}
+
+    if (!/^\w+$/.test(tag)) {
+      console.error("tag must is word");
+      return parenttags
+    }
+    regStr = "(<" + tag + "[^>]*>)(((?!<" + tag + ").)*?)<\\/" + tag + ">";
+    attrRegStr = "<" + tag + "([^>]*)>(((?!<" + tag + ").)*?)<\\/" + tag + ">";
+    var tags =parseTagByReg(tag,regStr,attrRegStr,html,false);
+
+    if(!parenttags){
+      parenttags = tags
+    }else{
+      tags.forEach((t,idx)=>{
+        t.orgTemplate = t.template;//保留之前的template
+        t.child = t.child ||[];
+        parenttags.forEach((ptag,pindex)=>{
+          if(~t.template.indexOf("__TAG__"+tag+pindex+(level.count)+"__")){
+            t.child.push(parenttags[pindex]);
+            t.template = t.template.replace("__TAG__"+tag+pindex+(level.count)+"__",ptag.template);
+            t.innerHTML = t.innerHTML.replace("__TAG__"+tag+pindex+(level.count)+"__",ptag.template);
+            parenttags[pindex] = t;//父类取代
+          }
         })
-      }
-    } else {
-      console.error("tag must is word");
+      })
     }
-    return arr;
+
+
+    if(tags.length){
+      level.count++;
+      tags.forEach((t,idx)=>{
+        t.orgTemplate = t.orgTemplate||t.template;//保留之前的template
+        html = html.replace(t.orgTemplate,"__TAG__"+tag+idx+(level.count)+"__");
+      })
+      this.parseTree(tag,html,level,parenttags);
+    }
+    var newArr=[];
+    parenttags.forEach(p=>{
+      if(newArr.indexOf(p)==-1){
+        newArr.push(p);
+      }
+    })
+    return newArr;
   },
+
   parseRequire(code) {
     var arr = [];
     if (!code) {

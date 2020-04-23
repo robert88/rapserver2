@@ -71,7 +71,7 @@ function handleChange(changeFiles, relativeWatch, config) {
   //已命中的文件进行更新
   for (var relativeFile in handleChangeFile) {
     console.log("----".warn + "change file:".green, handleChangeFile[relativeFile]);
-    console.log("----".warn + "triggle pack:".yellow, relativeFile, config.html.data.suffix.warn);
+    console.log("----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
     hanlderHtml(relativeFile, relativeWatch, config);
   }
 }
@@ -81,6 +81,7 @@ function hanlderHtml(relativeFile, relativeWatch, config) {
   //将config带入css和js里面
   config.html = config.html || {}
   config.html.output = config.html.output || rap.parse.output;
+  config.html.compression = config.html.compression || rap.parse.compressionHtml;
   relativeFile = relativeFile.toURI();
   //过滤文件
   if (typeof config.html.filter == "function") {
@@ -92,8 +93,13 @@ function hanlderHtml(relativeFile, relativeWatch, config) {
   var orgHTML = rap.parse.byHtmlFile(relativeFile, config.html, config.data, relativeWatch, {});
   handlerResource(orgHTML, relativeFile, config, function(ret) {
     var outHtmlFile = config.html.output(relativeFile, relativeFile);
+    if(global.ENV=="product"){
+      //压缩html
+      outHtmlFile =  config.html.compression(outHtmlFile)
+
+    }
     wakeout.writeSync(outHtmlFile, ret);
-    console.log("----".warn + "pack file:".green, outHtmlFile);
+    console.log("----".warn + "pack file:".warn, outHtmlFile);
   });
 }
 

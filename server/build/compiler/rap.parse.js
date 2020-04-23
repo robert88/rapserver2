@@ -6,7 +6,7 @@ const pt = require("path");
 const URL = require("url");
 
 
-
+var UglifyJS = require("uglify-js");
 const babel = require("@babel/core");
 var less = require('less');
 
@@ -202,7 +202,7 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
 }
 
 /**
- * 清除注释的干扰
+ * 清除注释的干扰/<!--((?!<!--).)*?-->/gmi
  * */
 async function clearNoteWrap(orgHtml, wrap) {
   //过滤掉注释
@@ -218,6 +218,25 @@ async function clearNoteWrap(orgHtml, wrap) {
 
   noteRegArr.forEach(function(str, idx) {
     orgHtml = orgHtml.replace(new RegExp(noteRegReplaceString + idx), str);
+  });
+
+  return orgHtml;
+}
+
+/**
+ * 清除干扰
+ * */
+rap.parse.wrap=function(reg,id,orgHtml, wrap) {
+  var arr = [];
+  orgHtml = orgHtml.replace(reg, function(val) {
+    arr.push(val);
+    return id + (arr.length - 1)
+  });
+
+  orgHtml =  wrap(orgHtml);
+
+  arr.forEach(function(str, idx) {
+    orgHtml = orgHtml.replace(new RegExp(id + idx), str);
   });
 
   return orgHtml;
@@ -321,7 +340,12 @@ mergeFileConfig(config.fileConfig);
           "@babel/preset-env"
         ]
       })
-      return babelT.code.replace(/^\s*\"use\sstrict\";\s+/, "")
+      //上线打包
+      if(global.ENV=="product"){
+        return rap.parse.compressionJs(babelT.code);
+      }else{
+        return babelT.code.replace(/^\s*\"use\sstrict\";\s+/, "")
+      }
     }, "body")
 
     var tags = parseTag("script", html);
@@ -359,6 +383,9 @@ mergeFileConfig(config.fileConfig);
     //需要将less文件转css文件
     mergeDefaultConfig(config, async function(code, callback) {
         var output = await less.render(code);
+        if(global.ENV=="product"){
+          return rap.parse.compressionCss(output.css);
+        }
         return output.css
       }, "head",
       function(resolvePath) {
@@ -601,7 +628,7 @@ async function hanlderGroupMap(name, groupMap, config, html, tagMap, type) {
   groupTag.codeType = "file";
   groupTag.location = groupTag.location ||config.location
 
-  return await insetCode(html, groupTag, groupCode.join("\n\n"), config, type);
+  return await insetCode(html, groupTag, groupCode.join("\n;\n"), config, type);
 }
 
 /**
@@ -614,7 +641,7 @@ async function insetCode(html, item, code, config, type) {
   var param = URL.format(item.param || {});
   var src = item.src;
   var template;
-  var location = item.location;
+  var location = item.location||config.location;
   if (item.codeType == "file") {
     var realFile =config.input(config.templatePath, src); //源文件
     var realWriteFile =config.output(config.templatePath, src); //目标文件
@@ -631,7 +658,7 @@ async function insetCode(html, item, code, config, type) {
       return html;
     } else {
       var transformCode =  await config.build(code)
-      if(type=="css"){
+      if(type=="css"){//解析css文件路径
         transformCode = parseFileByCssCode(transformCode,config.fileConfig);
       }
       wakeout.writeSync(realWriteFile,transformCode);
@@ -651,7 +678,9 @@ async function insetCode(html, item, code, config, type) {
   }
 
   //需要清除原来的位置
-  if (item.clear) {
+  if (!item.clear&&item.replaceUuid) {
+    html = html.replace(item.replaceUuid, template);
+  } else {
     if (item.replaceUuid) {
       html = html.replace(item.replaceUuid, "");
     }
@@ -666,13 +695,45 @@ async function insetCode(html, item, code, config, type) {
 
       html = html + "\n" + template + "\n";
     }
-  } else {
-    if (item.replaceUuid) {
-      html = html.replace(item.replaceUuid, template);
-    }
   }
 
   return html;
+}
+
+//压缩html代码
+rap.parse.compressionHtml = function(outHtmlFile){
+  outHtmlFile = outHtmlFile.replace(/<!--[\u0000-\uFFFF]*?-->/gm,"");
+  outHtmlFile =  rap.parse.wrap(/"[^\\]*?"/g,"___RAPcompressionQUOTONE__",outHtmlFile,function(wrapHtml1){
+   return rap.parse.wrap(/'[^\\]*?'/g,"___RAPcompressionQUOTTWO__",wrapHtml1,function(wrapHtml2){
+      return rap.parse.wrap(/(<pre[^>]*>)([\\u0000-\\uFFFF]*?)<\/pre>/igm,"___RAPcompressionPREAll__",wrapHtml2,function(wrapHtml3){
+        return rap.parse.wrap(/(<script[^>]*>)([\\u0000-\\uFFFF]*?)<\/script>/igm,"___RAPcompressionPRESCRIPT__",wrapHtml3,function(wrapHtml4){
+          return rap.parse.wrap(/(<style[^>]*>)([\\u0000-\\uFFFF]*?)<\/style>/igm,"___RAPcompressionSTYLE__",wrapHtml4,function(wrapHtml5){
+            return wrapHtml5.replace(/\s+/igm," ");
+           })
+         })
+      })
+    })
+  })
+  return outHtmlFile;
+}
+//压缩css代码
+rap.parse.compressionCss = function(code){
+  code = code.replace(/<\/\*[\u0000-\uFFFF]*?\*\//gm,"");
+  code =  rap.parse.wrap(/"[^\\]*?"/g,"___RAPcompressionQUOTONE__",code,function(wrapHtml1){
+    return rap.parse.wrap(/'[^\\]*?'/g,"___RAPQUOTTWO__",wrapHtml1,function(wrapHtml2){
+       return rap.parse.wrap(/(<pre[^>]*>)([\\u0000-\\uFFFF]*?)<\/pre>/igm,"___RAPcompressionPREAll__",wrapHtml2,function(wrapHtml3){
+        return wrapHtml3.replace(/\s+/igm," ");
+       })
+     })
+   })
+  return code;
+}
+
+//压缩js代码
+rap.parse.compressionJs = function(code,options){
+   options =Object.assign({},options);
+  var result = UglifyJS.minify(code, options);
+  return result.code;
 }
 
 /*
