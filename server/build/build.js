@@ -95,7 +95,7 @@ function hanlderHtml(relativeFile, relativeWatch, config) {
     var outHtmlFile = config.html.output(relativeFile, relativeFile);
     if(global.ENV=="product"){
       //压缩html
-      outHtmlFile =  config.html.compression(outHtmlFile)
+      ret =  config.html.compression(ret)
 
     }
     wakeout.writeSync(outHtmlFile, ret);

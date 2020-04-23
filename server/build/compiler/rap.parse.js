@@ -705,9 +705,9 @@ rap.parse.compressionHtml = function(outHtmlFile){
   outHtmlFile = outHtmlFile.replace(/<!--[\u0000-\uFFFF]*?-->/gm,"");
   outHtmlFile =  rap.parse.wrap(/"[^\\]*?"/g,"___RAPcompressionQUOTONE__",outHtmlFile,function(wrapHtml1){
    return rap.parse.wrap(/'[^\\]*?'/g,"___RAPcompressionQUOTTWO__",wrapHtml1,function(wrapHtml2){
-      return rap.parse.wrap(/(<pre[^>]*>)([\\u0000-\\uFFFF]*?)<\/pre>/igm,"___RAPcompressionPREAll__",wrapHtml2,function(wrapHtml3){
-        return rap.parse.wrap(/(<script[^>]*>)([\\u0000-\\uFFFF]*?)<\/script>/igm,"___RAPcompressionPRESCRIPT__",wrapHtml3,function(wrapHtml4){
-          return rap.parse.wrap(/(<style[^>]*>)([\\u0000-\\uFFFF]*?)<\/style>/igm,"___RAPcompressionSTYLE__",wrapHtml4,function(wrapHtml5){
+      return rap.parse.wrap(/(<pre[^>]*>)([\u0000-\uFFFF]*?)<\/pre>/igm,"___RAPcompressionPREAll__",wrapHtml2,function(wrapHtml3){
+        return rap.parse.wrap(/(<script[^>]*>)([\u0000-\uFFFF]*?)<\/script>/igm,"___RAPcompressionPRESCRIPT__",wrapHtml3,function(wrapHtml4){
+          return rap.parse.wrap(/(<style[^>]*>)([\u0000-\uFFFF]*?)<\/style>/igm,"___RAPcompressionSTYLE__",wrapHtml4,function(wrapHtml5){
             return wrapHtml5.replace(/\s+/igm," ");
            })
          })
