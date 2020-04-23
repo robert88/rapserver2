@@ -1,12 +1,22 @@
 {
-  "name": "rapserver2",
+  "name": "rapbuild",
   "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "enhanced-resolve": "^4.1.0"
+  "description": "",
+  "main": "build.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "vue": "^2.6.10"
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "less": "^3.11.1"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.8.7",
+    "babel-preset-env": "^1.7.0",
+    "uglify-js": "^3.9.1"
   }
 }
