@@ -1,5 +1,5 @@
 require("../../build/build.js");
-global.ENV = "dev"
+global.ENV = "product"
 rap.build(localRequire("@/server/test/compiler/source/build.html", true), {
   js: {
     group: { "base": { src:"./base.js" } }
