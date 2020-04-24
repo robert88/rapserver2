@@ -1,17 +1,16 @@
 <!doctype html>
 <html>
-
 <head>
   <meta charset="utf-8" />
   <title>Marked in the browser</title>
-  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js?v=1" sort="false"></script>
   <script src="./lib/makedown/makedown.js"></script>
   <link rel="stylesheet" href="./lib/makedown/makedown.css">
   <link rel="stylesheet" href="./lib/index.css">
   <link href="https://highlightjs.org/static/demo/styles/solarized-light.css" rel="stylesheet">
   <script src="https://highlightjs.org/static/highlight.site.pack.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js?v=1"></script>
 
 </head>
 
@@ -20,8 +19,22 @@
     <nav class="nav">
       <div class="nav-wap-close">&lt;&lt;</div>
       <div class="nav-btn">+ 写文章</div>
-      <div class="nav-list"> </div>
-
+      <div class="nav-list">
+        <ul class="list first-inner">
+          {{#each nav}}
+          <li class="makedownListLi" title="{{$value.name}}" data-path="{{$value.path}}"> <span>{{$value.name}}</span>
+            {{#if $value.child}}
+            <em class="more"></em>
+              <ul class="list">
+                {{#each $value.child}}
+                <li class="makedownListLi" title="{{$value.name}}" data-path="{{$value.path}}"><span>{{$value.name}}</span></li>
+                {{#endEach}}
+              </ul>
+            {{#endIf}}
+        </li>
+        {{#endEach}}
+      </div>
+      
     </nav>
     <div id="app"></div>
   </div>
@@ -32,7 +45,7 @@
       <div class="dialog-close">×</div>
       <div class="ipt-item">存档地址</div>
       <div class="ipt-item"><input type="text" name="path" placeholder="如完整路径：/server/static/doc/customise/学习笔记.md"></div>
-      <p style="color:#ccc;padding:0 10px;">当前路径：/server/static/doc</p>
+      <p style="color:#ccc;padding:0 10px;;;">当前路径：/server/static/doc</p>
       <div class="ipt-item">makedown内容</div>
       <div class="ipt-item"><textarea></textarea></div>
       <div class="ipt-item"><input type="submit" value="提交"></div>
@@ -72,29 +85,14 @@
 
     }
     //nav
-    var navHtml = ""
-    $.ajax({
-        url: "./nav.txt",
-        async:false,
-        success: function (data) {
-          navHtml = data;
-        }
-      })
-    $(".nav .nav-list").html(makedown(navHtml,true))
+
     $("pre code").each(function () {
       hljs.highlightBlock(this);
     })
 
     var currentUrl, currentData, currentRender;
     $(".nav").find("li").each(function () {
-      var path = $.trim($(this).html());
-      if($(this).find("ul").length){
-        return;
-      }
-      $(this).attr("title", path);
-      var name = path.slice(path.lastIndexOf("/") == -1 ? 0 : (path.lastIndexOf("/") + 1), path.length)
-      name = name.slice(0, name.lastIndexOf(".") == -1 ? name.length : (name.lastIndexOf(".")));
-      $(this).html(name);
+      var path = $.trim($(this).data("path"));
       $(this).click(function () {
         if (currentUrl == path) {
           return;
