@@ -1,0 +1,46 @@
+
+---------------------------1-----------------------------------
+<useSlot src="/server/test/compiler/useSlotTemplate.html" slot="replaceHere">
+
+    这个是slot内容区
+
+</useSlot>
+
+---------------------------2-----------------------------------
+
+<useSlot src="./useSlotTemplate.html" slot="replaceHere2">
+
+    这个是slot内容区
+
+</useSlot>
+---------------------------3-----------------------------------
+
+<useSlot src="./useSlotTemplate.html" slot="replaceHere" moduleSpace="obj.tag">
+
+    这个是slot内容区 modulespace
+
+</useSlot>
+{{willReplace}}
+---------------------------4-----------------------------------
+<include src='./useSlotTemplate.html'></include>
+
+
+---------------------------5-----------------------------------
+<include src='/server/test/compiler/useSlotTemplate.html'></include>
+
+---------------------------6-----------------------------------
+<!-- 
+    <useSlot src="./useSlotTemplate.html" name="replaceHere" modulespace="">
+
+    {{我不见了}}
+
+</useSlot> 
+
+<include src='./useSlotTemplate.html'></include>
+
+    {{我不编译}}
+-->
+---------------------------7-----------------------------------
+<script>
+    var a = "{{我不编译}}"
+</script>
