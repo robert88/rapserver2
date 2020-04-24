@@ -372,14 +372,14 @@
     }
     t.setAttribute("class", c)
   }
-
+console.log("11111111111111111111111111111111111")
   document.addEventListener("click", function(e) {
     e = window.event || e;
     var target = e.target || e.srcElement;
     if (target) {
       var className = target.getAttribute("class") //不兼容ie8及以下版本
       var parentClassName = target.parentNode && target.parentNode.getAttribute("class") //不兼容ie8及以下版本
-      if (className && parentClassName) {
+      if (className || parentClassName) {
         if (className.indexOf("makedownListLi") != -1) {
           clickLi(target, className)
         } else if (parentClassName.indexOf("makedownListLi") != -1) {

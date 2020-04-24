@@ -120,10 +120,10 @@ body {
 .wrap .nav .list li:hover {
   color: #333;
 }
-.wrap .nav .list li.active {
+.wrap .nav .list li.active > span {
   color: #c50000;
 }
-.wrap .nav .list li.active:hover {
+.wrap .nav .list li.active > span:hover {
   color: #f00a0a;
 }
 .wrap .nav .list li + li {
