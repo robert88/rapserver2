@@ -26,10 +26,23 @@ function templ (templStr,json,setHelp){
                 parentStr +=" $parent= $parent"+(templId-1)+";}";
                 templId--;
             }
-            return "\"+(function(){var $length ="+m1+"&&"+m1+".length; var t=\"\";"+m1+"&&"+m1+".forEach(function($value,$index){ "+
-            "var $ID ="+eachID+";"+
-            "var $parent;"+parentStr+
-            "var $parent"+eachID+"={$value:$value,$length:$length,id:"+eachID+",$index:$index,$parent:$parent};\n t+= \""
+            return `"+(function(){
+            var $length =${m1}&&${m1}.length; 
+            var t="";
+            if(typeof ${m1}=="object"&&!${m1}.forEach){
+                $length = Object.keys(${m1}).length;
+                ${m1}.forEach = function(c){
+                    Object.keys(${m1}).forEach(function(v,i){
+                        c(${m1}[v],v)
+                    })
+                }
+            }
+            ${m1}&&${m1}.forEach(function($value,$index){ 
+            var $ID =${eachID};
+            var $parent;
+            ${parentStr}
+            var $parent${eachID}={$value:$value,$length:$length,id:${eachID},$index:$index,$parent:$parent};
+            t+="`
         })
         .replace(/\{\{#endEach\s*\}\}/g,help[2]+"\"});return t;}()) +\"")
         //ifelse

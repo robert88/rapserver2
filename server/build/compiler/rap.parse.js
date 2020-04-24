@@ -24,7 +24,7 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
   tags.forEach(function(tagInfo) {
 
     //路径必须在config里面配置
-    var src = config.input(parentData.__templateFile__||"", tagInfo.attrs.src||"");
+    var src = config.input(parentData.__templateFile__ || "", tagInfo.attrs.src || "");
 
     //文件必须存在D:\yinming\code\rapserver2-master\server\test\compiler
     if (!src || !wake.existsSync(src)) {
@@ -134,10 +134,10 @@ rap.parse.byHtml = function(orgHtml, config, parseData, relativeWatch, unique) {
 rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWatch, unique) {
 
   unique = unique || {};
-  config.data = config.data||{}
-  parentData = parentData||{}
-  parentData.suffix = parentData.suffix ||"cn";
-  if(!config.data.suffix){
+  config.data = config.data || {}
+  parentData = parentData || {}
+  parentData.suffix = parentData.suffix || "cn";
+  if (!config.data.suffix) {
     config.data.suffix = parentData.suffix;
     rap.parse.outputName = rap.parse.outputName || parentData.suffix;
   }
@@ -150,10 +150,10 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
   entryFile = noSuffixFile.replace(".html", "." + suffix + ".html");
 
   var orgHtml, __templateFile__;
-  if (wake.existsSync(entryFile)&&wake.isFileSync(entryFile)) {
+  if (wake.existsSync(entryFile) && wake.isFileSync(entryFile)) {
     orgHtml = wake.readDataSync(entryFile);
     __templateFile__ = entryFile;
-  } else if (wake.existsSync(noSuffixFile)&&wake.isFileSync(noSuffixFile)) {
+  } else if (wake.existsSync(noSuffixFile) && wake.isFileSync(noSuffixFile)) {
     orgHtml = wake.readDataSync(noSuffixFile);
     __templateFile__ = noSuffixFile;
   } else {
@@ -184,15 +184,15 @@ rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWat
     localData = {};
   }
 
-  if(localData.__relativeWatch__){
-    Object.assign(parentRelativeWatch,localData.__relativeWatch__)
+  if (localData.__relativeWatch__) {
+    Object.assign(parentRelativeWatch, localData.__relativeWatch__)
   }
 
-  parentRelativeWatch[dataFile.toURI()]= 1; //数据文件依赖,可以通过__relativeWatch__来添加数据依赖
+  parentRelativeWatch[dataFile.toURI()] = 1; //数据文件依赖,可以通过__relativeWatch__来添加数据依赖
 
   var parseData = rap.extend("deepNotArray", {}, localData, parentData); //深度拷贝，但是对于数组不需要深度拷贝
 
-  parseData.__parentTemplateFile__ = parentData&&parentData.__templateFile__; //用于跟踪模板
+  parseData.__parentTemplateFile__ = parentData && parentData.__templateFile__; //用于跟踪模板
   parseData.__templateFile__ = __templateFile__; //用于跟踪模板
 
   orgHtml = rap.parse.byHtml(orgHtml, config, parseData, parentRelativeWatch, unique);
@@ -226,14 +226,14 @@ async function clearNoteWrap(orgHtml, wrap) {
 /**
  * 清除干扰
  * */
-rap.parse.wrap=function(reg,id,orgHtml, wrap) {
+rap.parse.wrap = function(reg, id, orgHtml, wrap) {
   var arr = [];
   orgHtml = orgHtml.replace(reg, function(val) {
     arr.push(val);
     return id + (arr.length - 1)
   });
 
-  orgHtml =  wrap(orgHtml);
+  orgHtml = wrap(orgHtml);
 
   arr.forEach(function(str, idx) {
     orgHtml = orgHtml.replace(new RegExp(id + idx), str);
@@ -244,50 +244,55 @@ rap.parse.wrap=function(reg,id,orgHtml, wrap) {
 /**
  * 拷贝文件，并且得到浏览路径
  * */
-function copyFile(m1,config){
+function copyFile(m1, config, relativeWatch) {
   var src = m1.split("?")[0]
   var param = m1.split("?")[1]
-  var outpath = config.output(config.templatePath,src);
-  var inpath = config.input(config.templatePath,src);
+  var outpath = config.output(config.templatePath, src);
+  var inpath = config.input(config.templatePath, src);
   var browserPath = config.browser(src);
   var extname = pt.extname(m1);
-  config.nameReg.lastIndex=0;
-  if(config.nameReg.test(extname)){
+  config.nameReg.lastIndex = 0;
+  if (config.nameReg.test(extname)) {
     if (wake.existsSync(inpath)) {
+      //只需要拷贝
+      relativeWatch[inpath.toURI()] = function() {
+        wakeout.copySync(inpath, outpath);
+      };
       wakeout.copySync(inpath, outpath);
-      param = param&&param.replace(/ver=\d+/,wake.getModifySync(inpath));
+      param = param && param.replace(/ver=\d+/, wake.getModifySync(inpath));
     }
-    return browserPath+(param?("?"+param):"")
-  }else{
+    return browserPath + (param ? ("?" + param) : "")
+  } else {
     return m1;
   }
 }
 /**
  * 解析url()文件
  * */
-function parseFileByCssCode(code,config){
+function parseFileByCssCode(code, config, relativeWatch) {
   return code.replace(/url\(([^\)]+)\)/gi, function(m, m1) {
-    var browserPath = copyFile(m1,config);
+    var browserPath = copyFile(m1, config, relativeWatch);
     return "url(" + browserPath + ")";
   })
 }
-function mergeFileConfig(config){
-  config.fileAttrs = config.fileAttrs || ["style","href","src"];
+
+function mergeFileConfig(config) {
+  config.fileAttrs = config.fileAttrs || ["style", "href", "src"];
   config.output = config.output || outputResolve
   config.input = config.input || inputResolve
   config.browser = config.browser || browserResolve
   config.nameReg = config.nameReg || /\.(md|jpg|png|gif|ico|mp4|svg|mp3|txt|json|xml|ttf|eot|woff)/gi
- 
+
 }
 /**
  * 解析file
  * */
-rap.parse.handleFile = async function(orgHtml, config) {
+rap.parse.handleFile = async function(orgHtml, config, relativeWatch) {
 
   mergeFileConfig(config);
 
- if(!config.templatePath){
-    console.log("error:".error,"please set file config templatePath");
+  if (!config.templatePath) {
+    console.log("error:".error, "please set file config templatePath");
     return;
   }
   return await clearNoteWrap(orgHtml, function(html) {
@@ -296,27 +301,28 @@ rap.parse.handleFile = async function(orgHtml, config) {
     var styleTags = parseTag("style", html);
 
     styleTags.forEach(item => {
-      html= html.replace(item.template, parseFileByCssCode(item.template,config));
+      html = html.replace(item.template, parseFileByCssCode(item.template, config));
     });
 
     //解析标签中的图片
 
-    config.fileAttrs.forEach(item => {
+    config.fileAttrs.forEach(attrItem => {
 
-      html = html.replace(new RegExp(item+"\s*=\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|"+item+"\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'","igm"),function(m,quot,m1){
-       if(!m1){
-       //后面的括号匹配不到
-        var reReg = new RegExp(item+"\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'","igm").exec(m);
-        quot = reReg[1]
-        m1 = reReg[2]
-       }
-        if(item=="style"){
-         m1= m1.replace(item.template, parseFileByCssCode(m1,config));
-        }else{
-          var browserPath =copyFile(m1,config);
+      html = html.replace(new RegExp(attrItem + "\s*=\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm"), function(m, quot, m1) {
+        var ret;
+        if (!m1) {
+          //后面的括号匹配不到
+          var reReg = new RegExp(attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
+          quot = reReg[1]
+          m1 = reReg[2]
+        }
+        if (attrItem == "style") {
+          ret = parseFileByCssCode(m1, config);
+        } else {
+          var browserPath = copyFile(m1, config, relativeWatch);
           ret = browserPath;
         }
-        return item+"="+quot+ret+quot;
+        return attrItem + "=" + quot + ret + quot;
       })
     })
 
@@ -328,9 +334,9 @@ rap.parse.handleFile = async function(orgHtml, config) {
 /**
  * 解析js
  * */
-rap.parse.handleJs = async function(orgHtml, config) {
+rap.parse.handleJs = async function(orgHtml, config,relativeWatch) {
 
-mergeFileConfig(config.fileConfig);
+  mergeFileConfig(config.fileConfig);
 
   return await clearNoteWrap(orgHtml, async function(html) {
 
@@ -341,9 +347,9 @@ mergeFileConfig(config.fileConfig);
         ]
       })
       //上线打包
-      if(global.ENV=="product"){
+      if (global.ENV == "product") {
         return rap.parse.compressionJs(babelT.code);
-      }else{
+      } else {
         return babelT.code.replace(/^\s*\"use\sstrict\";\s+/, "")
       }
     }, "body")
@@ -357,7 +363,11 @@ mergeFileConfig(config.fileConfig);
         return false;
       } else {
         if (src) {
-          item.codeType = "file";
+          if ((/^https?:/i.test(src) || /^\/\//i.test(src))) {
+            item.codeType = "remotefile";
+          } else {
+            item.codeType = "file";
+          }
         } else {
           item.codeType = "code";
           item.attrs.sort = (item.attrs.sort == "true") ? true : "false"; //默认不用排序
@@ -366,7 +376,7 @@ mergeFileConfig(config.fileConfig);
       }
     })
 
-    return await compilerSource(html, tags, config, "js");
+    return await compilerSource(html, tags, config,relativeWatch, "js");
   })
 
 }
@@ -374,16 +384,16 @@ mergeFileConfig(config.fileConfig);
 /**
  * 解析css,默认使用less编译
  * */
-rap.parse.handleCSS = async function(orgHtml, config) {
+rap.parse.handleCSS = async function(orgHtml, config, relativeWatch) {
 
-mergeFileConfig(config.fileConfig);
+  mergeFileConfig(config.fileConfig);
 
   return await clearNoteWrap(orgHtml, async function(html) {
 
     //需要将less文件转css文件
     mergeDefaultConfig(config, async function(code, callback) {
         var output = await less.render(code);
-        if(global.ENV=="product"){
+        if (global.ENV == "product") {
           return rap.parse.compressionCss(output.css);
         }
         return output.css
@@ -399,7 +409,12 @@ mergeFileConfig(config.fileConfig);
 
     tags = tags.filter(item => {
       var rel = item.attrs.rel;
-      item.codeType = "file";
+      var url = (item.attrs.href || "").toURI();
+      if ((/^https?:/i.test(url) || /^\/\//i.test(url))) {
+        item.codeType = "remotefile";
+      } else {
+        item.codeType = "file";
+      }
       if (rel == "stylesheet") {
         return true;
       }
@@ -417,7 +432,7 @@ mergeFileConfig(config.fileConfig);
       return a.mapIndex > b.mapIndex ? 1 : -1;
     })
 
-    return await compilerSource(html, sourceTags, config, "css");
+    return await compilerSource(html, sourceTags, config, relativeWatch, "css");
   })
 }
 
@@ -427,10 +442,10 @@ mergeFileConfig(config.fileConfig);
 var root = __dirname.toURI().replace("/server/build/compiler", "");
 
 function inputResolve(templatePath, resolvePath) {
-  if(!resolvePath){
+  if (!resolvePath) {
     return "";
   }
-  if(!templatePath){
+  if (!templatePath) {
     return resolvePath
   }
   if (resolvePath.trim().toURI().indexOf("/") == 0) {
@@ -446,23 +461,23 @@ rap.parse.input = inputResolve;
 源路径转目标路径的物理路径
 */
 function outputResolve(templatePath, resolvePath, type) {
-  resolvePath =  resolvePath&&resolvePath.trim().toURI()||"";
-  if(!resolvePath){
+  resolvePath = resolvePath && resolvePath.trim().toURI() || "";
+  if (!resolvePath) {
     return "";
   }
-  if(!templatePath){
+  if (!templatePath) {
     return resolvePath
   }
-  var dirNameSpace = rap.parse.outputName||"dist";
+  var dirNameSpace = rap.parse.outputName || "dist";
   if (type) {
     resolvePath = resolvePath.replace(/\.\w+$/, "." + type);
   }
   if (resolvePath.indexOf("/") == 0) {
     return (root + `/${dirNameSpace}/` + resolvePath.trim()).toURI();
   } else if (/^\w:/i.test(resolvePath) || (/^https?:/i.test(resolvePath))) {
-    if(~resolvePath.indexOf(root)){
-      return (root + `/${dirNameSpace}/` + resolvePath.replace(root,"")).toURI();
-    }else{
+    if (~resolvePath.indexOf(root)) {
+      return (root + `/${dirNameSpace}/` + resolvePath.replace(root, "")).toURI();
+    } else {
       return resolvePath;
     }
   } else {
@@ -474,10 +489,10 @@ rap.parse.output = outputResolve;
 源路径转浏览器地址,可以指定后缀名
 */
 function browserResolve(resolvePath, type) {
-  if(!resolvePath){
+  if (!resolvePath) {
     return "";
   }
-  var dirNameSpace = rap.parse.outputName||"dist";
+  var dirNameSpace = rap.parse.outputName || "dist";
   if (type) {
     resolvePath = resolvePath.replace(/\.\w+$/, "." + type);
   }
@@ -499,14 +514,14 @@ function mergeDefaultConfig(config, build, location, brResolve, opResolve) {
   config.output = config.output || opResolve || outputResolve;
   config.browser = config.browser || brResolve || browserResolve;
 
- config.build =config.build || build;
- config.location =config.location || location;
+  config.build = config.build || build;
+  config.location = config.location || location;
 
 }
 /**
  * 提取资源文件
  * */
-async function compilerSource(html, tags, config, type) {
+async function compilerSource(html, tags, config, relativeWatch, type) {
 
 
   var tagMap = {};
@@ -531,6 +546,10 @@ async function compilerSource(html, tags, config, type) {
       src = url.split("?")[0].trim().toURI();
       param = URL.parse(url).query;
       uuid = src;
+    } else if (tag.codeType == "remotefile") {
+      param = ""
+      uuid = url;
+      src = url;
     }
 
     //需要合并打包的必须清除
@@ -579,11 +598,11 @@ async function compilerSource(html, tags, config, type) {
 
   //处理合并
   for (var name in groupMap) {
-    html = await hanlderGroupMap(name, groupMap, config, html, tagMap, type);
+    html = await hanlderGroupMap(name, groupMap, config, html, tagMap, relativeWatch, type);
   }
 
   for (var uuidIndex in codeStack) {
-    html = await insetCode(html, tagMap[codeStack[uuidIndex]], null, config, type);
+    html = await insetCode(html, tagMap[codeStack[uuidIndex]], null, config, relativeWatch, type);
   }
 
   //还原
@@ -598,23 +617,13 @@ async function compilerSource(html, tags, config, type) {
   return html;
 }
 
-/**
- *处理合并
- * */
-async function hanlderGroupMap(name, groupMap, config, html, tagMap, type) {
-  var item = groupMap[name]
-  if (!config.group || !config.group[name] || !config.group[name].src) {
-    console.log("error".error, type+" config  -> group['" + name + "'].src not set");
-    return;
-  }
-
-  var groupTag =config.group[name];
-
+function getGroupCode(src, groupMap, config, html, tagMap, relativeWatch, type) {
   var groupCode = [];
   item.forEach(uuid => {
     var tag = tagMap[uuid];
     if (tag.codeType == "file") {
-      var realFile =config.input(config.templatePath, tag.src);
+      var realFile = config.input(config.templatePath, tag.src).toURI();
+      relativeWatch[realFile] = triggeMerge(relativeWatch, src);
       if (wake.existsSync(realFile)) {
         groupCode.push(wake.readDataSync(realFile));
       } else {
@@ -622,29 +631,65 @@ async function hanlderGroupMap(name, groupMap, config, html, tagMap, type) {
       }
     } else if (tag.codeType == "code") {
       groupCode.push(tag.code);
+    } else {
+      console.log("error".error, " group file must local file", tag.src)
     }
   })
+  return groupCode.join("\n;\n")
+}
+//必须
+function triggeMerge(relativeWatch, id) {
+  relativeWatch[id].create(relativeWatch[id].getCode());
+}
+/**
+ *处理合并
+ * */
+async function hanlderGroupMap(name, groupMap, config, html, tagMap, relativeWatch, type) {
+  var item = groupMap[name]
+  if (!config.group || !config.group[name] || !config.group[name].src) {
+    console.log("error".error, type + " config  -> group['" + name + "'].src not set");
+    return;
+  }
+
+  var groupTag = config.group[name];
+  var src = config.group[name].src.toURI();
+
+  relativeWatch[src] = {
+    getCode: function() {
+      return getGroupCode(src, groupMap, config, html, tagMap, relativeWatch, type);
+    }
+  }
+
+  var groupCode = getGroupCode(src, groupMap, config, html, tagMap, relativeWatch, type);
 
   groupTag.codeType = "file";
-  groupTag.location = groupTag.location ||config.location
 
-  return await insetCode(html, groupTag, groupCode.join("\n;\n"), config, type);
+  groupTag.location = groupTag.location || config.location
+
+  return await insetCode(html, groupTag, groupCode, config, relativeWatch, type);
 }
 
+async function createCode(config, code, type, realWriteFile) {
+  var transformCode = await config.build(code)
+  if (type == "css") { //解析css文件路径
+    transformCode = parseFileByCssCode(transformCode, config.fileConfig);
+  }
+  wakeout.writeSync(realWriteFile, transformCode);
+}
 /**
  * 解析html引入资源，和解析编译code
  * */
-async function insetCode(html, item, code, config, type) {
+async function insetCode(html, item, code, config, relativeWatch, type) {
 
   code = code || item.code;
 
   var param = URL.format(item.param || {});
   var src = item.src;
   var template;
-  var location = item.location||config.location;
+  var location = item.location || config.location;
   if (item.codeType == "file") {
-    var realFile =config.input(config.templatePath, src); //源文件
-    var realWriteFile =config.output(config.templatePath, src); //目标文件
+    var realFile = config.input(config.templatePath, src); //源文件
+    var realWriteFile = config.output(config.templatePath, src); //目标文件
     if (!code) {
       if (!wake.existsSync(realFile)) {
         console.log("error:".error, "insertScript not find file:", src, "->".error, realFile);
@@ -652,33 +697,48 @@ async function insetCode(html, item, code, config, type) {
       }
       code = wake.readDataSync(realFile);
     }
+
     //目标文件不能覆盖源文件
     if (realFile == realWriteFile) {
       console.log("error:".error, "in file is out file", src, "->".error, realFile);
       return html;
     } else {
-      var transformCode =  await config.build(code)
-      if(type=="css"){//解析css文件路径
-        transformCode = parseFileByCssCode(transformCode,config.fileConfig);
+      //如果已经匹配group
+      if (relativeWatch[src.toURI()]) {
+        relativeWatch[src.toURI()].create =async function(newCode) {
+          await createCode(config, newCode, type, realWriteFile);
+        }
+      } else {
+        //只需要编译写入
+        relativeWatch[realFile] =async function() {
+          var newCode = wake.readDataSync(realFile);
+          await createCode(config, newCode, type, realWriteFile);
+        }
       }
-      wakeout.writeSync(realWriteFile,transformCode);
+     await createCode(config, code, type, realWriteFile)
     }
     if (type == "css") {
-      template = "<link rel='stylesheet' src='" +config.browser(src) + (param ? ("?" + param) : "") + "'/>"
+      template = "<link rel='stylesheet' href='" + config.browser(src) + (param ? ("?" + param) : "") + "'/>"
     } else {
-      template = "<script src='" +config.browser(src) + (param ? ("?" + param) : "") + "'></script>"
+      template = "<script src='" + config.browser(src) + (param ? ("?" + param) : "") + "'></script>"
     }
-  } else {
+  } else if (item.codeType == "code") {
     if (type == "css") {
       template = "<style>\n" + await config.build(code) + "\n</style>"
     } else {
       template = "<script>\n" + await config.build(code) + "\n</script>"
     }
-
+    //远程路径wenj
+  } else {
+    if (type == "css") {
+      template = "<link rel='stylesheet' href='" + src + (param ? ("?" + param) : "") + "'/>"
+    } else {
+      template = "<script src='" + src + (param ? ("?" + param) : "") + "'></script>"
+    }
   }
 
   //需要清除原来的位置
-  if (!item.clear&&item.replaceUuid) {
+  if (!item.clear && item.replaceUuid) {
     html = html.replace(item.replaceUuid, template);
   } else {
     if (item.replaceUuid) {
@@ -701,37 +761,37 @@ async function insetCode(html, item, code, config, type) {
 }
 
 //压缩html代码
-rap.parse.compressionHtml = function(outHtmlFile){
-  outHtmlFile = outHtmlFile.replace(/<!--[\u0000-\uFFFF]*?-->/gm,"");
-  outHtmlFile =  rap.parse.wrap(/"[^\\]*?"/g,"___RAPcompressionQUOTONE__",outHtmlFile,function(wrapHtml1){
-   return rap.parse.wrap(/'[^\\]*?'/g,"___RAPcompressionQUOTTWO__",wrapHtml1,function(wrapHtml2){
-      return rap.parse.wrap(/(<pre[^>]*>)([\u0000-\uFFFF]*?)<\/pre>/igm,"___RAPcompressionPREAll__",wrapHtml2,function(wrapHtml3){
-        return rap.parse.wrap(/(<script[^>]*>)([\u0000-\uFFFF]*?)<\/script>/igm,"___RAPcompressionPRESCRIPT__",wrapHtml3,function(wrapHtml4){
-          return rap.parse.wrap(/(<style[^>]*>)([\u0000-\uFFFF]*?)<\/style>/igm,"___RAPcompressionSTYLE__",wrapHtml4,function(wrapHtml5){
-            return wrapHtml5.replace(/\s+/igm," ");
-           })
-         })
+rap.parse.compressionHtml = function(outHtmlFile) {
+  outHtmlFile = outHtmlFile.replace(/<!--[\u0000-\uFFFF]*?-->/gm, "");
+  outHtmlFile = rap.parse.wrap(/"[^\\]*?"/g, "___RAPcompressionQUOTONE__", outHtmlFile, function(wrapHtml1) {
+    return rap.parse.wrap(/'[^\\]*?'/g, "___RAPcompressionQUOTTWO__", wrapHtml1, function(wrapHtml2) {
+      return rap.parse.wrap(/(<pre[^>]*>)([\u0000-\uFFFF]*?)<\/pre>/igm, "___RAPcompressionPREAll__", wrapHtml2, function(wrapHtml3) {
+        return rap.parse.wrap(/(<script[^>]*>)([\u0000-\uFFFF]*?)<\/script>/igm, "___RAPcompressionPRESCRIPT__", wrapHtml3, function(wrapHtml4) {
+          return rap.parse.wrap(/(<style[^>]*>)([\u0000-\uFFFF]*?)<\/style>/igm, "___RAPcompressionSTYLE__", wrapHtml4, function(wrapHtml5) {
+            return wrapHtml5.replace(/\s+/igm, " ");
+          })
+        })
       })
     })
   })
   return outHtmlFile;
 }
 //压缩css代码
-rap.parse.compressionCss = function(code){
-  code = code.replace(/<\/\*[\u0000-\uFFFF]*?\*\//gm,"");
-  code =  rap.parse.wrap(/"[^\\]*?"/g,"___RAPcompressionQUOTONE__",code,function(wrapHtml1){
-    return rap.parse.wrap(/'[^\\]*?'/g,"___RAPQUOTTWO__",wrapHtml1,function(wrapHtml2){
-       return rap.parse.wrap(/(<pre[^>]*>)([\\u0000-\\uFFFF]*?)<\/pre>/igm,"___RAPcompressionPREAll__",wrapHtml2,function(wrapHtml3){
-        return wrapHtml3.replace(/\s+/igm," ");
-       })
-     })
-   })
+rap.parse.compressionCss = function(code) {
+  code = code.replace(/<\/\*[\u0000-\uFFFF]*?\*\//gm, "");
+  code = rap.parse.wrap(/"[^\\]*?"/g, "___RAPcompressionQUOTONE__", code, function(wrapHtml1) {
+    return rap.parse.wrap(/'[^\\]*?'/g, "___RAPQUOTTWO__", wrapHtml1, function(wrapHtml2) {
+      return rap.parse.wrap(/(<pre[^>]*>)([\\u0000-\\uFFFF]*?)<\/pre>/igm, "___RAPcompressionPREAll__", wrapHtml2, function(wrapHtml3) {
+        return wrapHtml3.replace(/\s+/igm, " ");
+      })
+    })
+  })
   return code;
 }
 
 //压缩js代码
-rap.parse.compressionJs = function(code,options){
-   options =Object.assign({},options);
+rap.parse.compressionJs = function(code, options) {
+  options = Object.assign({}, options);
   var result = UglifyJS.minify(code, options);
   return result.code;
 }

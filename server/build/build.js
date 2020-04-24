@@ -29,7 +29,7 @@ rap.build = function(entryPath, config) {
     var htmlArr = wake.findFileSync(entryPath, "html", true);
 
     //过滤掉template目录下的文件
-    htmlArr = htmlArr.filter(file => toPath(file).indexOf("/template/") == -1);
+    htmlArr = htmlArr.filter(file => file.toURI().indexOf("/template/") == -1);
 
     htmlArr.forEach(function(file) {
       file = file.toURI();
@@ -58,21 +58,36 @@ rap.build = function(entryPath, config) {
 //从change文件是否命中相关文件
 function handleChange(changeFiles, relativeWatch, config) {
   var handleChangeFile = {};
+  var funcType = {};
   changeFiles.forEach(function(file) {
     file = file.toURI();
     for (var relativeFile in relativeWatch) {
       relativeFile = relativeFile.toURI();
       if (relativeWatch[relativeFile][file]) {
-        handleChangeFile[relativeFile] = file;
+        //设置1，就要重新打包
+        if(relativeWatch[relativeFile][file]==1){
+          funcType[relativeFile] = 1
+        }
+        handleChangeFile[relativeFile] = handleChangeFile[relativeFile] || [];
+        handleChangeFile[relativeFile].push(file)
       }
     }
   })
 
   //已命中的文件进行更新
   for (var relativeFile in handleChangeFile) {
-    console.log("----".warn + "change file:".green, handleChangeFile[relativeFile]);
-    console.log("----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
-    hanlderHtml(relativeFile, relativeWatch, config);
+    if(funcType[relativeFile] ){
+      console.log("----".warn + "change file:".green, handleChangeFile[relativeFile]);
+      console.log("----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
+      relativeWatch[relativeFile]={};
+      hanlderHtml(relativeFile, relativeWatch[relativeFile], config);
+    }else{
+      handleChangeFile[relativeFile].forEach(item=>{
+        //必须是function
+        relativeWatch[relativeFile][item]();
+      })
+    }
+
   }
 }
 
@@ -91,7 +106,7 @@ function hanlderHtml(relativeFile, relativeWatch, config) {
   }
 
   var orgHTML = rap.parse.byHtmlFile(relativeFile, config.html, config.data, relativeWatch, {});
-  handlerResource(orgHTML, relativeFile, config, function(ret) {
+handlerResource(orgHTML, relativeFile,relativeWatch, config, function(ret) {
     var outHtmlFile = config.html.output(relativeFile, relativeFile);
     if(global.ENV=="product"){
       //压缩html
@@ -104,16 +119,16 @@ function hanlderHtml(relativeFile, relativeWatch, config) {
 }
 
 /*处理resource*/
-function handlerResource(orgHTML, relativeFile, config, callback) {
+function handlerResource(orgHTML, relativeFile,relativeWatch, config, callback) {
   var fileConfig = Object.assign({ templatePath: relativeFile }, config.file)
   var jsConfig = Object.assign({ fileConfig: fileConfig, templatePath: relativeFile }, config.js)
   var cssConfig = Object.assign({ fileConfig: fileConfig, templatePath: relativeFile }, config.css)
 
-  rap.parse.handleJs(orgHTML, jsConfig).then(ret => {
-      return rap.parse.handleCSS(ret, cssConfig)
+  rap.parse.handleJs(orgHTML, jsConfig,relativeWatch).then(ret => {
+      return rap.parse.handleCSS(ret, cssConfig,relativeWatch)
     })
     .then(ret => {
-      return rap.parse.handleFile(ret, fileConfig);
+      return rap.parse.handleFile(ret, fileConfig,relativeWatch);
     }).then(ret => {
       callback(ret);
     })
