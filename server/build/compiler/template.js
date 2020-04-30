@@ -16,7 +16,6 @@ function templ (templStr,json,setHelp){
             help = ["<!--#each-->","<!--#eachItem-->","<!--#endeach-->","<!--#if-->","<!--#elseIf-->","<!--#else-->","<!--#endIf-->"]
         }
          templStr = templStr.seam()
-         //each
          .replace(/\{\{#each\s+([^}]+)\s*\}\}/g,function(m,m1){
             eachID++;
             let templId = eachID;

@@ -1,7 +1,7 @@
 const wake = rap.system.input;
 const wakeout = rap.system.output;
 const { clearNoteTag, parseTag } = require("./parse");
-const parseTeample = require("./template");
+const parseTemplate = require("./template");
 const pt = require("path");
 const URL = require("url");
 
@@ -58,7 +58,7 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
     unique[src] = false;
 
     //插槽的位置
-    var slotName = tagInfo.attrs.slot;
+    var slotName = tagInfo.attrs.name;
 
     //使用去掉模板标签
     var slotHtml = tagInfo.innerHTML;
@@ -110,7 +110,7 @@ rap.parse.byInclude = function(orgHtml, config, parentData, relativeWatch, uniqu
 */
 rap.parse.byHtml = function(orgHtml, config, parseData, relativeWatch, unique) {
 
-  orgHtml = parseTeample(orgHtml, parseData);
+  orgHtml = config.parseTemplate ? config.parseTemplate(orgHtml, parseData) : parseTemplate(orgHtml, parseData);
 
   //还原
 
@@ -617,7 +617,7 @@ async function compilerSource(html, tags, config, relativeWatch, type) {
   return html;
 }
 
-function getGroupCode(src, groupMap, config, html, tagMap, relativeWatch, type) {
+function getGroupCode(src, item, config, html, tagMap, relativeWatch, type) {
   var groupCode = [];
   item.forEach(uuid => {
     var tag = tagMap[uuid];
@@ -639,7 +639,9 @@ function getGroupCode(src, groupMap, config, html, tagMap, relativeWatch, type) 
 }
 //必须
 function triggeMerge(relativeWatch, id) {
-  relativeWatch[id].create(relativeWatch[id].getCode());
+  return function(){
+    relativeWatch[id].create(relativeWatch[id].getCode());
+  }
 }
 /**
  *处理合并
@@ -656,11 +658,11 @@ async function hanlderGroupMap(name, groupMap, config, html, tagMap, relativeWat
 
   relativeWatch[src] = {
     getCode: function() {
-      return getGroupCode(src, groupMap, config, html, tagMap, relativeWatch, type);
+      return getGroupCode(src, item, config, html, tagMap, relativeWatch, type);
     }
   }
 
-  var groupCode = getGroupCode(src, groupMap, config, html, tagMap, relativeWatch, type);
+  var groupCode = getGroupCode(src, item, config, html, tagMap, relativeWatch, type);
 
   groupTag.codeType = "file";
 
@@ -692,7 +694,7 @@ async function insetCode(html, item, code, config, relativeWatch, type) {
     var realWriteFile = config.output(config.templatePath, src); //目标文件
     if (!code) {
       if (!wake.existsSync(realFile)) {
-        console.log("error:".error, "insertScript not find file:", src, "->".error, realFile);
+        console.log("insetCode error:".error, src, "->".error, realFile," not find and code empty");
         return html;
       }
       code = wake.readDataSync(realFile);

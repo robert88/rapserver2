@@ -131,6 +131,8 @@ function handlerResource(orgHTML, relativeFile,relativeWatch, config, callback) 
       return rap.parse.handleFile(ret, fileConfig,relativeWatch);
     }).then(ret => {
       callback(ret);
+    }).catch(e=>{
+      console.log("error:".error,e.message,e.stack,e.extract&&e.extract.join("\n"))
     })
 
 }
