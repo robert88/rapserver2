@@ -340,7 +340,10 @@ rap.parse.handleJs = async function(orgHtml, config,relativeWatch) {
 
   return await clearNoteWrap(orgHtml, async function(html) {
 
-    mergeDefaultConfig(config, async function(code) {
+    mergeDefaultConfig(config, async function(code,build) {
+      if(!build){
+        return code;
+      }
       var babelT = babel.transformSync(code, {
         "presets": [
           "@babel/preset-env"
@@ -391,7 +394,10 @@ rap.parse.handleCSS = async function(orgHtml, config, relativeWatch) {
   return await clearNoteWrap(orgHtml, async function(html) {
 
     //需要将less文件转css文件
-    mergeDefaultConfig(config, async function(code, callback) {
+    mergeDefaultConfig(config, async function(code, build) {
+        if(!build){
+          return code;
+        }
         var output = await less.render(code);
         if (global.ENV == "product") {
           return rap.parse.compressionCss(output.css);
@@ -536,6 +542,7 @@ async function compilerSource(html, tags, config, relativeWatch, type) {
     var param;
     var sort = tag.attrs.sort;
     var group = tag.attrs.group;
+    var build = tag.attrs.build=="false"?false:true;//定了了false就不需要编译
     var id = tag.attrs.id;
     var clear = true;
     var uuid = "__RAP" + tag.startTag.replace(/\W+/g, "").toUpperCase() + (id || idx) + "SORT__";
@@ -579,6 +586,10 @@ async function compilerSource(html, tags, config, relativeWatch, type) {
     }
 
     if (group) {
+      //用于和codestack一起排序
+      if(!groupMap[group]){
+        codeStack.push(group);
+      }
       groupMap[group] = groupMap[group] || [];
       groupMap[group].push(uuid);
     } else {
@@ -587,6 +598,7 @@ async function compilerSource(html, tags, config, relativeWatch, type) {
 
     tagMap[uuid] = {
       src: src,
+      build: build,
       param: param,
       clear: clear,
       replaceUuid: replaceUuid,
@@ -596,13 +608,14 @@ async function compilerSource(html, tags, config, relativeWatch, type) {
 
   });
 
-  //处理合并
-  for (var name in groupMap) {
-    html = await hanlderGroupMap(name, groupMap, config, html, tagMap, relativeWatch, type);
-  }
-
   for (var uuidIndex in codeStack) {
-    html = await insetCode(html, tagMap[codeStack[uuidIndex]], null, config, relativeWatch, type);
+      //处理合并
+    if(groupMap[codeStack[uuidIndex]]){
+      html = await hanlderGroupMap(codeStack[uuidIndex], groupMap, config, html, tagMap, relativeWatch, type);
+    }else{
+      html = await insetCode(html, tagMap[codeStack[uuidIndex]], null, config, relativeWatch, type);
+    }
+
   }
 
   //还原
@@ -623,7 +636,7 @@ function getGroupCode(src, item, config, html, tagMap, relativeWatch, type) {
     var tag = tagMap[uuid];
     if (tag.codeType == "file") {
       var realFile = config.input(config.templatePath, tag.src).toURI();
-      relativeWatch[realFile] = triggeMerge(relativeWatch, src);
+      relativeWatch[realFile.toURI()] = triggeMerge(relativeWatch, src);
       if (wake.existsSync(realFile)) {
         groupCode.push(wake.readDataSync(realFile));
       } else {
@@ -640,23 +653,30 @@ function getGroupCode(src, item, config, html, tagMap, relativeWatch, type) {
 //必须
 function triggeMerge(relativeWatch, id) {
   return function(){
-    relativeWatch[id].create(relativeWatch[id].getCode());
+    relativeWatch[id.toURI()].create(relativeWatch[id.toURI()].getCode());
   }
 }
 /**
  *处理合并
  * */
 async function hanlderGroupMap(name, groupMap, config, html, tagMap, relativeWatch, type) {
-  var item = groupMap[name]
+  var item = groupMap[name];
+  var src,groupTag
   if (!config.group || !config.group[name] || !config.group[name].src) {
-    console.log("error".error, type + " config  -> group['" + name + "'].src not set");
-    return;
+    console.log("warn".warn, type + " config  -> group['" + name + "'].src not set");
+    //使用名称做为路径
+    groupTag={src:name}
+    src = name;
+  }else{
+     groupTag = config.group[name];
+     src = config.group[name].src.toURI();
   }
 
-  var groupTag = config.group[name];
-  var src = config.group[name].src.toURI();
 
-  relativeWatch[src] = {
+
+
+  //提前赋值，来区分是否是group
+  relativeWatch[src.toURI()] = {
     getCode: function() {
       return getGroupCode(src, item, config, html, tagMap, relativeWatch, type);
     }
@@ -671,8 +691,8 @@ async function hanlderGroupMap(name, groupMap, config, html, tagMap, relativeWat
   return await insetCode(html, groupTag, groupCode, config, relativeWatch, type);
 }
 
-async function createCode(config, code, type, realWriteFile) {
-  var transformCode = await config.build(code)
+async function createCode(config, code, type, realWriteFile,build) {
+  var transformCode = await config.build(code,build)
   if (type == "css") { //解析css文件路径
     transformCode = parseFileByCssCode(transformCode, config.fileConfig);
   }
@@ -705,14 +725,14 @@ async function insetCode(html, item, code, config, relativeWatch, type) {
       console.log("error:".error, "in file is out file", src, "->".error, realFile);
       return html;
     } else {
-      //如果已经匹配group
+      //如果已经匹配group(,会提前赋值)
       if (relativeWatch[src.toURI()]) {
         relativeWatch[src.toURI()].create =async function(newCode) {
           await createCode(config, newCode, type, realWriteFile);
         }
       } else {
         //只需要编译写入
-        relativeWatch[realFile] =async function() {
+        relativeWatch[realFile.toURI()] =async function() {
           var newCode = wake.readDataSync(realFile);
           await createCode(config, newCode, type, realWriteFile);
         }
@@ -726,9 +746,9 @@ async function insetCode(html, item, code, config, relativeWatch, type) {
     }
   } else if (item.codeType == "code") {
     if (type == "css") {
-      template = "<style>\n" + await config.build(code) + "\n</style>"
+      template = "<style>\n" + await config.build(code,item.build) + "\n</style>"
     } else {
-      template = "<script>\n" + await config.build(code) + "\n</script>"
+      template = "<script>\n" + await config.build(code,item.build) + "\n</script>"
     }
     //远程路径wenj
   } else {

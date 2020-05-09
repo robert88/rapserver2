@@ -77,12 +77,14 @@ function handleChange(changeFiles, relativeWatch, config) {
   //已命中的文件进行更新
   for (var relativeFile in handleChangeFile) {
     if(funcType[relativeFile] ){
-      console.log("----".warn + "change file:".green, handleChangeFile[relativeFile]);
-      console.log("----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
+      console.log(new Date().format("hh:mm:ss"),"----".warn + "change file:".green, handleChangeFile[relativeFile]);
+      console.log(new Date().format("hh:mm:ss"),"----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
       relativeWatch[relativeFile]={};
       hanlderHtml(relativeFile, relativeWatch[relativeFile], config);
     }else{
+      var uni={};
       handleChangeFile[relativeFile].forEach(item=>{
+        console.log(new Date().format("hh:mm:ss"),"build".warn,item,relativeFile)
         //必须是function
         relativeWatch[relativeFile][item]();
       })
