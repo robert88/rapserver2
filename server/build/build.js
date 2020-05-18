@@ -4,27 +4,34 @@ localRequire("@/server/lib/global/global.js");
 
 localRequire("@/server/lib/rap/rap.js");
 
-localRequire("@/server/build/compiler/rap.parse.js");
+localRequire("@/server/build/compiler/rap.parse.handleHtml.js");
+localRequire("@/server/build/compiler/rap.parse.handleJs.js");
+localRequire("@/server/build/compiler/rap.parse.handleCss.js");
+localRequire("@/server/build/compiler/rap.parse.handleFile.js");
+localRequire("@/server/build/compiler/rap.parse.resolve.js");
+localRequire("@/server/build/compiler/rap.parse.wrap.js");
 
 
 const wake = rap.system.input;
 const wakeout = rap.system.output;
 
-//默认配置
 
+/**
+ * 入口文件为打包文件必须是全路径
+ * 
+ */
 
-//入口文件为打包文件必须是全路径
 rap.build = function(entryPath, config) {
 
   config = config || {};
 
   entryPath = entryPath.toURI();
 
-  var relativeWatch = {} //顶层依赖收集
+  var topWatch = {} //顶层依赖收集
 
   if (wake.isFileSync(entryPath)) {
-    relativeWatch[entryPath] = {};
-    hanlderHtml(entryPath, relativeWatch[entryPath], config);
+    topWatch[entryPath] = {};
+    hanlderHtml(entryPath, topWatch[entryPath], config);
   } else {
     var htmlArr = wake.findFileSync(entryPath, "html", true);
 
@@ -33,8 +40,8 @@ rap.build = function(entryPath, config) {
 
     htmlArr.forEach(function(file) {
       file = file.toURI();
-      relativeWatch[file] = {};
-      hanlderHtml(file, relativeWatch[file], config);
+      topWatch[file] = {};
+      hanlderHtml(file, topWatch[file], config);
     });
   }
 
@@ -48,14 +55,76 @@ rap.build = function(entryPath, config) {
         return;
       }
       rap.watch(item.toURI(), function(changeFiles) {
-        handleChange(changeFiles, relativeWatch, config)
+        handleChange(changeFiles, topWatch, config)
       });
     })
   }
 
 };
 
-//从change文件是否命中相关文件
+/**
+ * 
+ * 
+ * 处理html
+ * 
+ * 
+ * */
+function hanlderHtml(relativeFile, relativeWatch, config) {
+
+  //将config带入css和js里面
+  config.html = createConfig({ compression: rap.parse.compressionHtml }, config.html)
+
+  relativeFile = relativeFile.toURI();
+
+  var orgHTML = rap.parse.byHtmlFile(relativeFile, config.html, config.data, relativeWatch, {});
+
+  handlerResource(orgHTML, relativeFile, relativeWatch, config, function(ret) {
+    var outHtmlFile = config.html.output(relativeFile, relativeFile);
+    if (global.ENV == "product") {
+      //压缩html
+      ret = config.html.compression(ret)
+
+    }
+    wakeout.writeSync(outHtmlFile, ret);
+    console.log("----".warn + "pack file:".warn, outHtmlFile);
+  });
+}
+/**
+ * 
+ * 合并config
+ * 
+ * */
+function createConfig(defaultOption, option) {
+  return Object.assign({ input: rap.parse.input, output: rap.parse.output, browser: rap.parse.browser }, defaultOption, option);
+}
+
+/**
+ * 
+ * 
+ * 
+ * 处理resource
+ * 
+ * */
+function handlerResource(orgHTML, relativeFile, relativeWatch, config, callback) {
+
+  var fileConfig = createConfig({ templatePath: relativeFile, fileAttrs: ["style", "href", "src"], nameReg: /\.(md|jpg|png|gif|ico|mp4|svg|mp3|txt|json|xml|ttf|eot|woff)/gi }, config.file);
+  var jsConfig = createConfig({ fileConfig: fileConfig, templatePath: relativeFile }, config.js);
+  var cssConfig = createConfig({ fileConfig: fileConfig, templatePath: relativeFile }, config.css);
+
+  orgHTML = rap.parse.handleJs(orgHTML, jsConfig, relativeWatch); //解析js
+
+  rap.parse.handleCSS(orgHTML, cssConfig, relativeWatch, html => { //解析css
+    html = rap.parse.handleFile(html, fileConfig, relativeWatch); //解析file
+    callback(html)
+  });
+
+}
+/***
+ * 
+ * 从change文件是否命中相关文件
+ * 
+ * 
+ * **/
 function handleChange(changeFiles, relativeWatch, config) {
   var handleChangeFile = {};
   var funcType = {};
@@ -65,7 +134,7 @@ function handleChange(changeFiles, relativeWatch, config) {
       relativeFile = relativeFile.toURI();
       if (relativeWatch[relativeFile][file]) {
         //设置1，就要重新打包
-        if(relativeWatch[relativeFile][file]==1){
+        if (relativeWatch[relativeFile][file] == 1) {
           funcType[relativeFile] = 1
         }
         handleChangeFile[relativeFile] = handleChangeFile[relativeFile] || [];
@@ -76,65 +145,19 @@ function handleChange(changeFiles, relativeWatch, config) {
 
   //已命中的文件进行更新
   for (var relativeFile in handleChangeFile) {
-    if(funcType[relativeFile] ){
-      console.log(new Date().format("hh:mm:ss"),"----".warn + "change file:".green, handleChangeFile[relativeFile]);
-      console.log(new Date().format("hh:mm:ss"),"----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
-      relativeWatch[relativeFile]={};
+    if (funcType[relativeFile]) {
+      console.log(new Date().format("hh:mm:ss"), "----".warn + "change file:".green, handleChangeFile[relativeFile]);
+      console.log(new Date().format("hh:mm:ss"), "----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
+      relativeWatch[relativeFile] = {};
       hanlderHtml(relativeFile, relativeWatch[relativeFile], config);
-    }else{
-      var uni={};
-      handleChangeFile[relativeFile].forEach(item=>{
-        console.log(new Date().format("hh:mm:ss"),"build".warn,item,relativeFile)
+    } else {
+      var uni = {};
+      handleChangeFile[relativeFile].forEach(item => {
+        console.log(new Date().format("hh:mm:ss"), "build".warn, item, relativeFile)
         //必须是function
         relativeWatch[relativeFile][item]();
       })
     }
 
   }
-}
-
-/*处理html*/
-function hanlderHtml(relativeFile, relativeWatch, config) {
-  //将config带入css和js里面
-  config.html = config.html || {}
-  config.html.output = config.html.output || rap.parse.output;
-  config.html.compression = config.html.compression || rap.parse.compressionHtml;
-  relativeFile = relativeFile.toURI();
-  //过滤文件
-  if (typeof config.html.filter == "function") {
-    if (config.html.filter(relativeFile) === false) {
-      return;
-    }
-  }
-
-  var orgHTML = rap.parse.byHtmlFile(relativeFile, config.html, config.data, relativeWatch, {});
-handlerResource(orgHTML, relativeFile,relativeWatch, config, function(ret) {
-    var outHtmlFile = config.html.output(relativeFile, relativeFile);
-    if(global.ENV=="product"){
-      //压缩html
-      ret =  config.html.compression(ret)
-
-    }
-    wakeout.writeSync(outHtmlFile, ret);
-    console.log("----".warn + "pack file:".warn, outHtmlFile);
-  });
-}
-
-/*处理resource*/
-function handlerResource(orgHTML, relativeFile,relativeWatch, config, callback) {
-  var fileConfig = Object.assign({ templatePath: relativeFile }, config.file)
-  var jsConfig = Object.assign({ fileConfig: fileConfig, templatePath: relativeFile }, config.js)
-  var cssConfig = Object.assign({ fileConfig: fileConfig, templatePath: relativeFile }, config.css)
-
-  rap.parse.handleJs(orgHTML, jsConfig,relativeWatch).then(ret => {
-      return rap.parse.handleCSS(ret, cssConfig,relativeWatch)
-    })
-    .then(ret => {
-      return rap.parse.handleFile(ret, fileConfig,relativeWatch);
-    }).then(ret => {
-      callback(ret);
-    }).catch(e=>{
-      console.log("error:".error,e.message,e.stack,e.extract&&e.extract.join("\n"))
-    })
-
 }

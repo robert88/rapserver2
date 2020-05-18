@@ -1,19 +1,31 @@
-function parseAttrs(attrArr, obj) {
-  if (attrArr) {
-    var attrs = {};
-    attrArr.forEach(function(attrStr) {
-      var splitAttr = attrStr.split("=");
-      var key = splitAttr[0].trim()
-      if (key) {
-        attrs[key] = splitAttr[1].trim().replace(/^'|^"|'$|"$/g, "");
-        if (key == "src" || key == "href") {
-          attrs["params"] = attrs[key].split("?")[1];
-          attrs[key] = attrs[key].split("?")[0];
+//解析属性
+function parseAttrs(attrStrOrg, obj) {
+
+  var attrs = {};
+
+  if (attrStrOrg) {
+
+    //排除'"对空格的影响
+    var other = attrStrOrg.replace(/([^='"\s]+)\s*=\s*"([^"]+)"/g, function(m, m1, m2) {
+      attrs[m1] = m2;
+      return "";
+    }).replace(/([^='"\s]+)\s*=\s*'([^']+)'/g, function(m, m1, m2) {
+      attrs[m1] = m2;
+      return "";
+    })
+    var otherAttr = other.split(/\s+/g);
+    otherAttr.forEach(function(attrStr) {
+      if (attrStr) {
+        if (attrStr.indexOf("=") == -1) {
+          attrs[attrStr.trim()] = "";
+        } else {
+          key = attrStr.slice(0, attrStr.indexOf("=")).trim();
+          attrs[key] = attrStr.slice(attrStr.indexOf("=")+1, attrStr.length).trim()
         }
       }
-    });
-    obj.attrs = attrs;
+    })
   }
+  obj.attrs = attrs;
 }
 
 //去掉注释
@@ -49,7 +61,7 @@ function parseSrc(obj, requireCode, importReg) {
   obj.params = src.split("?")[1];
 }
 
-function parseTagByReg(tag,regStr,attrRegStr,fileData,single){
+function parseTagByReg(tag, regStr, attrRegStr, fileData, single) {
   var arr = [];
   if (/^\w+$/.test(tag)) {
     var reg = new RegExp(regStr, "gmi");
@@ -67,12 +79,8 @@ function parseTagByReg(tag,regStr,attrRegStr,fileData,single){
 
         obj.endTag = "</" + tag + ">";
       }
-      var attrStrOrg = tagStr.replace(new RegExp(attrRegStr, "i"), "$1")
-      var attrArr1 = attrStrOrg.match(/[^='"\s]+="[^"]+"/g) || [];
-      var attrArr2 = attrStrOrg.match(/[^='"\s]+='[^']+'/g) || [];
-      var attrArr3 = attrStrOrg.match(/[^='"\s]+=[^"'\s]+/g) || [];
-      var attrArr = attrArr1.concat(attrArr2).concat(attrArr3);
-      parseAttrs(attrArr, obj);
+      var attrStrOrg = tagStr.replace(new RegExp(attrRegStr, "i"), "$1");
+      parseAttrs(attrStrOrg, obj);
       obj.mapIndex = arguments[arguments.length - 2];
       arr.push(obj);
     });
@@ -95,12 +103,12 @@ exports = module.exports = {
       attrRegStr = "<" + tag + "([^>]*)>([\\u0000-\\uFFFF]*?)<\\/" + tag + ">";
     }
 
-    return parseTagByReg(tag,regStr,attrRegStr,fileData,single);
+    return parseTagByReg(tag, regStr, attrRegStr, fileData, single);
   },
   //闭合标签
-  parseTree(tag, html,level,parenttags) {
+  parseTree(tag, html, level, parenttags) {
 
-     level=level||{count:0}
+    level = level || { count: 0 }
 
     if (!/^\w+$/.test(tag)) {
       console.error("tag must is word");
@@ -108,37 +116,37 @@ exports = module.exports = {
     }
     regStr = "(<" + tag + "[^>]*>)(((?!<" + tag + ").)*?)<\\/" + tag + ">";
     attrRegStr = "<" + tag + "([^>]*)>(((?!<" + tag + ").)*?)<\\/" + tag + ">";
-    var tags =parseTagByReg(tag,regStr,attrRegStr,html,false);
+    var tags = parseTagByReg(tag, regStr, attrRegStr, html, false);
 
-    if(!parenttags){
+    if (!parenttags) {
       parenttags = tags
-    }else{
-      tags.forEach((t,idx)=>{
-        t.orgTemplate = t.template;//保留之前的template
-        t.child = t.child ||[];
-        parenttags.forEach((ptag,pindex)=>{
-          if(~t.template.indexOf("__TAG__"+tag+pindex+(level.count)+"__")){
+    } else {
+      tags.forEach((t, idx) => {
+        t.orgTemplate = t.template; //保留之前的template
+        t.child = t.child || [];
+        parenttags.forEach((ptag, pindex) => {
+          if (~t.template.indexOf("__TAG__" + tag + pindex + (level.count) + "__")) {
             t.child.push(parenttags[pindex]);
-            t.template = t.template.replace("__TAG__"+tag+pindex+(level.count)+"__",ptag.template);
-            t.innerHTML = t.innerHTML.replace("__TAG__"+tag+pindex+(level.count)+"__",ptag.template);
-            parenttags[pindex] = t;//父类取代
+            t.template = t.template.replace("__TAG__" + tag + pindex + (level.count) + "__", ptag.template);
+            t.innerHTML = t.innerHTML.replace("__TAG__" + tag + pindex + (level.count) + "__", ptag.template);
+            parenttags[pindex] = t; //父类取代
           }
         })
       })
     }
 
 
-    if(tags.length){
+    if (tags.length) {
       level.count++;
-      tags.forEach((t,idx)=>{
-        t.orgTemplate = t.orgTemplate||t.template;//保留之前的template
-        html = html.replace(t.orgTemplate,"__TAG__"+tag+idx+(level.count)+"__");
+      tags.forEach((t, idx) => {
+        t.orgTemplate = t.orgTemplate || t.template; //保留之前的template
+        html = html.replace(t.orgTemplate, "__TAG__" + tag + idx + (level.count) + "__");
       })
-      this.parseTree(tag,html,level,parenttags);
+      this.parseTree(tag, html, level, parenttags);
     }
-    var newArr=[];
-    parenttags.forEach(p=>{
-      if(newArr.indexOf(p)==-1){
+    var newArr = [];
+    parenttags.forEach(p => {
+      if (newArr.indexOf(p) == -1) {
         newArr.push(p);
       }
     })
