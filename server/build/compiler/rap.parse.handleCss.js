@@ -45,7 +45,7 @@ function watchRebuildGroupFile(config, relativeWatch, watchFile, dirFile, stack)
     config.build(code, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
-
+      rap.parse.parseFileByCssCode(code, config, relativeWatch) 
     })
   }
 }
@@ -59,7 +59,7 @@ function watchRebuildFile(config, relativeWatch, watchFile, dirFile) {
     config.build(code, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
-
+      rap.parse.parseFileByCssCode(code, config, relativeWatch) 
     })
   }
 }
@@ -177,6 +177,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
     config.build(code, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
+      rap.parse.parseFileByCssCode(code, config, relativeWatch) 
       compile(replaceTagBySrc(),true);
     })
 

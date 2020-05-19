@@ -83,8 +83,16 @@ function currentBuild(code, buildFlag) {
   }
   var babelT = babel.transformSync(code, {
     "presets": [
-      "@babel/preset-env"
-    ]
+      "@babel/preset-env",
+      {
+        "targets": {
+          "chrome": "60",
+          "node": "current"
+        }
+      }
+    ],
+    // targets:["chrome60"],
+    // "plugins": ["transform-remove-strict-mode"]
   })
   //上线打包
   if (global.ENV == "product") {

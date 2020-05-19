@@ -126,6 +126,7 @@ function handlerResource(orgHTML, relativeFile, relativeWatch, config, callback)
  * 
  * **/
 function handleChange(changeFiles, relativeWatch, config) {
+  console.clear();
   var handleChangeFile = {};
   var funcType = {};
   changeFiles.forEach(function(file) {
@@ -147,7 +148,7 @@ function handleChange(changeFiles, relativeWatch, config) {
   for (var relativeFile in handleChangeFile) {
     if (funcType[relativeFile]) {
       console.log(new Date().format("hh:mm:ss"), "----".warn + "change file:".green, handleChangeFile[relativeFile]);
-      console.log(new Date().format("hh:mm:ss"), "----".warn + "triggle pack:".green, relativeFile, config.html.data.suffix.warn);
+      console.log(new Date().format("hh:mm:ss"), "----".warn + "triggle pack:".green, relativeFile, config.html&&config.html.data&&config.html.data.suffix&&config.html.data.suffix.warn);
       relativeWatch[relativeFile] = {};
       hanlderHtml(relativeFile, relativeWatch[relativeFile], config);
     } else {

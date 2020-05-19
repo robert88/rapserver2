@@ -34,3 +34,26 @@ rap.parse.clearNoteWrap = function(orgHtml, wrap) {
   return rap.parse.wrap(noteReg,id,orgHtml, wrap)
 }
 
+
+/**
+ * css干扰/<!--((?!<!--).)*?-->/gmi
+ * */
+rap.parse.clearCssWrap = function(orgHtml, wrap) {
+  //过滤掉注释
+  var noteReg = /<link\s*.*?rel='?"?\s*stylesheet\s*"?'?.*?>/gmi;
+  var id = "______RAPREPLACECSSETAG______"
+  return rap.parse.wrap(noteReg,id,orgHtml, wrap)
+}
+
+
+
+/**
+ * js干扰/<!--((?!<!--).)*?-->/gmi
+ * */
+rap.parse.clearJsWrap = function(orgHtml, wrap) {
+  //过滤掉注释
+  var noteReg =/<script\s*.*?src='?"?\s*[^'"]+\s*"?'?.*?>\s*<\/script>/gmi;
+  var id = "______RAPREPLACEJSTAG______"
+  return rap.parse.wrap(noteReg,id,orgHtml, wrap)
+}
+
