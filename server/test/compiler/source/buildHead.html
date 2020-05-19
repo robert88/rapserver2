@@ -1,4 +1,14 @@
-<link rel="stylesheet" href="/server/test/compiler/source/build1.less">
+<link rel="ico" href="/server/test/compiler/source/icon.png" checked solt='s' tt="s" class=ss>
+<link rel="stylesheet" href="/server/test/compiler/source/build1.less?large=1">
+<link rel="stylesheet" href="build1.less" group="/server/test/compiler/source/base">
+<style lang="less">
+    a{
+        .b{
+            font-size: 12px;
+            background:url(4.jpg?version=12);
+        }
+    }
+</style>
 <link rel="stylesheet" href="build2.less" group="base">
 <link rel="stylesheet" href="build3.less" group="base">
 
@@ -6,6 +16,7 @@
     alert("this is build2.less javascript")
 </script>
 
-<script src="/server/test/compiler/source/build1.js"></script>
+<script src="/server/test/compiler/source/build1.js?large=1"></script>
+<script src="./build1.js" group="/server/test/compiler/source/base"></script>
 <script src="./build2.js" group="base"></script>
-<script src="./build3.js" group="base"></script>
+<script src="./build3" group="base.js"></script>
