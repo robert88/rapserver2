@@ -51,9 +51,9 @@ function watchRebuildGroupFile(config, relativeWatch, watchFile, dirFile, stack)
 }
 
 //重新打包一个文件
-function watchRebuildFile(config, relativeWatch, watchFile, dirFile) {
+function watchRebuildFile(config, relativeWatch, watchFile, dirFile,stack) {
   relativeWatch[watchFile.toURI()] = function() {
-    var code = wake.readDataSync(srcFile);
+    var code = wake.readDataSync(watchFile);
     //写入编译之后的代码
 
     config.build(code, stack.build, function(code) {
@@ -170,7 +170,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
       } else {
         stack.param.version = wake.getModifySync(srcFile);
         code = wake.readDataSync(srcFile);
-        watchRebuildFile(config, relativeWatch, srcFile, dirFile)
+        watchRebuildFile(config, relativeWatch, srcFile, dirFile,stack)
       }
     }
 

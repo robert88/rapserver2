@@ -68,11 +68,11 @@ function watchRebuildGroupFile(config, relativeWatch, watchFile, dirFile, stack)
 }
 
 //重新打包一个文件
-function watchRebuildFile(config, relativeWatch, watchFile, dirFile) {
+function watchRebuildFile(config, relativeWatch, watchFile, dirFile,stack) {
   relativeWatch[watchFile.toURI()] = function() {
-    var code = wake.readDataSync(srcFile);
+    var code = wake.readDataSync(watchFile);
     //写入编译之后的代码
-    wakeout.writeSync(dirFile, config.build(code));
+    wakeout.writeSync(dirFile, config.build(code,stack.build));
   }
 }
 
@@ -83,14 +83,14 @@ function currentBuild(code, buildFlag) {
   }
   var babelT = babel.transformSync(code, {
     "presets": [
-      "@babel/preset-env",
-      {
-        "targets": {
-          "chrome": "60",
-          "node": "current"
-        }
-      }
-    ],
+      "@babel/preset-env"
+      // {
+      //   "targets": {
+      //     "chrome": "60",
+      //     "node": "current"
+      //   }
+      // }
+    ]
     // targets:["chrome60"],
     // "plugins": ["transform-remove-strict-mode"]
   })
@@ -157,11 +157,11 @@ function insetCode(html, config, relativeWatch, stack) {
 
       if (!wake.existsSync(srcFile)) {
         console.log("error:".error, ` parse js not not find ${srcFile}`);
-        code = `console.error("parse js not not find ${srcFile}"")`; //提示没有文件
+        code = `console.error("parse js not not find ${srcFile}")`; //提示没有文件
       } else {
         stack.param.version = wake.getModifySync(srcFile);
         code = wake.readDataSync(srcFile);
-        watchRebuildFile(config, relativeWatch, srcFile, dirFile)
+        watchRebuildFile(config, relativeWatch, srcFile, dirFile,stack)
       }
     }
 
