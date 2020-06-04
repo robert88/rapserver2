@@ -56,11 +56,11 @@ function handleFile(html, config, relativeWatch) {
 
   config.fileAttrs.forEach(attrItem => {
 
-    html = html.replace(new RegExp(attrItem + "\s*=\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm"), function(m, quot, m1) {
+    html = html.replace(new RegExp("\s"+attrItem + "\s*=\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm"), function(m, quot, m1) {
       var ret;
       if (!m1) {
         //后面的括号匹配不到
-        var reReg = new RegExp(attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
+        var reReg = new RegExp("\s"+attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
         quot = reReg[1]
         m1 = reReg[2]
       }
