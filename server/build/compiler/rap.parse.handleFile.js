@@ -55,8 +55,8 @@ function handleFile(html, config, relativeWatch) {
   //解析标签中的图片
 
   config.fileAttrs.forEach(attrItem => {
-
-    html = html.replace(new RegExp("\s"+attrItem + "\s*=\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm"), function(m, quot, m1) {
+    var reg = new RegExp("\\s"+attrItem + "\\s*=\\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm")
+    html = html.replace(reg, function(m, quot, m1) {
       var ret;
       if (!m1) {
         //后面的括号匹配不到
@@ -70,7 +70,7 @@ function handleFile(html, config, relativeWatch) {
         var browserPath = copyFile(m1, config, relativeWatch);
         ret = browserPath;
       }
-      return attrItem + "=" + quot + ret + quot;
+      return " "+attrItem + "=" + quot + ret + quot;
     })
   })
 
