@@ -3,7 +3,7 @@
 const getPaths = require("../node_modules/enhanced-resolve/lib/getPaths.js");
 const toPath = require("../node_modules/enhanced-resolve/lib/toPath.js");
 
-const {paths} = getPaths(process.cwd());
+const {paths} = getPaths(__dirname);
 
 const pt = require("path");
 const fs = require("fs");
@@ -12,7 +12,7 @@ const fs = require("fs");
 
 
 //将package.json表示跟目录，如果没有使用当前执行环境路径
-let rootPath = process.cwd();
+let rootPath =  pt.resolve(__dirname) //process.cwd();
 
 paths.forEach(dir=>{
     var packagePath = pt.resolve(dir,"package.json");
@@ -22,7 +22,7 @@ paths.forEach(dir=>{
     }
 })
 
-console.log("根目录："+rootPath)
+console.log("@目录："+rootPath)
 
 //unload不需要加载模块，只需要转换后的url
 global.localRequire = function(url,unLoad){

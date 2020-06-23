@@ -5,6 +5,7 @@ const UglifyJS = require("uglify-js");
 const babel = require("@babel/core");
 const codeStack = require("./rap.parse.codeStack");
 const querystring = require('querystring');
+const { pathToFileURL } = require("url");
 
 //压缩js代码
 rap.parse.compressionJs = function(code, options) {
@@ -90,7 +91,9 @@ function currentBuild(code, buildFlag) {
       //     "node": "current"
       //   }
       // }
-    ]
+    ],
+    cwd:  localRequire("@/",true),
+    root: localRequire("@/",true),
     // targets:["chrome60"],
     // "plugins": ["transform-remove-strict-mode"]
   })
