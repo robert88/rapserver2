@@ -1,6 +1,7 @@
 const http = require("http");
 const https = require("https");
 const domain = require('domain');
+const { fstat } = require("fs");
 
 const AsyncSeriesWaterfallHook = localRequire("@/server/lib/node_modules/tapable/AsyncSeriesWaterfallHook.js");
 
@@ -57,7 +58,11 @@ module.exports = class Runner {
     this.readyStack = [];
     this.status = "ready";
     if (options.https) {
-      this.server = https.createServer(this.middleware.bind(this)).listen(options.port || 3004, () => {
+      let httpsOptions = {
+        pfx:fs.readFileSync( localRequire("@/exe/lib/ssl/crt.pfx") ),
+        passphrase:"password",
+      }
+      this.server = https.createServer(httpsOption,this.middleware.bind(this)).listen(options.port || 3004, () => {
         this.status = "started";
         this.ready();
         console.log("server https run port " + (options.port || 3004));

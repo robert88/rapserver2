@@ -4,6 +4,7 @@ const {  parseTag } = require("./parse");
 const less = require('less');
 const codeStack = require("./rap.parse.codeStack")
 const querystring = require('querystring');
+const pt = require("path");
 
 //压缩css代码
 rap.parse.compressionCss = function(code) {
@@ -21,12 +22,13 @@ rap.parse.compressionCss = function(code) {
 /**
  * 解析css,默认使用less编译,必须要用异步
  * */
-function currentBuild(code, buildFlag, callback) {
+function currentBuild(code,file, buildFlag, callback) {
   if (!buildFlag) {
     callback(code);
   }
+  let filepath = pt.dirname(file);
   //异步
-  less.render(code).then(output => {
+  less.render(code,{paths:[filepath]}).then(output => {
     if (global.ENV == "product") {
       callback(rap.parse.compressionCss(output.css));
     }
@@ -42,7 +44,7 @@ function watchRebuildGroupFile(config, relativeWatch, watchFile, dirFile, stack)
   relativeWatch[watchFile.toURI()] = function() {
     var code = getGroupCode(config, relativeWatch, stack)
     //写入编译之后的代码
-    config.build(code, stack.build, function(code) {
+    config.build(code, watchFile,stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
       rap.parse.parseFileByCssCode(code, config, relativeWatch) 
@@ -56,7 +58,7 @@ function watchRebuildFile(config, relativeWatch, watchFile, dirFile,stack) {
     var code = wake.readDataSync(watchFile);
     //写入编译之后的代码
 
-    config.build(code, stack.build, function(code) {
+    config.build(code,watchFile, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
       rap.parse.parseFileByCssCode(code, config, relativeWatch) 
@@ -174,7 +176,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
       }
     }
 
-    config.build(code, stack.build, function(code) {
+    config.build(code,srcFile, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
       rap.parse.parseFileByCssCode(code, config, relativeWatch) 
@@ -187,7 +189,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
     compile(replaceTagBySrc(),true);
     //内联js代码
   } else if (stack.codeType == "code") {
-    code = config.build(stack.content, stack.build, function(code) {
+    code = config.build(stack.content,srcFile, stack.build, function(code) {
       template = `<style>${code}</style>`
       compile(template,true);
     });

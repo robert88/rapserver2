@@ -60,7 +60,7 @@ function handleFile(html, config, relativeWatch) {
       var ret;
       if (!m1) {
         //后面的括号匹配不到
-        var reReg = new RegExp("\s"+attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
+        var reReg = new RegExp("\\s*"+attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
         quot = reReg[1]
         m1 = reReg[2]
       }
