@@ -8,14 +8,16 @@ const pt = require("path")
 
 //压缩css代码
 rap.parse.compressionCss = function(code) {
-  code = code.replace(/<\/\*[\u0000-\uFFFF]*?\*\//gm, "");
-  code = rap.parse.wrap(/"[^\\]*?"/g, "___RAPcompressionQUOTONE__", code, function(wrapHtml1) {
-    return rap.parse.wrap(/'[^\\]*?'/g, "___RAPQUOTTWO__", wrapHtml1, function(wrapHtml2) {
+  //注释和\" \'
+  code = code.replace(/<\/\*[\u0000-\uFFFF]*?\*\//gm, "").replace(/\\"/gm, "___RAPcompressionNotQUOTONE__").replace(/\\'/gm, "___RAPNotQUOTTWO__");
+  code = rap.parse.wrap(/"[\u0000-\uFFFF]*?"/g, "___RAPcompressionQUOTONE__", code, function(wrapHtml1) {
+    return rap.parse.wrap(/'[\u0000-\uFFFF]*?'/g, "___RAPQUOTTWO__", wrapHtml1, function(wrapHtml2) {
       return rap.parse.wrap(/(<pre[^>]*>)([\\u0000-\\uFFFF]*?)<\/pre>/igm, "___RAPcompressionPREAll__", wrapHtml2, function(wrapHtml3) {
         return wrapHtml3.replace(/\s+/igm, " ");
       })
     })
   })
+  code.replace(/___RAPcompressionNotQUOTONE__/gm, "\"").replace(/___RAPNotQUOTTWO__/gm, "'");
   return code;
 }
 
