@@ -74,6 +74,15 @@ function handleFile(html, config, relativeWatch) {
     })
   })
 
+  //去掉解析html中的link rel build
+  var linkTags = parseTag("link", html,"single");
+
+  linkTags.forEach(item => {
+    if(item.attrs.rel=="build"){
+      html = html.replace(item.template, "");
+    }
+  });
+
   return html;
 
 }

@@ -4,7 +4,7 @@ const {  parseTag } = require("./parse");
 const less = require('less');
 const codeStack = require("./rap.parse.codeStack")
 const querystring = require('querystring');
-const pt = require("path");
+const pt = require("path")
 
 //压缩css代码
 rap.parse.compressionCss = function(code) {
@@ -26,11 +26,12 @@ function currentBuild(code,file, buildFlag, callback) {
   if (!buildFlag) {
     callback(code);
   }
-  let filepath = pt.dirname(file);
+  var path = pt.dirname(file);
   //异步
-  less.render(code,{paths:[filepath]}).then(output => {
+  less.render(code,{paths: [path]}).then(output => {
     if (global.ENV == "product") {
       callback(rap.parse.compressionCss(output.css));
+      return
     }
     callback(output.css);
   }).catch(e => {
@@ -176,7 +177,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
       }
     }
 
-    config.build(code,srcFile, stack.build, function(code) {
+    config.build(code, srcFile,stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
       rap.parse.parseFileByCssCode(code, config, relativeWatch) 
