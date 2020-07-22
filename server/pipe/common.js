@@ -47,7 +47,7 @@ module.exports = function(run,timeout) {
       for (var i in obj) {
         obj[i] = obj[i](request);
       }
-      //定义request的rap
+      //定义request的rap,用于存储rquest信息
       if(!request.rap ){
         request.rap = obj;
       }else{

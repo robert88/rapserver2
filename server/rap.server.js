@@ -15,14 +15,14 @@ if (ENV == "product") {
   let cluster = Clter(webServerWorker);
   cluster && cluster.fork().send("start");
 } else {
-  webServerWorker();
+  webServerWorker(true);
 }
 
 /*
  * web server worker
  */
 
-function webServerWorker() {
+function webServerWorker(httpsFlag) {
 
   const Sockie = localRequire("@/server/bootstrap/Sockie.js");
 
@@ -33,10 +33,15 @@ function webServerWorker() {
   localRequire("@/server/lib/rap/rap.js");
 
   const Runner = localRequire("@/server/bootstrap/Runner.js");
-  
-  serverConfig(config => {
 
-    let run = new Runner({ port: config.port });
+  serverConfig(config => {
+    let run;
+
+    if (httpsFlag) {
+      run = new Runner({ port: config.port || 443, https: config.https });
+    } else {
+      run = new Runner({ port: config.port || 80 });
+    }
 
     //sockie
     var sockie = new Sockie(run, rap.console.log, port => {
@@ -47,13 +52,29 @@ function webServerWorker() {
     var inStagMap = {};
     ["init", "cache", "query", "cookie", "session", "action", "staticFileSetId", "staticFile", "end"].forEach((val, idx) => {
       inStagMap[val] = idx;
-    })
+    });
+
     run.inPipe.interceptors.push({
       register: (tap) => {
-        tap.stag = inStagMap[tap.name]
+        tap.stage = inStagMap[tap.name];
+        var fn = tap.fn;
+        tap.fn = function(request) {
+          console.log("in:", request.maskIndex, tap.name)
+          fn.apply(tap, arguments);
+        }
       }
     })
-
+    
+    //测试环境
+    if (ENV !== "product") {
+      run.error.tapAsync({
+        name: "debuger",
+        fn: function(err, response, comeFrom, next) {
+          console.error(err && err.stack, comeFrom);
+          next();
+        }
+      })
+    }
 
     //response数组中顺序代表执行顺序,actionEnd会把end给覆盖掉
     var outStagMap = {};
@@ -62,7 +83,12 @@ function webServerWorker() {
     })
     run.outPipe.interceptors.push({
       register: (tap) => {
-        tap.stag = outStagMap[tap.name]
+        tap.stage = outStagMap[tap.name];
+        var fn = tap.fn;
+        tap.fn = function(request) {
+          console.log("out:", request.maskIndex, tap.name)
+          fn.apply(tap, arguments);
+        }
       }
     })
 

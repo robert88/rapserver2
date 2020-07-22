@@ -1,7 +1,7 @@
 const http = require("http");
 const https = require("https");
 const domain = require('domain');
-const { fstat } = require("fs");
+const fs = require("fs");
 
 const AsyncSeriesWaterfallHook = localRequire("@/server/lib/node_modules/tapable/AsyncSeriesWaterfallHook.js");
 
@@ -23,19 +23,25 @@ module.exports = class Runner {
     this.outPipe = new AsyncSeriesWaterfallHook(["request", "response"]);
     this.update = new AsyncSeriesWaterfallHook(["file"]);
     this.error = new AsyncSeriesWaterfallHook(["err", "response", "comeFrom"]);
+    this.uuid = 0;
 
     this.error.tapAsync({
       name: "end",
       stage: 4,
-      fn(err, response, comeFrom) {
+      fn(err, response, comeFrom,next) {
         //默认错误response
         if (response && response.finished == false) {
           response._header = null;
           response.removeHeader("Content-Length");
           response.setHeader("Content-Type","text/plain");
-          response.writeHead(500);
-          response.end(comeFrom + ":" + (err && err.stack));
+          if(err&&err.message.indexOf("ENOENT: no such file")!=-1){
+            response.writeHead(404);
+          }else{
+            response.writeHead(500);
+          }
+          response.end(comeFrom + ":" + (err && err.message));
         }
+        next()
       }
     })
 
@@ -58,11 +64,15 @@ module.exports = class Runner {
     this.readyStack = [];
     this.status = "ready";
     if (options.https) {
-      let httpsOptions = {
-        pfx:fs.readFileSync( localRequire("@/exe/lib/ssl/crt.pfx") ),
-        passphrase:"password",
-      }
-      this.server = https.createServer(httpsOption,this.middleware.bind(this)).listen(options.port || 3004, () => {
+      // let httpsOptions = {
+      //   pfx:fs.readFileSync( localRequire("@/exe/lib/ssl/crt.pfx") ),
+      //   passphrase:"password",
+      // }
+      // let httpsOptions = {
+      //   key:fs.readFileSync( localRequire("@/exe/lib/ssl/cert.pem") ),
+      //   cert:fs.readFileSync( localRequire("@/exe/lib/ssl/key.pem") )
+      // }
+      this.server = https.createServer(options.https,this.middleware.bind(this)).listen(options.port || 3004, () => {
         this.status = "started";
         this.ready();
         console.log("server https run port " + (options.port || 3004));
@@ -108,10 +118,14 @@ module.exports = class Runner {
     //清除无用的response
     this.clear();
     this.responseStack.push(response);
+    this.uuid++;
     this.try(request, response)
   }
+
   //捕获异步异常
-  try (request, response) {
+  try (request, response, maskIndex) {
+
+    request.maskIndex = this.uuid;
 
     let d = domain.create();
 
