@@ -1,0 +1,2 @@
+https://github.com/FiloSottile/mkcert/releases/download/mkcert-v1.4.1-windows-amd64.exe
+https://github.com/FiloSottile/mkcert/releases/download/mkcert-v1.4.1-linux-amd64
