@@ -148,7 +148,7 @@ function handleChange(changeFiles, relativeWatch, config) {
   for (var relativeFile in handleChangeFile) {
     if (funcType[relativeFile]) {
       console.log(new Date().format("hh:mm:ss"), "----".warn + "change file:".green, handleChangeFile[relativeFile]);
-      console.log(new Date().format("hh:mm:ss"), "----".warn + "triggle pack:".green, relativeFile, config.html&&config.html.data&&config.html.data.suffix&&config.html.data.suffix.warn);
+      console.log(new Date().format("hh:mm:ss"), "----".warn + "triggle pack:".green, relativeFile, "width suffix:".warn, (config.html && config.html.data && config.html.data.suffix));
       relativeWatch[relativeFile] = {};
       hanlderHtml(relativeFile, relativeWatch[relativeFile], config);
     } else {

@@ -7,7 +7,7 @@ const wakeout = rap.system.output;
  * 拷贝文件，并且得到浏览路径
  * */
 function copyFile(m1, config, relativeWatch) {
-  if ((/^https?:/i.test(m1) || /^\/\//i.test(m1))||/^data:/.test(m1)) {
+  if ((/^https?:/i.test(m1) || /^\/\//i.test(m1)) || /^data:/.test(m1)) {
     return m1;
   } else {
     var param = URL.parse(m1.trim(), true).query || {}; //必须提前解析param,URL.parse第二个参数为true才能保证输出的是对象
@@ -20,7 +20,12 @@ function copyFile(m1, config, relativeWatch) {
       wakeout.copySync(inpath, outpath);
     };
     if (wake.existsSync(inpath)) {
-      wakeout.copySync(inpath, outpath);
+      if (inpath == outpath) {
+        console.error("cope file src==dir", inpath);
+      } else {
+        wakeout.copySync(inpath, outpath);
+      }
+
       param.version = wake.getModifySync(inpath);
       param = querystring.stringify(param || {});
       param = (param ? ("?" + param) : "");
@@ -55,12 +60,12 @@ function handleFile(html, config, relativeWatch) {
   //解析标签中的图片
 
   config.fileAttrs.forEach(attrItem => {
-    var reg = new RegExp("\\s"+attrItem + "\\s*=\\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm")
+    var reg = new RegExp("\\s" + attrItem + "\\s*=\\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm")
     html = html.replace(reg, function(m, quot, m1) {
       var ret;
       if (!m1) {
         //后面的括号匹配不到
-        var reReg = new RegExp("\\s*"+attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
+        var reReg = new RegExp("\\s*" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
         quot = reReg[1]
         m1 = reReg[2]
       }
@@ -70,15 +75,15 @@ function handleFile(html, config, relativeWatch) {
         var browserPath = copyFile(m1, config, relativeWatch);
         ret = browserPath;
       }
-      return " "+attrItem + "=" + quot + ret + quot;
+      return " " + attrItem + "=" + quot + ret + quot;
     })
   })
 
   //去掉解析html中的link rel build
-  var linkTags = parseTag("link", html,"single");
+  var linkTags = parseTag("link", html, "single");
 
   linkTags.forEach(item => {
-    if(item.attrs.rel=="build"){
+    if (item.attrs.rel == "build") {
       html = html.replace(item.template, "");
     }
   });

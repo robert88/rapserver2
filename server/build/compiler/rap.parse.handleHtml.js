@@ -47,14 +47,14 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
     unique[src] = false;
 
     //插槽的位置
-    var slotName = tagInfo.attrs.name;
+    var slotName = tagInfo.attrs[config.slotTag]||tagInfo.attrs.name;
 
     //使用去掉模板标签
     var slotHtml = tagInfo.innerHTML;
 
-    htmlFromTag = clearNoteTag("slot", htmlFromTag);
+    htmlFromTag = clearNoteTag(config.slotTag||"slot", htmlFromTag);
 
-    var slotsTag = parseTag("slot", htmlFromTag);
+    var slotsTag = parseTag(config.slotTag||"slot", htmlFromTag);
 
 
     //定义了插槽，而且定义了填充的位置
@@ -62,7 +62,8 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
     if (slotName) {
       var findReplace = false;
       slotsTag && slotsTag.forEach(function(tag) {
-        if (slotName == tag.attrs.name) {
+        var mapName = tag.attrs[config.slotTagId]||tag.attrs.name;//config slot是为了兼容之前的模板
+        if (slotName == mapName) {
           htmlFromTag = htmlFromTag.replace(tag.template, slotHtml);
           findReplace = true;
         }
@@ -87,7 +88,7 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
 解析useSlot 标签
 */
 rap.parse.useSlot = function(orgHtml, config, parentData, relativeWatch, unique) {
-  return byTag("useSlot", orgHtml, config, parentData, relativeWatch, unique)
+  return byTag(config.useSlot||"useSlot", orgHtml, config, parentData, relativeWatch, unique)
 }
 /*
 解析include 标签

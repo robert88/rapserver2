@@ -1,6 +1,6 @@
 const wake = rap.system.input;
 const wakeout = rap.system.output;
-const {  parseTag } = require("./parse");
+const { parseTag } = require("./parse");
 const less = require('less');
 const codeStack = require("./rap.parse.codeStack")
 const querystring = require('querystring');
@@ -24,21 +24,23 @@ rap.parse.compressionCss = function(code) {
 /**
  * 解析css,默认使用less编译,必须要用异步
  * */
-function currentBuild(code,file, buildFlag, callback) {
+function currentBuild(code, file, buildFlag, callback) {
   if (!buildFlag) {
     callback(code);
   }
   var path = pt.dirname(file);
   //异步
-  less.render(code,{paths: [path]}).then(output => {
+  less.render(code, { paths: [path] }).then(output => {
     if (global.ENV == "product") {
-      callback(rap.parse.compressionCss(output.css));
-      return
+      return rap.parse.compressionCss(output.css)
+    } else {
+      return output.css
     }
-    callback(output.css);
   }).catch(e => {
-    console.log("error".error, e.message,e.stack);
+    console.log("error".error, e.message, e.stack);
     callback(`/**\n${e.message}\n**/`);
+  }).then((code) => {
+    callback(code);
   });
 
 }
@@ -47,24 +49,24 @@ function watchRebuildGroupFile(config, relativeWatch, watchFile, dirFile, stack)
   relativeWatch[watchFile.toURI()] = function() {
     var code = getGroupCode(config, relativeWatch, stack)
     //写入编译之后的代码
-    config.build(code, watchFile,stack.build, function(code) {
+    config.build(code, watchFile, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
-      rap.parse.parseFileByCssCode(code, config, relativeWatch) 
+      rap.parse.parseFileByCssCode(code, config, relativeWatch)
     })
   }
 }
 
 //重新打包一个文件
-function watchRebuildFile(config, relativeWatch, watchFile, dirFile,stack) {
+function watchRebuildFile(config, relativeWatch, watchFile, dirFile, stack) {
   relativeWatch[watchFile.toURI()] = function() {
     var code = wake.readDataSync(watchFile);
     //写入编译之后的代码
 
-    config.build(code,watchFile, stack.build, function(code) {
+    config.build(code, watchFile, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
-      rap.parse.parseFileByCssCode(code, config, relativeWatch) 
+      rap.parse.parseFileByCssCode(code, config, relativeWatch)
     })
   }
 }
@@ -147,7 +149,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
   function replaceTagBySrc() {
     param = querystring.stringify(stack.param || {});
     param = (param ? ("?" + param) : "");
-    browserUrl = config.browser(stack.url,".css") + param;
+    browserUrl = config.browser(stack.url, ".css") + param;
     template = `<link href='${browserUrl}' rel="stylesheet"/>`;
     return template
   }
@@ -155,7 +157,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
 
   //不需要处理
   if (stack.codeType == "igrone") {
-    compile("",false);
+    compile("", false);
     //本地css文件
   } else if (stack.codeType == "file") {
 
@@ -175,30 +177,30 @@ function insetCode(html, config, relativeWatch, stack, compile) {
       } else {
         stack.param.version = wake.getModifySync(srcFile);
         code = wake.readDataSync(srcFile);
-        watchRebuildFile(config, relativeWatch, srcFile, dirFile,stack)
+        watchRebuildFile(config, relativeWatch, srcFile, dirFile, stack)
       }
     }
 
-    config.build(code, srcFile,stack.build, function(code) {
+    config.build(code, srcFile, stack.build, function(code) {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
-      rap.parse.parseFileByCssCode(code, config, relativeWatch) 
-      compile(replaceTagBySrc(),true);
+      rap.parse.parseFileByCssCode(code, config, relativeWatch)
+      compile(replaceTagBySrc(), true);
     })
 
 
     //远程js文件
   } else if (stack.codeType == "remotefile") {
-    compile(replaceTagBySrc(),true);
+    compile(replaceTagBySrc(), true);
     //内联js代码
   } else if (stack.codeType == "code") {
-    code = config.build(stack.content,srcFile, stack.build, function(code) {
+    code = config.build(stack.content, srcFile, stack.build, function(code) {
       template = `<style>${code}</style>`
-      compile(template,true);
+      compile(template, true);
     });
 
   } else {
-    compile("",false);
+    compile("", false);
   }
 
 }
@@ -238,6 +240,12 @@ rap.parse.handleCSS = function(orgHtml, config, relativeWatch, callback) {
       return a.mapIndex > b.mapIndex ? 1 : -1;
     })
     var stackCount = 0;
+    //没有样式编译
+    if (sourceTags.length == 0) {
+      callback(recover(html));
+      config.complie = false;
+      return "";
+    }
     codeStack(sourceTags, config, ".css",
       function(stack, idx, len) {
         insetCode(html, config, relativeWatch, stack, (template, locationFlag) => {
