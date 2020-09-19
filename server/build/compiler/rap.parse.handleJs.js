@@ -69,11 +69,11 @@ function watchRebuildGroupFile(config, relativeWatch, watchFile, dirFile, stack)
 }
 
 //重新打包一个文件
-function watchRebuildFile(config, relativeWatch, watchFile, dirFile,stack) {
+function watchRebuildFile(config, relativeWatch, watchFile, dirFile, stack) {
   relativeWatch[watchFile.toURI()] = function() {
     var code = wake.readDataSync(watchFile);
     //写入编译之后的代码
-    wakeout.writeSync(dirFile, config.build(code,stack.build));
+    wakeout.writeSync(dirFile, config.build(code, stack.build));
   }
 }
 
@@ -92,8 +92,8 @@ function currentBuild(code, buildFlag) {
       //   }
       // }
     ],
-    cwd:  localRequire("@/",true),
-    root: localRequire("@/",true),
+    cwd: localRequire("@/", true),
+    root: localRequire("@/", true),
     // targets:["chrome60"],
     // "plugins": ["transform-remove-strict-mode"]
   })
@@ -164,7 +164,7 @@ function insetCode(html, config, relativeWatch, stack) {
       } else {
         stack.param.version = wake.getModifySync(srcFile);
         code = wake.readDataSync(srcFile);
-        watchRebuildFile(config, relativeWatch, srcFile, dirFile,stack)
+        watchRebuildFile(config, relativeWatch, srcFile, dirFile, stack)
       }
     }
 

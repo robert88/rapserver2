@@ -3,6 +3,9 @@ const querystring = require('querystring');
 const URL = require('url');
 const wake = rap.system.input;
 const wakeout = rap.system.output;
+const babel = require("@babel/core");
+const less = require('less');
+const pt = require("path")
 /**
  * 拷贝文件，并且得到浏览路径
  * */
@@ -17,13 +20,13 @@ function copyFile(m1, config, relativeWatch) {
     var browserPath = config.browser(src);
     //只需要拷贝
     relativeWatch[inpath.toURI()] = function() {
-      wakeout.copySync(inpath, outpath);
+      copyFileByType(inpath, outpath);
     };
     if (wake.existsSync(inpath)) {
       if (inpath == outpath) {
         console.error("cope file src==dir", inpath);
       } else {
-        wakeout.copySync(inpath, outpath);
+        copyFileByType(inpath, outpath);
       }
 
       param.version = wake.getModifySync(inpath);
@@ -34,6 +37,53 @@ function copyFile(m1, config, relativeWatch) {
       console.log("not find resource:".error, m1);
       return m1;
     }
+  }
+}
+
+function copyFileByType(inpath, outpath) {
+  if (pt.extname(inpath) == ".less") {
+    renderCss(inpath, wake.readSync(inpath), (code) => {
+      wakeout.writeSync(outpath, code);
+    })
+  } else if (pt.extname(inpath) == ".js") {
+
+    wakeout.writeSync(outpath, renderJs(wake.readDataSync(inpath)));
+
+  } else {
+    wakeout.copySync(inpath, outpath);
+  }
+}
+
+function renderCss(src, code, callback) {
+  var path = pt.dirname(src);
+  //异步
+  less.render(code, { paths: [path] }).then(output => {
+    if (global.ENV == "product") {
+      return rap.parse.compressionCss(output.css)
+    } else {
+      return output.css
+    }
+  }).catch(e => {
+    console.log("error".error, e.message, e.stack);
+    callback(`/**\n${e.message}\n**/`);
+  }).then((code) => {
+    callback(code);
+  });
+}
+
+function renderJs(code) {
+  var babelT = babel.transformSync(code, {
+    "presets": [
+      "@babel/preset-env"
+    ],
+    cwd: localRequire("@/", true),
+    root: localRequire("@/", true),
+  })
+  //上线打包
+  if (global.ENV == "product") {
+    return rap.parse.compressionJs(babelT.code);
+  } else {
+    return babelT.code.replace(/^\s*\"use\sstrict\";\s+/, "")
   }
 }
 /**
