@@ -42,7 +42,7 @@ function copyFile(m1, config, relativeWatch) {
 
 function copyFileByType(inpath, outpath) {
   if (pt.extname(inpath) == ".less") {
-    renderCss(inpath, wake.readSync(inpath), (code) => {
+    renderCss(inpath, wake.readDataSync(inpath), (code) => {
       wakeout.writeSync(outpath, code);
     })
   } else if (pt.extname(inpath) == ".js") {
