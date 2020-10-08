@@ -45,7 +45,7 @@ function copyFileByType(inpath, outpath) {
     renderCss(inpath, wake.readDataSync(inpath), (code) => {
       wakeout.writeSync(outpath, code);
     })
-  } else if (pt.extname(inpath) == ".js") {
+  } else if (pt.extname(inpath) == ".es") {
 
     wakeout.writeSync(outpath, renderJs(wake.readDataSync(inpath)));
 
