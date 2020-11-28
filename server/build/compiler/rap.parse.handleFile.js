@@ -7,7 +7,7 @@ const babel = require("@babel/core");
 const less = require('less');
 const pt = require("path")
 /**
- * 拷贝文件，并且得到浏览路径
+ * 拷贝文件，并且得到浏览路径,处理preload和css和js的时候需要编译
  * */
 function copyFile(m1, config, relativeWatch) {
   if ((/^https?:/i.test(m1) || /^\/\//i.test(m1)) || /^data:/.test(m1)) {
@@ -45,6 +45,7 @@ function copyFileByType(inpath, outpath) {
     renderCss(inpath, wake.readDataSync(inpath), (code) => {
       wakeout.writeSync(outpath, code);
     })
+    //将es文件转为js
   } else if (pt.extname(inpath) == ".es") {
 
     wakeout.writeSync(outpath, renderJs(wake.readDataSync(inpath)));

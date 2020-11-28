@@ -82,21 +82,27 @@ function currentBuild(code, buildFlag) {
   if (!buildFlag) {
     return code;
   }
-  var babelT = babel.transformSync(code, {
-    "presets": [
-      "@babel/preset-env"
-      // {
-      //   "targets": {
-      //     "chrome": "60",
-      //     "node": "current"
-      //   }
-      // }
-    ],
-    cwd: localRequire("@/", true),
-    root: localRequire("@/", true),
-    // targets:["chrome60"],
-    // "plugins": ["transform-remove-strict-mode"]
-  })
+  try {
+    var babelT = babel.transformSync(code, {
+      "presets": [
+        "@babel/preset-env"
+        // {
+        //   "targets": {
+        //     "chrome": "60",
+        //     "node": "current"
+        //   }
+        // }
+      ],
+      cwd: localRequire("@/", true),
+      root: localRequire("@/", true),
+      // targets:["chrome60"],
+      // "plugins": ["transform-remove-strict-mode"]
+    })
+  } catch (error) {
+    console.log(code);
+    console.error(error.message);
+  }
+
   //上线打包
   if (global.ENV == "product") {
     return rap.parse.compressionJs(babelT.code);
