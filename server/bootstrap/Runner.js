@@ -21,64 +21,30 @@ module.exports = class Runner {
 
     this.inPipe = new AsyncSeriesWaterfallHook(["request", "response"]);
     this.outPipe = new AsyncSeriesWaterfallHook(["request", "response"]);
-    this.update = new AsyncSeriesWaterfallHook(["file"]);
+    this.update = new AsyncSeriesWaterfallHook(["ret", "request", "response"]);
     this.error = new AsyncSeriesWaterfallHook(["err", "response", "comeFrom"]);
     this.uuid = 0;
-
-    this.error.tapAsync({
-      name: "end",
-      stage: 4,
-      fn(err, response, comeFrom,next) {
-        //默认错误response
-        if (response && response.finished == false) {
-          response._header = null;
-          response.removeHeader("Content-Length");
-          response.setHeader("Content-Type","text/plain");
-          if(err&&err.message.indexOf("ENOENT: no such file")!=-1){
-            response.writeHead(404);
-          }else{
-            response.writeHead(500);
-          }
-          response.end(comeFrom + ":" + (err && err.message));
-        }
-        next()
-      }
-    })
-
-    //默认response
-    this.outPipe.tapAsync({
-      name: "end",
-      stage: 4,
-      fn(request, response, next) {
-        if (response && response.finished == false) {
-          response._header = null;
-          response.removeHeader("Content-Length");
-          response.setHeader("Content-Type","text/plain");
-          response.writeHead(200);
-          response.end("helloworld");
-        }
-      }
-    })
 
     //创建http服务
     this.readyStack = [];
     this.status = "ready";
     if (options.https) {
-      // let httpsOptions = {
-      //   pfx:fs.readFileSync( localRequire("@/exe/lib/ssl/crt.pfx") ),
-      //   passphrase:"password",
-      // }
-      // let httpsOptions = {
-      //   key:fs.readFileSync( localRequire("@/exe/lib/ssl/cert.pem") ),
-      //   cert:fs.readFileSync( localRequire("@/exe/lib/ssl/key.pem") )
-      // }
-      this.server = https.createServer(options.https,this.middleware.bind(this)).listen(options.port || 3004, () => {
+      this.server = https.createServer(options.https, this.middleware.bind(this)).listen(options.https.port || 3004, () => {
         this.status = "started";
         this.ready();
-        console.log("server https run port " + (options.port || 3004));
+        console.log("server https run port " + (options.https.port || 3004));
+
+        //启动http
+        http.createServer(function() {
+          console.log(11)
+        }).listen(options.http.port || 3005, () => {
+          console.log("server http run port " + (options.http.port || 3005));
+        });
       });
+
+
     } else {
-      this.server = http.createServer(this.middleware.bind(this)).listen(options.port || 3003, () => {
+      this.server = http.createServer(this.middleware.bind(this)).listen(options.http.port || 3003, () => {
         this.status = "started";
         this.ready();
         console.log("server http run port " + (options.port || 3003));
@@ -123,8 +89,9 @@ module.exports = class Runner {
   }
 
   //捕获异步异常
-  try (request, response, maskIndex) {
+  try (request, response) {
 
+    //用于标识请求
     request.maskIndex = this.uuid;
 
     let d = domain.create();
@@ -132,7 +99,7 @@ module.exports = class Runner {
     //捕获异步异常
     d.on('error', (err) => {
 
-      this.error.callAsync(err, response, "domainErrorEvent", () => {
+      this.error.callAsync(err, request, response, "domainErrorEvent", () => {
         d = null;
       });
 
@@ -143,7 +110,7 @@ module.exports = class Runner {
       try {
         this.handler(request, response);
       } catch (err) {
-        this.error.callAsync(err, response, "trycatch", () => {
+        this.error.callAsync(err, request, response, "trycatch", () => {
           err = null;
           d = null;
         });
@@ -170,13 +137,13 @@ module.exports = class Runner {
   //处理请求
   handler(request, response) {
 
-    this.inPipe.callAsync(request, response, (err, request, response) => {
+    this.inPipe.callAsync(request, response, (err) => {
       if (err) {
-        this.error.callAsync(err, response, "inPipeException");
-      }else{
-        this.outPipe.callAsync(request, response, (err, request, response) => {
+        this.error.callAsync(err, request, response, "inPipeException");
+      } else {
+        this.outPipe.callAsync(request, response, (err) => {
           if (err) {
-            this.error.callAsync(err, response, "outPipeException");
+            this.error.callAsync(err, request, response, "outPipeException");
           }
         })
       }
