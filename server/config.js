@@ -6,26 +6,36 @@
 //  * */
 const fs = require("fs");
 module.exports = function(callback) {
-  if(ENV=="product"){
+  if (ENV == "product") {
     callback({
-      staticMap: { rapserver: localRequire("@/server/static", true) },
-      https:{
-          key:fs.readFileSync( localRequire("@/server/exe/ssl/localhost.key",true) ),
-          cert:fs.readFileSync( localRequire("@/server/exe/ssl/localhost.crt",true) )
+      staticMap: { rapserver: localRequire("@/server/static/dest", true) },
+      actionMap: { rapserver: localRequire("@/server/action", true) },
+      https: {
+        key: fs.readFileSync(localRequire("@/server/exe/ssl/localhost.key", true)),
+        cert: fs.readFileSync(localRequire("@/server/exe/ssl/localhost.crt", true)),
+        port: 443
+      },
+      http: {
+        port: 80
       }
     })
-  }else{
-    rap.getPort(port => {
-      callback({
-        staticMap: { rapserver: localRequire("@/server/static", true) },
-        port: port,
-        https:{
-          key:fs.readFileSync( localRequire("@/server/exe/ssl/localhost.key",true) ),
-          cert:fs.readFileSync( localRequire("@/server/exe/ssl/localhost.crt",true) )
-      }
+  } else {
+    rap.getPort(port1 => {
+      rap.getPort(port1 + 1, port2 => {
+        callback({
+          staticMap: { rapserver: localRequire("@/server/static/dest", true) },
+          actionMap: { rapserver: localRequire("@/server/action", true) },
+          https: {
+            port: port1,
+            key: fs.readFileSync(localRequire("@/server/exe/ssl/localhost.key", true)),
+            cert: fs.readFileSync(localRequire("@/server/exe/ssl/localhost.crt", true))
+          },
+          http: {
+            port: port2
+          }
+        })
       })
     })
   }
 
 }
-

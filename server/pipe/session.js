@@ -8,68 +8,55 @@ module.exports = function(run, staticMap) {
   run.inPipe.tapAsync({
     name: "session",
     fn(request, response, next) {
+      let sessionId = request.rap.cookie["RAPID"] || response.rap.cookie["RAPID"].value;
+      let sessionIdSplit = sessionId.split("_");
+      let sessionPath = sessionIdSplit.slice(0, sessionIdSplit.length - 1).join("/");
+      let sessionFile = sessionIdSplit.slice(sessionIdSplit.length - 1, sessionIdSplit.length) + ".json";
+      let absPath = sessionRootPath + "/" + sessionPath + "/" + sessionFile;
+
       request.rap.session = {
+
         reset(callback) {
           this.cache = {};
-          this.set(null,null,callback);
+          this.setSessionFileData(callback);
         },
-        del(key,callback) {
-          this.set(key,null,callback)
+        del(key, callback) {
+          this.set(key, null, callback)
         },
-        set(key, value,callback) {
+        set(key, value, callback) {
           //session必须再cookie之后
-          let sessionId = request.rap.cookie["RAPID"];
-          if (!sessionId) {
-            sessionId = response.rap.cookie["RAPID"].value;
+          var oldVal = this.get(key);
+
+          if (oldVal != value) {
+            this.cache[key] = value;
+            this.setSessionFileData(callback);
+          } else {
+            callback(this.cache)
           }
-          if(this.cache){
-            if(key){
-              this.cache[key]=value;
-            }
-            let file = this.getSessionFile(sessionId)
-            rap.system.output.write(file,JSON.stringify(this.cache)).then(()=>{
-              rap.system.input.purge("all",file);
-              callback(this.cache);
-            }).catch(e=>{
-              throw e;
-            })
-          }else{
-            this.getSessionFileData(sessionId);
-            if(this.cache&&this.cache[key]!=value){
-              this.set(key, value,callback)
-            }else{
-              callback(this.cache)
-            }
-          }
-         
         },
         //session存储在磁盘上
-        getSessionFile(sessionId){
-          let sessionIdSplit = sessionId.split("_");
-          let sessionPath = sessionIdSplit.slice(0, sessionIdSplit.length - 1).join("/");
-          let sessionFile = sessionIdSplit.slice(sessionIdSplit.length - 1, sessionIdSplit.length) + ".json";
-          let absPath = sessionRootPath + "/" + sessionPath + "/" + sessionFile;
-          return absPath;
+        setSessionFileData(callback) {
+          rap.system.output.write(absPath, JSON.stringify(this.cache)).then(() => {
+            rap.system.input.purge("all", file);
+            callback(this.cache);
+          }).catch(e => {
+            throw e;
+          })
         },
-        getSessionFileData(sessionId){
-          let absPath =  this.getSessionFile(sessionId);
-          try{
+        getSessionFileData() {
+          try {
             this.cache = rap.system.input.readJsonSync(absPath);
-          }catch(e){
+          } catch (e) {
             this.cache = {};
           }
-          return this.cache[sessionId];
         },
         get(key) {
-          let sessionId = request.rap.cookie["RAPID"];
-          if (sessionId) {
-            if (!this.cache) {
-              this.getSessionFileData(sessionId);
-            }
-            return this.cache[key];
-          }else{
-            return null
+
+          if (!this.cache) {
+            this.getSessionFileData();
           }
+          return this.cache[key];
+
         }
       }
       next();

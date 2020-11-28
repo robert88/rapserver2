@@ -10,7 +10,7 @@ output.createSync(uploadFileTemplPath);
 function parsePostParams(obj, set, next) {
 
   var fileId, position = 0;
-  if (obj.binaryData) {
+  if (obj.binaryFlag) {
     //断点续传
 
     if (obj.range) {
@@ -37,7 +37,7 @@ function parsePostParams(obj, set, next) {
   set.addListener("data", function(data) {
     postBuffer = Buffer.concat([postBuffer, data]);
     //大文件上传
-    if (obj.binaryData) {
+    if (obj.binaryFlag) {
       if (postBuffer.length > m3) {
         output.writeSplitSync(file, postBuffer, position);
         position += postBuffer.byteLength;
@@ -53,7 +53,7 @@ function parsePostParams(obj, set, next) {
    */
   set.addListener("end", function() {
 
-    if (obj.binaryData) {
+    if (obj.binaryFlag) {
       if (postBuffer.byteLength) {
         output.writeSplitSync(file, postBuffer, position);
         position += postBuffer.byteLength;
@@ -93,9 +93,9 @@ module.exports = function(run) {
     name: "query",
     fn(request, response, next) {
       //提前解析了
-      if(request.rap.query){
+      if (request.rap.query) {
         next();
-	return
+        return
       }
       /**
        * 也可使用var query=qs.parse(url.parse(req.url).query);
@@ -113,7 +113,7 @@ module.exports = function(run) {
           });
           break;
         default: //get，delete
-          request.rap.binaryData = false;
+          request.rap.binaryFlag = false;
           paramsTypeConvert(request.rap.query);
 
           next();
