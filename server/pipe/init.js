@@ -53,7 +53,7 @@ module.exports = function(run, timeout) {
       }
       response.rap = {} //响应也有rap字段
       //异步才会超时
-      request.rap.timer = setTimeout(() => {
+      response.rap.timer = setTimeout(() => {
         throw Error("request timeout");
       }, timeout || 120000);
       next();
@@ -65,6 +65,11 @@ module.exports = function(run, timeout) {
   run.outPipe.tapAsync({
     name: "init",
     fn(request, response, next) {
+
+      let timer = response.rap && response.rap.timer
+      if (timer) {
+        clearTimeout(timer);
+      }
       //分块传输
       response.setHeader("Connection", "keep-alive");
       response.setHeader("Content-Type", "text/plain"); //默认
@@ -76,12 +81,12 @@ module.exports = function(run, timeout) {
   //一旦发生错误，必须清除掉定时器
   run.error.tapAsync({
     name: "init",
-    fn(request, response, next) {
-      let timer = request.rap && request.rap.timer
+    fn(err, response, comfrom, next) {
+      let timer = response.rap && response.rap.timer
       if (timer) {
         clearTimeout(timer);
       }
-
+      next();
     }
   })
 

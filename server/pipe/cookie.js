@@ -4,6 +4,7 @@ const qs = require("querystring");
 module.exports = function(run, staticMap) {
 
   let rapid = 0;
+  let startTime = new Date().getTime();
 
   //request
   run.inPipe.tapAsync({
@@ -23,7 +24,7 @@ module.exports = function(run, staticMap) {
         // let ip = request.ip && request.ip || "0.0.0.0";
         //客户端类型/系统类型/系统位数/系统版本/浏览器/浏览器版本/浏览器厂家
         let userAgentSplit = rap.userAgent(userAgent).split(/\//)
-        let SessionId = rap.AES(response.rap.date + "/" + (rapid++));
+        let SessionId = rap.AES(startTime + "/" + (rapid++));
 
         if (userAgent) {
           response.rap.cookie["RAPID"] = {

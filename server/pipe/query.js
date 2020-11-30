@@ -81,8 +81,14 @@ function paramsTypeConvert(params) {
       params[k] = true;
     } else if (params[k] === "false") {
       params[k] = false;
+    } else if (typeof params[k] === "null") {
+      params[k] = null;
+    } else if (typeof params[k] === "undefined") {
+      params[k] = undefined;
     } else if (typeof params[k] == "object") {
       paramsTypeConvert(params[k]);
+    } else if (typeof params[k] == "string") {
+      params[k] = params[k].trim();
     }
   }
   return params;

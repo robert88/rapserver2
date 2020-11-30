@@ -1,8 +1,35 @@
 /*cookie和session*/
+const output = rap.system.output;
+const input = rap.system.input;
+var timer;
 
-module.exports = function(run, staticMap) {
+//回收session
+function gcSession(sessionRootPath) {
+  clearTimeout(timer)
+  // 必须删除掉之前的session
+  console.log("删除过期session...");
+  let currentTime = new Date().getTime();
+  var allFile = input.findFileSync(sessionRootPath, "json", true);
+  allFile.forEach(file => {
+    let stat = input.statSync(file);
+    let ct = Math.floor(stat.birthtimeMs);
+    if (currentTime > (ct + 30 * 24 * 60 * 60 * 1000)) { //超过30天就过期
+      output.removeSync(file);
+    }
+  });
+  console.log("成功删除过期session");
+
+  timer = setTimeout(function() {
+    gcSession(sessionRootPath);
+  }, 15 * 24 * 60 * 60 * 1000); //超过15天检查一次
+
+}
+
+module.exports = function(run) {
 
   var sessionRootPath = localRequire("@/server/templ/session", true);
+
+  gcSession(sessionRootPath);
 
   //request
   run.inPipe.tapAsync({
@@ -21,7 +48,7 @@ module.exports = function(run, staticMap) {
           this.setSessionFileData(callback);
         },
         del(key, callback) {
-          this.set(key, null, callback)
+          this.set(key, null, callback);
         },
         set(key, value, callback) {
           //session必须再cookie之后

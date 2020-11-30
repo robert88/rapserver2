@@ -6,6 +6,8 @@
  * */
 global.ENV = process.argv[2] == "dev" ? "dev" : "product"
 
+console.clear();
+
 require("./lib/global/global.localRequire");
 
 
@@ -56,7 +58,11 @@ function webServerWorker() {
       register: (tap) => {
         tap.stage = inStagMap[tap.name];
         var fn = tap.fn;
-        tap.fn = function(request) {
+        tap.fn = function(request, response) {
+          //响应结束或者发生错误时都结束
+          if (response.finished || response.error) {
+            return;
+          }
           console.log("in:", request.maskIndex, tap.name)
           fn.apply(tap, arguments);
         }
@@ -71,16 +77,15 @@ function webServerWorker() {
       register: (tap) => {
         tap.stage = errorStagMap[tap.name];
         var fn = tap.fn;
-        tap.fn = function(err, request) {
-          console.error("error:", request.maskIndex, tap.name, err.stack)
+        tap.fn = function(err, response, comefrom) {
+          response.error = true;
+          console.error("error:", response.maskIndex, tap.name, err.stack)
           fn.apply(tap, arguments);
         }
       }
     })
 
     //测试环境
-
-
     //response数组中顺序代表执行顺序
     var outStagMap = {};
     ["init", "query", "cookie", "stat", "action", "staticFile", "end"].forEach((val, idx) => {
@@ -91,6 +96,9 @@ function webServerWorker() {
         tap.stage = outStagMap[tap.name];
         var fn = tap.fn;
         tap.fn = function(request) {
+          if (response.finished || response.error) {
+            return;
+          }
           console.log("out:", request.maskIndex, tap.name)
           fn.apply(tap, arguments);
         }
@@ -125,6 +133,7 @@ function webServerWorker() {
     localRequire("@/server/pipe/stat.js")(run, config.staticMap);
     localRequire("@/server/pipe/action")(run);
     localRequire("@/server/pipe/staticFile.js")(run);
+    localRequire("@/server/pipe/end.js")(run);
 
   })
 }

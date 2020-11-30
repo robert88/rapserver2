@@ -93,13 +93,14 @@ module.exports = class Runner {
 
     //用于标识请求
     request.maskIndex = this.uuid;
+    response.maskIndex = this.uuid;
 
     let d = domain.create();
 
     //捕获异步异常
     d.on('error', (err) => {
 
-      this.error.callAsync(err, request, response, "domainErrorEvent", () => {
+      this.error.callAsync(err, response, "domainErrorEvent", () => {
         d = null;
       });
 
@@ -110,7 +111,7 @@ module.exports = class Runner {
       try {
         this.handler(request, response);
       } catch (err) {
-        this.error.callAsync(err, request, response, "trycatch", () => {
+        this.error.callAsync(err, response, "trycatch", () => {
           err = null;
           d = null;
         });
@@ -139,11 +140,11 @@ module.exports = class Runner {
 
     this.inPipe.callAsync(request, response, (err) => {
       if (err) {
-        this.error.callAsync(err, request, response, "inPipeException");
+        this.error.callAsync(err, response, "inPipeException");
       } else {
         this.outPipe.callAsync(request, response, (err) => {
           if (err) {
-            this.error.callAsync(err, request, response, "outPipeException");
+            this.error.callAsync(err, response, "outPipeException");
           }
         })
       }

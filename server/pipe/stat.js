@@ -8,7 +8,9 @@ const StaticFileState = localRequire("@/server/pipe/stat.file.js");
 
 module.exports = function(run) {
 
-  run.state = new StaticFileState(run.config.staticMap, rap.system, localRequire("@/server/templ/cache", true));
+  console.log("统计stat信息...")
+  run.state = new StaticFileState(run.config.staticMap, rap.system, localRequire("@/server/templ/stat", true));
+  console.log("已统计stat信息", localRequire("@/server/templ/stat", true));
 
   //update作为整体更新
   run.update.tapAsync({
@@ -33,10 +35,7 @@ module.exports = function(run) {
       let realRoot = request.rap.realRoot;
       if (realFile) {
         //可以读取和更新
-        run.state.readOrUpdate(realId, realRoot, realFile, "read", (err, data) => {
-          if (err) {
-            throw err;
-          }
+        run.state.readOrUpdate(realId, realRoot, realFile, "read", (data) => {
           request.rap.realStat = data; //得到当前url的stat信息
           next();
         });
