@@ -78,8 +78,12 @@ function webServerWorker() {
         tap.stage = errorStagMap[tap.name];
         var fn = tap.fn;
         tap.fn = function(err, response, comefrom) {
-          response.error = true;
-          console.error("error:", response.maskIndex, tap.name, err.stack)
+
+          if(!response.error){
+            console.error("error:", response.maskIndex, tap.name, err.stack)
+            response.error = true;
+          }
+
           fn.apply(tap, arguments);
         }
       }
