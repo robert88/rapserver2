@@ -8,11 +8,16 @@ const http = require("http");
 const { URL } = require('url');
 const querystring = require('querystring');
 const zlib = require("zlib");
+const fs = require("fs")
+const pt = require("path");
 const m3 = 3 * 1024 * 1024; //3mb大小
 // const gunzip = zlib.createGunzip
 // "deflate": zlib.createInflate
 //提供toUri
 localRequire("@/server/lib/global/extention.String.js")
+
+// const key = fs.readFileSync(localRequire('@/server/exe/ssl/localhost.key', true));
+// const cert = fs.readFileSync(localRequire('@/server/exe/ssl/localhost.crt', true));
 
 global.rap = global.rap || {};
 
@@ -38,8 +43,11 @@ rap.rest = function(options) {
     path: urlOptions.href.replace(urlOptions.origin, "").toURI(),
     method: (options.method || "GET").toUpperCase(), //这里是发送的方法
     headers: options.headers || {},
-    agent: false
+    agent: false,
+    // key: urlOptions.protocol == "https:" ? key : "",
+    // cert: urlOptions.protocol == "https:" ? cert : ""
   }
+
   var accept = {
     "*": "*/*",
     html: "text/html",
@@ -107,7 +115,7 @@ rap.rest = function(options) {
       options.error(e);
     }
   });
-
+  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
   //如何是post请求就直接将params做为请求体$.ajax和querystring.stringify都是区分数字和字符串
   if (opt.method == "POST") {
     req.write(querystring.stringify(options.data));
