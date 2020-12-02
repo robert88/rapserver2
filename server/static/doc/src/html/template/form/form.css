@@ -1,0 +1,37 @@
+.validItem {
+  position: relative;
+  /*错误*/
+}
+.validItem .validErrMsg {
+  display: none;
+  padding-bottom: 10px;
+  margin-top: -10px;
+  top: 100%;
+  line-height: 23px;
+  font-size: 14px;
+}
+.validItem .validIcon {
+  display: none;
+  position: absolute;
+  top: 50%;
+  margin-top: -13px;
+  right: -30px;
+}
+.validItem .ipt-error {
+  display: none;
+}
+.validItem.validError input,
+.validItem.validError select {
+  border: 1px solid #d9534f;
+}
+.validItem.validError .validErrMsg {
+  color: #d9534f;
+  display: block;
+}
+.validItem.validError .validIcon {
+  color: #d9534f;
+  display: block;
+}
+.validItem.validError .ipt-error {
+  display: block;
+}

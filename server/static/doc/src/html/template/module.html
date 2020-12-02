@@ -1,1 +1,77 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+  <link href="/src/favicon.ico" rel="shortcut icon">
+  <title>{{document.title}}</title>
+  <link rel="stylesheet" type="text/css" href="/src/css/base.css" group="base.css">
+  <link rel="stylesheet" type="text/css" href="/src/css/btn.less" group="base.css">
+  <link rel="stylesheet" type="text/css" href="/src/css/iconmoon/style.css" group="base.css">
+  <link rel="stylesheet" type="text/css" href="/src/js/RBT/dialog.css" group="base.css">
+  <link rel="stylesheet" type="text/css" href="/src/css/down-menu.less" group="base.css">
+  <link rel="stylesheet" type="text/css" href="/src/css/loader.less" group="base.css">
+  <link rel="stylesheet" href="/src/css/module/layout-footer.css" group="base.css">
+
+  <script src="/src/js/RBT/prototype.js" group="base.js"></script>
+  <script src="/src/js/RBT/each.js" group="base.js"></script>
+  <script src="/src/js/RBT/extend.js" group="base.js"></script>
+  <script src="/src/js/RBT/browser.js" group="base.js"></script>
+  <script src="/src/js/RBT/dom.js" group="base.js"></script>
+  <script src="/src/js/RBT/ajax.js" group="base.js"></script>
+  <script src="/src/js/RBT/resize.js" group="base.js"></script>
+  <script src="/src/js/RBT/localStorage.js" group="base.js"></script>
+  <script src="/src/js/RBT/url.js" group="base.js"></script>
+  <script src="/src/js/RBT/template.js" group="base.js"></script>
+  <script src="/src/js/RBT/downMenu.js" group="base.js"></script>
+  <script src="/src/js/RBT/floatHeight.js" group="base.js"></script>
+  <script src="/src/js/RBT/validForm.js" group="base.js"></script>
+  <script src="/src/js/RBT/dialog.js" group="base.js"></script>
+  <script src="/src/js/RBT/socket.js" group="base.js"></script>
+  <script src="/src/js/RBT/chart.js" group="base.js"></script>
+  <script src="/src/js/RBT/performance.js" group="base.js"></script>
+
+</head>
+
+<body>
+
+  <div class="loader loading-mask">
+    <div class="loader-inner">
+      <div class="loader-line-wrap">
+        <div class="loader-line"></div>
+      </div>
+      <div class="loader-line-wrap">
+        <div class="loader-line"></div>
+      </div>
+      <div class="loader-line-wrap">
+        <div class="loader-line"></div>
+      </div>
+      <div class="loader-line-wrap">
+        <div class="loader-line"></div>
+      </div>
+      <div class="loader-line-wrap">
+        <div class="loader-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <include src="/src/html/template/layout-header.html"></include>
+
+  <slot name="root"></slot>
+
+  <div class="footer">
+    <div class="wrap col">
+      <ul class="footer-info col5">
+        © 2012-2020 版权协议请参考BSD协议
+      </ul>
+      <ul class="col4">
+        <li class="text"><i class="fa-github"></i>git仓库</li>
+        <li class="value"><a class="https://github.com/robert88/robert88.github.io">https://github.com/robert88/robert88.github.io</a></li>
+      </ul>
+    </div>
+  </div>
+</body>
+
+</html>
