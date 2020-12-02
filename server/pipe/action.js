@@ -23,6 +23,8 @@ module.exports = function(run) {
           if (mapInfo.type == "file") {
             request.rap.url = mapInfo.value;
             //得到是一个数据
+          } else if (mapInfo.type == "remote") {
+            request.rap.redirect = mapInfo.value;
           } else if (mapInfo.type == "data") {
             request.rap.action = mapInfo.value;
           }
@@ -36,7 +38,7 @@ module.exports = function(run) {
   run.outPipe.tapAsync({
     name: "action",
     fn(request, response, next) {
-      if (request.rap.action && !response.finished) {
+      if (request.rap.action) {
         let ret = request.rap.action;
         if (typeof ret == "string") {
           response.setHeader("Content-Type", ["text/plain"])
@@ -46,6 +48,10 @@ module.exports = function(run) {
         }
         response.writeHead(200);
         response.end(ret);
+      } else if (request.rap.redirect) {
+        response.setHeader("Location", request.rap.redirect)
+        response.writeHead(301);
+        response.end();
       } else {
         next();
       }
@@ -167,24 +173,32 @@ class Action {
     } else {
       //如果是字符串，因为之前已经映射过了，这里就不需要再次映射
       if (typeof actionValue == "string") {
-        actionValue = actionValue.replace(/^\s+|\s+$/, "");
-        let isNotUrl = (!/[-A-Za-z0-9+&@#\/%?=~_|!:,\.;]+[-A-Za-z0-9+&@#/%=~_|]/.test(actionValue))
+        actionValue = actionValue.trim();
+        let isNotUrl = actionValue.indexOf("/") == -1 || /\s/.test(actionValue) || actionValue.length > 2083; //ie最大url长度
+        let isRemote = (/^https?:\/\//.test(actionValue))
         if (isNotUrl) {
           callback({ type: "data", value: ret });
+        } else if (isRemote) {
+          callback({ type: "remote", value: actionValue });
         } else {
           callback({ type: "file", value: actionValue });
         }
       } else if (typeof actionValue == "function") {
+        //每个action都会触发
         actionValue.call(run, request, response, (ret, type) => {
           //动态映射
           if (typeof ret == "string") {
-            let isNotUrl = (!/[-A-Za-z0-9+&@#\/%?=~_|!:,\.;]+[-A-Za-z0-9+&@#/%=~_|]/.test(actionValue))
+            ret = ret.trim();
+            let isNotUrl = ret.indexOf("/") == -1 || /\s/.test(ret) || ret.length > 2083; //ie最大url长度
+            let isRemote = (/^https?:\/\//.test(ret))
             if (type == "text/text" || isNotUrl) {
               callback({ type: "data", value: ret });
+            } else if (isRemote) {
+              callback({ type: "remote", value: ret });
             } else {
               //防止死循环
               actionMapUnique = actionMapUnique || {};
-              if (actionMapUnique[actionName]) {
+              if (actionMapUnique[actionName]) { //已经匹配过了，且是一个url
                 callback({ type: "file", value: ret });
               } else {
                 actionMapUnique[actionName] = 1;

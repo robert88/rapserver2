@@ -22,18 +22,21 @@ let html5 = `<!DOCTYPE html>
  *如果存在就返回一个真实的地址
  * */
 function checkFileExist(run, ret, rootPath, callback) {
-  let absolutePathTemp = (rootPath + "/" + ret).toURI();
-  var extname = path.extname(ret);
+
   var basename = path.basename(ret);
   //如果是/ 默认就定义到index.html
   if (!basename && !run.config.directoryView) {
-    basename = "index.html";
+    ret = "index.html";
   }
 
+  var extname = path.extname(ret);
   //如果没有配置查看目录那么就
   if (!extname && !run.config.directoryView) {
     ret = ret + ".html"; //尝试匹配html
   }
+
+
+  let absolutePathTemp = (rootPath + "/" + ret).toURI();
 
   //地址是ip地址
   if (rootPath.indexOf("\\\\") == 0) {
@@ -43,6 +46,7 @@ function checkFileExist(run, ret, rootPath, callback) {
     if (!err && flag) {
       callback(absolutePathTemp);
     } else { //不存在
+      console.log("try find " + absolutePathTemp + " but not find");
       callback();
     }
   })
@@ -90,7 +94,7 @@ module.exports = function(run) {
         //必须传递function不能用箭头函数
         asyncArr.push(function() {
           var queue = this;
-          checkFileExist(run, request.url, staticMap[id], realFile => {
+          checkFileExist(run, request.rap.url, staticMap[id], realFile => {
             if (realFile) {
               queue.done(null, realFile, id, staticMap[id]);
             } else {
@@ -106,7 +110,7 @@ module.exports = function(run) {
           throw err;
         }
         if (!realFile) {
-          throw new Error(`ENOENT: no such file or directory, stat '${request.url}'`);
+          throw new Error(`ENOENT: no such file or directory, stat '${request.rap.url}'`);
         }
         request.rap.realFile = realFile; //真实路径
         request.rap.realRoot = realRoot; //真实的跟路径
@@ -161,7 +165,7 @@ module.exports = function(run) {
             throw Error("system input io error")
           }
           let ret = ""
-          if (request.url != "/") {
+          if (request.rap.url != "/") {
             ret += ' <a href = "{0}" > {0}</a> \n'.tpl(path.dirname(f))
           }
           files.forEach(f => {
@@ -197,7 +201,7 @@ module.exports = function(run) {
           response.removeHeader("Content-Length");
         }
       } else {
-        throw new Error(`ENOENT: no such file or directory, stat '${request.url}'`)
+        throw new Error(`ENOENT: no such file or directory, stat '${request.rap.url}'`)
       }
 
 

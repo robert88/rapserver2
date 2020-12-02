@@ -6,6 +6,11 @@
  * */
 global.ENV = process.argv[2] == "dev" ? "dev" : "product"
 
+// 引入 events 模块
+let events = require('events');
+// 创建 eventEmitter 对象
+global.event = new events.EventEmitter();
+
 console.clear();
 
 require("./lib/global/global.localRequire");
@@ -78,9 +83,9 @@ function webServerWorker() {
         tap.stage = errorStagMap[tap.name];
         var fn = tap.fn;
         tap.fn = function(err, response, comefrom) {
-
-          if(!response.error){
-            console.error("error:", response.maskIndex, tap.name, err.stack)
+          console.log("error:", response.maskIndex, tap.name)
+          if (!response.error) {
+            console.error("error:", err.stack)
             response.error = true;
           }
 
@@ -138,6 +143,8 @@ function webServerWorker() {
     localRequire("@/server/pipe/action")(run);
     localRequire("@/server/pipe/staticFile.js")(run);
     localRequire("@/server/pipe/end.js")(run);
+    global.run = run;
+    global.event.emit("run", run);
 
   })
 }
