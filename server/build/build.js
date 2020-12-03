@@ -111,9 +111,9 @@ function handlerResource(orgHTML, relativeFile, relativeWatch, config, callback)
   var jsConfig = createConfig({ fileConfig: fileConfig, templatePath: relativeFile }, config.js);
   var cssConfig = createConfig({ fileConfig: fileConfig, templatePath: relativeFile }, config.css);
 
-  orgHTML = rap.parse.handleJs(orgHTML, jsConfig, relativeWatch); //解析js
+  orgHTML = rap.parse.handleJs(orgHTML, jsConfig, relativeWatch, relativeFile); //解析js
 
-  rap.parse.handleCSS(orgHTML, cssConfig, relativeWatch, html => { //解析css
+  rap.parse.handleCSS(orgHTML, cssConfig, relativeWatch, relativeFile, html => { //解析css
     html = rap.parse.handleFile(html, fileConfig, relativeWatch); //解析file
     callback(html)
   });

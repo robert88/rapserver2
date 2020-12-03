@@ -196,7 +196,7 @@ function insetCode(html, config, relativeWatch, stack) {
 /**
  * 解析js
  * */
-rap.parse.handleJs = function(orgHtml, config, relativeWatch) {
+rap.parse.handleJs = function(orgHtml, config, relativeWatch, templatePath) {
 
   if (config.complie) {
     console.log("warn".warn, "current html handling js");
@@ -223,7 +223,7 @@ rap.parse.handleJs = function(orgHtml, config, relativeWatch) {
     })
 
     //得到要编译的js信息
-    codeStack(tags, config, ".js",
+    codeStack(tags, config, ".js", templatePath,
       function(stack) {
         html = insetCode(html, config, relativeWatch, stack);
       });

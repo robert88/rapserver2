@@ -30,29 +30,26 @@ function currentBuild(code, file, buildFlag, callback) {
   }
   var path = pt.dirname(file);
   //异步
-  less.render(code, { paths: [path] }).then(output => {
+  less.render(code, { paths: [path], "javascriptEnabled": true }).then(output => {
     if (global.ENV == "product") {
       return rap.parse.compressionCss(output.css)
     } else {
       return output.css
     }
+  }).then((code) => {
+    callback(code);
   }).catch(e => {
     console.log("error".error, e.message, e.stack);
     callback(`/**\n${e.message}\n**/`);
-  }).then((code) => {
-    callback(code);
   });
 
 }
 //重新打包合并多个文件
 function watchRebuildGroupFile(config, relativeWatch, watchFile, dirFile, stack) {
   relativeWatch[watchFile.toURI()] = function() {
-    var code = getGroupCode(config, relativeWatch, stack)
-    //写入编译之后的代码
-    config.build(code, watchFile, stack.build, function(code) {
+    getGroupCode(config, relativeWatch, stack, code => {
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
-      rap.parse.parseFileByCssCode(code, config, relativeWatch)
     })
   }
 }
@@ -64,55 +61,77 @@ function watchRebuildFile(config, relativeWatch, watchFile, dirFile, stack) {
     //写入编译之后的代码
 
     config.build(code, watchFile, stack.build, function(code) {
+      code = rap.parse.parseFileByCssCode(code, watchFile, config, relativeWatch)
       //写入编译之后的代码
       wakeout.writeSync(dirFile, code);
-      rap.parse.parseFileByCssCode(code, config, relativeWatch)
+
     })
   }
 }
 /**
  * 解析合并
  * */
-function getGroupCode(config, relativeWatch, stack) {
+function getGroupCode(config, relativeWatch, stack, callback) {
   var groupCode = [];
   var unique = [];
 
   //监听代理对象
   var dirFile = config.output(config.templatePath, stack.url); //目标文件
 
+  var maxCallBack = 0;
+
   stack.groupStack.forEach(item => {
+    let code = "";
+    var srcPath = "";
     if (item.url) {
       if (~unique.indexOf(item.url)) { //去重
         console.log("warning".warn, "group:", stack.url, "has same item url", item.url);
+        maxCallBack++
         return;
       }
       unique.push(item.url);
 
-      var srcPath = config.input(config.templatePath, item.url); //源地址
+      srcPath = config.input(config.templatePath, item.url); //源地址
 
       //监听文件变化，代理到总的打包中
       watchRebuildGroupFile(config, relativeWatch, srcPath, dirFile, stack)
 
       if (wake.existsSync(srcPath)) {
-        groupCode.push(wake.readDataSync(srcPath));
+        code = wake.readDataSync(srcPath);
       } else {
         console.log("error:".error, "group merge not find :", srcPath);
       }
-
+      // style
     } else if (item.content) {
       if (~unique.indexOf(item.content)) { //去重
         console.log("warning".warn, "group:", stack.url, "has same item content");
+        maxCallBack++
         return;
       }
       unique.push(item.content);
 
-      groupCode.push(item.content);
+      code = item.content;
+      srcPath = item.templatePath;
     } else {
       console.log("error".error, " group ", stack.url, "not find")
     }
+
+    if (code) {
+      config.build(code, srcPath, stack.build, function(parsedCode) {
+        parsedCode = rap.parse.parseFileByCssCode(parsedCode, srcPath, config, relativeWatch);
+        //写入编译之后的代码
+        groupCode.push(parsedCode);
+
+        maxCallBack++;
+        if (maxCallBack == stack.groupStack.length) {
+          unique = null;
+          callback(groupCode.join("\n;\n"));
+        }
+      })
+    }
+
   })
-  unique = null;
-  return groupCode.join("\n;\n")
+
 }
 
 //插入的位置
@@ -168,7 +187,15 @@ function insetCode(html, config, relativeWatch, stack, compile) {
 
     //合并css
     if (stack.group) {
-      code = getGroupCode(config, relativeWatch, stack);
+
+      getGroupCode(config, relativeWatch, stack, code => {
+        //写入编译之后的代码
+        wakeout.writeSync(dirFile, code);
+        compile(replaceTagBySrc(), true);
+      });
+
+
+
     } else { //解析单个css文件
 
       if (!wake.existsSync(srcFile)) {
@@ -179,14 +206,19 @@ function insetCode(html, config, relativeWatch, stack, compile) {
         code = wake.readDataSync(srcFile);
         watchRebuildFile(config, relativeWatch, srcFile, dirFile, stack)
       }
+
+      config.build(code, srcFile, stack.build, function(code) {
+
+        code = rap.parse.parseFileByCssCode(code, srcFile, config, relativeWatch)
+
+        //写入编译之后的代码
+        wakeout.writeSync(dirFile, code);
+
+        compile(replaceTagBySrc(), true);
+      })
+
     }
 
-    config.build(code, srcFile, stack.build, function(code) {
-      //写入编译之后的代码
-      wakeout.writeSync(dirFile, code);
-      rap.parse.parseFileByCssCode(code, config, relativeWatch)
-      compile(replaceTagBySrc(), true);
-    })
 
 
     //远程js文件
@@ -207,7 +239,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
 /**
  * 解析css,默认使用less编译,必须要用异步
  * */
-rap.parse.handleCSS = function(orgHtml, config, relativeWatch, callback) {
+rap.parse.handleCSS = function(orgHtml, config, relativeWatch, templatePath, callback) {
 
   if (config.complie) {
     console.log("warn".warn, "current html handling css");
@@ -246,7 +278,7 @@ rap.parse.handleCSS = function(orgHtml, config, relativeWatch, callback) {
       config.complie = false;
       return "";
     }
-    codeStack(sourceTags, config, ".css",
+    codeStack(sourceTags, config, ".css", templatePath,
       function(stack, idx, len) {
         insetCode(html, config, relativeWatch, stack, (template, locationFlag) => {
           if (locationFlag) {

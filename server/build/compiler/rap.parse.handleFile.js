@@ -9,14 +9,14 @@ const pt = require("path")
 /**
  * 拷贝文件，并且得到浏览路径,处理preload和css和js的时候需要编译
  * */
-function copyFile(m1, config, relativeWatch) {
-  if ((/^https?:/i.test(m1) || /^\/\//i.test(m1)) || /^data:/.test(m1)) {
+function copyFile(m1, comeFrom, config, relativeWatch) {
+  if ((/^https?:/i.test(m1) || /^\/\//i.test(m1)) || /^data:/.test(m1) || pt.extname(m1) == ".html" || pt.extname(m1) == ".htm" || !pt.extname(m1)) {
     return m1;
   } else {
     var param = URL.parse(m1.trim(), true).query || {}; //必须提前解析param,URL.parse第二个参数为true才能保证输出的是对象
     var src = m1.split("?")[0];
     var outpath = config.output(config.templatePath, src);
-    var inpath = config.input(config.templatePath, src);
+    var inpath = config.input(comeFrom, src);
     var browserPath = config.browser(src);
     //只需要拷贝
     relativeWatch[inpath.toURI()] = function() {
@@ -90,9 +90,10 @@ function renderJs(code) {
 /**
  * 解析url()文件
  * */
-function parseFileByCssCode(code, config, relativeWatch) {
+function parseFileByCssCode(code, comeFrom, config, relativeWatch) {
   return code.replace(/url\(([^\)]+)\)/gi, function(m, m1) {
-    var browserPath = copyFile(m1, config, relativeWatch);
+    m1 = m1.split("?")[0].split("#")[0].replace(/"|'/g, "");
+    var browserPath = copyFile(m1, comeFrom, config, relativeWatch);
     return "url(" + browserPath + ")";
   })
 }
@@ -105,7 +106,7 @@ function handleFile(html, config, relativeWatch) {
   var styleTags = parseTag("style", html);
 
   styleTags.forEach(item => {
-    html = html.replace(item.template, parseFileByCssCode(item.template, config, relativeWatch));
+    html = html.replace(item.template, parseFileByCssCode(item.template, config.templatePath, config, relativeWatch));
   });
 
   //解析标签中的图片
@@ -121,9 +122,9 @@ function handleFile(html, config, relativeWatch) {
         m1 = reReg[2]
       }
       if (attrItem == "style") {
-        ret = parseFileByCssCode(m1, config, relativeWatch);
+        ret = parseFileByCssCode(m1, config.templatePath, config, relativeWatch);
       } else {
-        var browserPath = copyFile(m1, config, relativeWatch);
+        var browserPath = copyFile(m1, config.templatePath, config, relativeWatch);
         ret = browserPath;
       }
       return " " + attrItem + "=" + quot + ret + quot;
