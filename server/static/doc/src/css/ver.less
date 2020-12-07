@@ -104,6 +104,17 @@
     }
   }
 
+  .ptb@{i} {
+    padding-top:~"@{i}px";
+    padding-bottom:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding-bottom:~`half(~"@{i}", 5)`;
+      padding-top:~`half(~"@{i}", 5)`;
+    }
+  }
+
+
   .pt@{i} {
     padding-top:~"@{i}px";
 
@@ -164,3 +175,13 @@
 }
 
 .space(60, 5);
+
+.clearfix {
+  zoom: 1;
+  *zoom: 1;
+
+  &:after,
+  &:before {
+    clear: both;
+  }
+}
