@@ -125,7 +125,7 @@ function getGroupCode(config, relativeWatch, stack, callback) {
         maxCallBack++;
         if (maxCallBack == stack.groupStack.length) {
           unique = null;
-          callback(groupCode.join("\n;\n"));
+          callback(groupCode.join("\n\n"));
         }
       })
     }

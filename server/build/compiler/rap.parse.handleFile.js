@@ -13,8 +13,9 @@ function copyFile(m1, comeFrom, config, relativeWatch) {
   if ((/^https?:/i.test(m1) || /^\/\//i.test(m1)) || /^data:/.test(m1) || pt.extname(m1) == ".html" || pt.extname(m1) == ".htm" || !pt.extname(m1)) {
     return m1;
   } else {
+    var hash = URL.parse(m1.trim(), true).hash || ""; //必须提前解析param,URL.parse第二个参数为true才能保证输出的是对象
     var param = URL.parse(m1.trim(), true).query || {}; //必须提前解析param,URL.parse第二个参数为true才能保证输出的是对象
-    var src = m1.split("?")[0];
+    var src = m1.split("?")[0].split("#")[0];
     var outpath = config.output(config.templatePath, src);
     var inpath = config.input(comeFrom, src);
     var browserPath = config.browser(src);
@@ -32,7 +33,8 @@ function copyFile(m1, comeFrom, config, relativeWatch) {
       param.version = wake.getModifySync(inpath);
       param = querystring.stringify(param || {});
       param = (param ? ("?" + param) : "");
-      return browserPath + param;
+
+      return browserPath + param + hash;
     } else {
       console.log("not find resource:".error, m1);
       return m1;
@@ -92,7 +94,7 @@ function renderJs(code) {
  * */
 function parseFileByCssCode(code, comeFrom, config, relativeWatch) {
   return code.replace(/url\(([^\)]+)\)/gi, function(m, m1) {
-    m1 = m1.split("?")[0].split("#")[0].replace(/"|'/g, "");
+    m1 = m1.replace(/"|'/g, "");
     var browserPath = copyFile(m1, comeFrom, config, relativeWatch);
     return "url(" + browserPath + ")";
   })

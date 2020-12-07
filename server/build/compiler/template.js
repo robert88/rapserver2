@@ -38,7 +38,7 @@ function templ(templStr, json, setHelp) {
             var $ID =${eachID};
             var $parent,$parentIndex,$parentLength,$parentEach;
             $parentEach = ${parentStr.join("||")};
-            if(!$parentEach){ 
+            if($parentEach){ 
                 $parent= $parentEach.$value;
                 $parentIndex=$parentEach.$index;
                 $parentLength= $parentEach.$length;
