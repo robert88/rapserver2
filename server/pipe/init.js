@@ -9,9 +9,9 @@ module.exports = function(run, timeout) {
           var xReq = set.headers['x-requested-with']
           return (xReq && (xReq.toLowerCase() == "XMLHttpRequest".toLowerCase()))
         },
-        ip(set) {
+        ip(set) { //解析ip，ipv6(::ffff:ip或者::1)
           var ip = set.client.localAddress;
-          return ip && ip.replace("::ffff:", "");
+          return ip && ip.replace("::ffff:", "").replace("::1", "127.0.0.1");
         },
         port: function(set) {
           return set.client.localPort;
@@ -53,9 +53,11 @@ module.exports = function(run, timeout) {
       }
       response.rap = {} //响应也有rap字段
       //异步才会超时
-      response.rap.timer = setTimeout(() => {
-        throw Error("request timeout");
-      }, timeout || 120000);
+      if (ENV == "product") {
+        response.rap.timer = setTimeout(() => {
+          throw Error("request timeout");
+        }, timeout || 120000);
+      }
       next();
     }
 

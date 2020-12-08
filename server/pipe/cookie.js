@@ -13,9 +13,11 @@ module.exports = function(run, staticMap) {
 
       var cookie = request.headers["cookie"];
 
-
-      request.rap.cookie = cookie && qs.parse(cookie.replace(/;/g, "&")) || {}
-
+      request.rap.cookie = {};
+      let parseCookie = cookie && qs.parse(cookie.replace(/;/g, "&")) || {}
+      for (let k in parseCookie) {
+        request.rap.cookie[k.trim()] = parseCookie[k].trim();
+      }
       response.rap.cookie = {};
 
       //如果客户端是第一次那么就需要设置rapid,(这是浏览器的自动功能，用户不会察觉到），当服务器处理完这个表单后，将结果返回给rapid==SessionId

@@ -68,7 +68,7 @@ function webServerWorker() {
           if (response.finished || response.error) {
             return;
           }
-          console.log("in:", request.maskIndex, tap.name)
+          // console.log("in:", request.maskIndex, tap.name)
           fn.apply(tap, arguments);
         }
       }
@@ -83,7 +83,7 @@ function webServerWorker() {
         tap.stage = errorStagMap[tap.name];
         var fn = tap.fn;
         tap.fn = function(err, response, comefrom) {
-          console.log("error:", response.maskIndex, tap.name)
+          // console.log("error:", response.maskIndex, tap.name)
           if (!response.error) {
             console.error("error:", err.stack)
             response.error = true;
@@ -104,11 +104,11 @@ function webServerWorker() {
       register: (tap) => {
         tap.stage = outStagMap[tap.name];
         var fn = tap.fn;
-        tap.fn = function(request) {
+        tap.fn = function(request, response) {
           if (response.finished || response.error) {
             return;
           }
-          console.log("out:", request.maskIndex, tap.name)
+          // console.log("out:", request.maskIndex, tap.name)
           fn.apply(tap, arguments);
         }
       }

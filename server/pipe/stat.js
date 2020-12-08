@@ -35,7 +35,7 @@ module.exports = function(run) {
       let realRoot = request.rap.realRoot;
       if (realFile) {
         //可以读取和更新
-        run.state.readOrUpdate(realId, realRoot, realFile, "read", (data) => {
+        run.state.readOrUpdate(realId, realRoot, realFile, (data) => {
           request.rap.realStat = data; //得到当前url的stat信息
           next();
         });

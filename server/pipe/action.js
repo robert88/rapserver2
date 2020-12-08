@@ -78,7 +78,7 @@ class Action {
       let actionPath = toPath(this.actionMap[uuid])
       let files = this.system.input.findFileSync(actionPath, "js", true);
       files.forEach((file) => {
-        this.parseAction(file, actionPath);
+        this.parseAction(file, actionPath, uuid);
       });
 
     }
@@ -117,7 +117,7 @@ class Action {
   }
 
   //解析js
-  parseAction(file, actionPath) {
+  parseAction(file, actionPath, uuid) {
 
     //清除一下缓存
     clearLocalRequireCache(file);
@@ -135,7 +135,7 @@ class Action {
 
         //不以“/”开头就得合并文件名作为action的一部分；“/”开头的action不会拼接文件路径
         if (!key.indexOf("/") == 0) {
-          actionName = (filePath + "/" + key).toLowerCase();
+          actionName = ("/" + uuid + "/" + filePath + "/" + key).toLowerCase().toURI();
         }
         //友好的提示
         if (this.map[actionName]) {

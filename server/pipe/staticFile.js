@@ -21,7 +21,11 @@ let html5 = `<!DOCTYPE html>
 /**
  *如果存在就返回一个真实的地址
  * */
-function checkFileExist(run, ret, rootPath, callback) {
+function checkFileExist(run, ret, rootId, rootPath, callback) {
+
+  // if (ret.indexOf("/" + rootId) == 0) {
+  //   ret = ret.replace("/" + rootId, "");
+  // }
 
   var basename = path.basename(ret);
   //如果是/ 默认就定义到index.html
@@ -94,7 +98,7 @@ module.exports = function(run) {
         //必须传递function不能用箭头函数
         asyncArr.push(function() {
           var queue = this;
-          checkFileExist(run, request.rap.url, staticMap[id], realFile => {
+          checkFileExist(run, request.rap.url, id, staticMap[id], realFile => {
             if (realFile) {
               queue.done(null, realFile, id, staticMap[id]);
             } else {
@@ -137,13 +141,12 @@ module.exports = function(run) {
 
       var clientSupportGzip = acceptEncoding.match(new RegExp("gzip", "i"))
       //这些文件已经经过了高度压缩,所以不需要压缩
-      let extname = path.extname(filePath);
+      let extname = path.extname(filePath).replace(".", "");
       let videoFile = /(mp3)|(mp4)|(wav)/.test(extname);
       var fileNotZip = /(jpg)|(ppt)|(pdf)|(doc)|(ico)|(gif)|(png)/.test(extname);
       let zip;
       let realStat = request.rap.realStat;
 
-      response.writeHead(200);
       if (mineType[extname]) {
         response.setHeader("Content-Type", [mineType[extname]]);
       }
@@ -175,8 +178,6 @@ module.exports = function(run) {
           response.writeHead(200);
           response.end(html5.tpl(ret));
         })
-
-
         return;
       }
       //文件是否需要压缩，且客户端是否支持压缩,只支持gzip压缩
@@ -187,6 +188,7 @@ module.exports = function(run) {
         //保持连接，设置错了报错HPE_INVALID_CONSTANT
         response.setHeader("Transfer-Encoding", "chunked");
         response.removeHeader("Content-Length")
+        response.writeHead(200);
       } else if (videoFile) {
         headerOption["Content-Length"] = realStat.size;
         headerOption["Content-Range"] = "bytes 0-{0}/{1}".tpl(realStat.size - 1, realStat.size);
@@ -200,6 +202,7 @@ module.exports = function(run) {
           response.setHeader("Transfer-Encoding", "chunked");
           response.removeHeader("Content-Length");
         }
+        response.writeHead(200);
       } else {
         throw new Error(`ENOENT: no such file or directory, stat '${request.rap.url}'`)
       }
@@ -213,7 +216,7 @@ module.exports = function(run) {
         inp.pipe(response);
       }
 
-      console.log("response static file ");
+      // console.log("response static file ");
     }
   })
 }

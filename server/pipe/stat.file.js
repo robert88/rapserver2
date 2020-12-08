@@ -5,21 +5,22 @@ const AsyncSeries = localRequire("@/server/lib/node_modules/enhanced-resolve/lib
  *将文件信息统计到一个json文件中
  */
 class StaticFileState {
-  constructor(staticPathMap, system, tempDir, log) {
-    this.staticStateMap = staticPathMap;
+  constructor(staticStateMap, system, tempDir, log) {
+    this.staticStateMap = staticStateMap;
     this.system = system;
     this.tempDir = tempDir;
     this.log = log || { warn: function() {} }
-    if (!staticPathMap) {
+    if (!staticStateMap) {
       this.log.warn("warning not find static file path");
       return;
     }
+    this.init().catch(e => { console.error(e && e.message, e && e.stack) });
   }
   //多是异步的
   async init() {
-    let staticPathMap = this.staticPathMap;
-    for (let id in staticPathMap) {
-      await this.initOne(id, root);
+    let staticStateMap = this.staticStateMap;
+    for (let id in staticStateMap) {
+      await this.initOne(id, staticStateMap[id]);
     }
   }
 
@@ -30,9 +31,7 @@ class StaticFileState {
         if (err) {
           reject(err);
         }
-        this.getAllStat(id, root, allFile).then(stateMap => {
-          return this.writeStat(stateMap);
-        }).then(() => {
+        this.getAllStat(id, root, allFile).then((stateMap) => {
           resove(stateMap);
         }).catch(e => {
           reject(e);
@@ -44,29 +43,17 @@ class StaticFileState {
     let stateMap = {};
     for (var i = 0; i < allFile.length; i++) {
       let file = allFile[i];
-      let relativefile = id + "/" + pt.dirname(file.replace(root, ''));
-      stateMap[relativefile] = stateMap[relativefile] || {}
-      stateMap[relativefile][pt.basename(file)] = await this.getStat(file);
+      let relativefile = pt.dirname(file.replace(root, ''));
+      relativefile = relativefile || "/";
+      stateMap[id] = stateMap[id] || {};
+      stateMap[id][relativefile] = stateMap[id][relativefile] || {}
+      stateMap[id][relativefile][pt.basename(file)] = await this.getStat(file);
     }
-    return stateMap;
+    this.stateMap = stateMap;
+    return stateMap
   }
 
-  async writeStat(stateMap) {
-    let tempDir = this.tempDir;
-    for (let dir in stateMap) {
-      var map = stateMap[dir]
-      var jsonFile = (tempDir + "/" + dir.replace(/\/+$/g, "") + ".json").toURI();
-      await new Promise((resove, reject) => {
-        this.system.output.write(jsonFile, JSON.stringify(map), err => {
-          if (err) {
-            reject(err);
-          }
-          this.system.input.purge("all", jsonFile);
-          resove(map)
-        })
-      })
-    }
-  }
+
 
   /*获取单个文件的stat信息*/
   async getStat(file) {
@@ -100,26 +87,7 @@ class StaticFileState {
     }
     return stat;
   }
-  getStatFile(realId, realRoot, updateFile) {
 
-    if (!updateFile) {
-      this.log.warn("warning not find real file path", updateFile);
-      return;
-    }
-
-    if (!realId) {
-      this.log.warn("warning not find real file root id", realId);
-      return;
-    }
-
-    if (!realRoot) {
-      this.log.warn("warning not find real file root path", realRoot);
-      return;
-    }
-    return ((this.tempDir + "/" + realId + "/" + pt.dirname(updateFile)).replace(/\/+$/g, "") + ".json").toURI();
-
-
-  }
 
   /*更新单个文件的stat信息
    * realId /真实的跟路径的id
@@ -128,41 +96,20 @@ class StaticFileState {
    * type
    * callback回调
    */
-  readOrUpdate(realId, realRoot, realFile, type, callback) {
+  readOrUpdate(realId, realRoot, realFile, callback) {
 
-    var jsonFile = this.getStatFile(realId, realRoot, realFile.replace(realRoot, ""));
-
-    if (!jsonFile) {
-      throw new Error("not find cache file")
+    let relativefile = pt.dirname(realFile.replace(realRoot, ''));
+    relativefile = relativefile || "/";
+    let stat = this.stateMap[realId] && this.stateMap[realId][relativefile] && this.stateMap[realId][relativefile][pt.basename(realFile)];
+    if (stat) {
+      callback(stat);
+    } else {
+      this.getStat(realFile).then(stat => {
+        callback(stat);
+      }).catch(e => {
+        throw e;
+      })
     }
-
-    this.system.input.readJson(jsonFile, (err, data) => {
-      if (err) {
-        throw err;
-      }
-      data = data || {};
-      let filename = pt.basename(realFile);
-      //获取信息
-      if (type == "update" || !data[filename]) {
-        this.system.input.purge("stat", realFile);
-        this.getStat(realFile).then(statInfo => {
-          data[filename] = statInfo;
-          this.system.output.write(jsonFile, JSON.stringify(data), err => {
-            if (err) {
-              throw err;
-            }
-            this.system.input.purge("all", jsonFile);
-          })
-          callback(statInfo);
-          data = null;
-        });
-      } else {
-        callback(data[filename]);
-        data = null;
-      }
-
-
-    })
   }
 
 }
