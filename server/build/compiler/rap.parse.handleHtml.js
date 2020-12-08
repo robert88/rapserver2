@@ -1,6 +1,7 @@
 const wake = rap.system.input;
 const { clearNoteTag, parseTag } = require("./parse");
 const parseTemplate = require("./template");
+const pt = require("path");
 
 rap.parse = rap.parse || {}
 
@@ -47,14 +48,14 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
     unique[src] = false;
 
     //插槽的位置
-    var slotName = tagInfo.attrs[config.slotTag]||tagInfo.attrs.name;
+    var slotName = tagInfo.attrs[config.slotTag] || tagInfo.attrs.name;
 
     //使用去掉模板标签
     var slotHtml = tagInfo.innerHTML;
 
-    htmlFromTag = clearNoteTag(config.slotTag||"slot", htmlFromTag);
+    htmlFromTag = clearNoteTag(config.slotTag || "slot", htmlFromTag);
 
-    var slotsTag = parseTag(config.slotTag||"slot", htmlFromTag);
+    var slotsTag = parseTag(config.slotTag || "slot", htmlFromTag);
 
 
     //定义了插槽，而且定义了填充的位置
@@ -62,7 +63,7 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
     if (slotName) {
       var findReplace = false;
       slotsTag && slotsTag.forEach(function(tag) {
-        var mapName = tag.attrs[config.slotTagId]||tag.attrs.name;//config slot是为了兼容之前的模板
+        var mapName = tag.attrs[config.slotTagId] || tag.attrs.name; //config slot是为了兼容之前的模板
         if (slotName == mapName) {
           htmlFromTag = htmlFromTag.replace(tag.template, slotHtml);
           findReplace = true;
@@ -73,7 +74,7 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
         htmlFromTag = htmlFromTag + slotHtml;
         console.log("warning:".warn, parseData.__templateFile__, ("-> slot name=(" + slotName + ") not find:").warn, " in ", src);
       }
-    }else if(slotsTag.length){
+    } else if (slotsTag.length) {
       console.log("warning:".warn, parseData.__templateFile__, ("-> slot name=(" + slotName + ") not find:").warn, " in ", src);
     }
 
@@ -88,7 +89,7 @@ function byTag(tag, orgHtml, config, parentData, relativeWatch, unique) {
 解析useSlot 标签
 */
 rap.parse.useSlot = function(orgHtml, config, parentData, relativeWatch, unique) {
-  return byTag(config.useSlot||"useSlot", orgHtml, config, parentData, relativeWatch, unique)
+  return byTag(config.useSlot || "useSlot", orgHtml, config, parentData, relativeWatch, unique)
 }
 /*
 解析include 标签
@@ -110,6 +111,32 @@ rap.parse.byHtml = function(orgHtml, config, parseData, relativeWatch, unique) {
     return orgHtml;
   }
 
+  if (rap.parse.parseRelativePath) {
+
+    config.fileAttrs.forEach(attrItem => {
+      var reg = new RegExp("\\s" + attrItem + "\\s*=\\s*(\")([\\u0000-\\uFFFF]*?[^\\\\])\"|" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm")
+      orgHtml = orgHtml.replace(reg, function(m, quot, m1) {
+        var ret;
+        if (!m1) {
+          //后面的括号匹配不到
+          var reReg = new RegExp("\\s*" + attrItem + "\\s*=\\s*(')([\\u0000-\\uFFFF]*?[^\\\\])\'", "igm").exec(m);
+          quot = reReg[1]
+          m1 = reReg[2]
+        }
+        //不需要替换
+        if ((/^https?:/i.test(m1) || /^\/\//i.test(m1)) || /^data:/.test(m1) || pt.extname(m1) == ".html" || pt.extname(m1) == ".htm" || !pt.extname(m1)) {
+          return m;
+        }
+
+        ret = rap.parse.parseRelativePath(parseData.__templateFile__, m1);
+
+        return " " + attrItem + "=" + quot + ret + quot;
+      })
+    })
+
+  }
+
+
   //解析useSlot 标签
   orgHtml = rap.parse.useSlot(orgHtml, config, parseData, relativeWatch, unique);
 
@@ -121,13 +148,13 @@ rap.parse.byHtml = function(orgHtml, config, parseData, relativeWatch, unique) {
 
 
 /*
-* entryFile 入口文件
-* config 编译html的配置文件
-* parentData 入口数据
-* parentRelativeWatch 父类监听，第一次是父类，第二次是自己
-* unique 是
-* 通过html文件来解析
-*/
+ * entryFile 入口文件
+ * config 编译html的配置文件
+ * parentData 入口数据
+ * parentRelativeWatch 父类监听，第一次是父类，第二次是自己
+ * unique 是
+ * 通过html文件来解析
+ */
 rap.parse.byHtmlFile = function(entryFile, config, parentData, parentRelativeWatch, unique) {
 
   unique = unique || {};

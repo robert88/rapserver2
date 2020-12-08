@@ -24,7 +24,7 @@ rap.parse.input = function(templatePath, resolvePath) {
 /*
 源路径转目标路径的物理路径
 */
-rap.parse.output =function(templatePath, resolvePath, type) {
+rap.parse.output = function(templatePath, resolvePath, type) {
   resolvePath = resolvePath && resolvePath.trim().toURI() || "";
   if (!resolvePath) {
     return "";
@@ -34,7 +34,7 @@ rap.parse.output =function(templatePath, resolvePath, type) {
   }
   var dirNameSpace = rap.parse.outputName || "dist";
   if (type) {
-    resolvePath = resolvePath.replace(/\.\w+$/,"")+type;
+    resolvePath = resolvePath.replace(/\.\w+$/, "") + type;
   }
   if (resolvePath.indexOf("/") == 0) {
     return (root + `/${dirNameSpace}/` + resolvePath.trim()).toURI();
@@ -58,7 +58,7 @@ rap.parse.browser = function(resolvePath, type) {
   }
   var dirNameSpace = rap.parse.outputName || "dist";
   if (type) {
-    resolvePath = resolvePath.replace(/\.\w+$/,"")+type;
+    resolvePath = resolvePath.replace(/\.\w+$/, "") + type;
   }
   if (resolvePath.trim().toURI().indexOf("/") == 0) {
     return (`/${dirNameSpace}/` + resolvePath.trim()).toURI();
@@ -68,4 +68,8 @@ rap.parse.browser = function(resolvePath, type) {
     return resolvePath;
   }
 }
- 
+
+rap.parse.parseRelativePath = function(templatePath, resolvePath) {
+  var src = rap.parse.input(templatePath, resolvePath);
+  return src.replace(root, "");
+}

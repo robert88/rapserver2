@@ -72,7 +72,7 @@ rap.build = function(entryPath, config) {
 function hanlderHtml(relativeFile, relativeWatch, config) {
 
   //将config带入css和js里面
-  config.html = createConfig({ compression: rap.parse.compressionHtml }, config.html)
+  config.html = createConfig({ compression: rap.parse.compressionHtml, fileAttrs: ["href", "src"], }, config.html)
 
   relativeFile = relativeFile.toURI();
 

@@ -5,6 +5,12 @@
  */
 
 //循环
+global.ATTR = function(attr, value) {
+  if (value) {
+    return attr + "=\"" + value + "\""
+  }
+  return ""
+}
 
 function templ(templStr, json, setHelp) {
   var eachID = 0;
@@ -85,9 +91,11 @@ function templ(templStr, json, setHelp) {
 function splitNotReplace(c, reg) {
   var a = [];
   var d = 0;
-  c.replace(reg, function(m, m1) { a.push(c.slice(d, m1));
+  c.replace(reg, function(m, m1) {
+    a.push(c.slice(d, m1));
     d = m1 + m.length;
-    a.push(m); });
+    a.push(m);
+  });
   if (d < c.length) { a.push(c.slice(d, c.length)) }
   return a;
 }
