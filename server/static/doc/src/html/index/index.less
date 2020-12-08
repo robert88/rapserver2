@@ -10,19 +10,55 @@
       color: @titleColor;
     }
 
+    .content {
+      .ptb20;
+    }
+
     .left {
       width: 50%;
     }
 
     .right {
       width: 50%;
+      .pl20;
+
+      ul {
+
+
+
+        >li {
+
+          +li {
+            .pt20;
+          }
+
+          &:nth-child(odd) {
+            background: #fff;
+          }
+
+          display: flex;
+
+          .rootId {
+            width: 36%;
+            color: @success
+          }
+
+          .rootPath {
+            width: 64%
+          }
+        }
+
+
+      }
+
     }
   }
 }
 
 .middle-line {
-  height: 60px;
+  .ptb30;
   .fs32;
+  background: linear-gradient(to right, #b4b2bd, #d7b7ba, #b9cade, #d8d6ca);
   text-align: center;
   color: #fff;
   position: relative;
