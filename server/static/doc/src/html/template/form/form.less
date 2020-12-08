@@ -1,5 +1,8 @@
 @import (reference) "../../../css/ver.less";
 
+/*
+* 校验
+*/
 .validItem {
   position: relative;
 
@@ -47,4 +50,73 @@
     }
   }
 
+}
+
+/**
+*样式
+*/
+.ipt-form {
+  .ipt-field {
+    position: relative;
+    .pt10;
+    .fs14;
+
+    .ipt-wrap {
+      cursor: text;
+      display: block;
+      .pt20;
+      position: relative;
+
+      .ipt-textArea,
+      .ipt-text {
+        display: block;
+        color: #333;
+        width: 100%;
+        border: none;
+        font-family: inherit;
+        line-height: 1.375;
+        padding: 5px 0;
+        background-color: transparent;
+        -webkit-box-shadow: inset 0 -1px 0 0 #D6D6D6;
+        box-shadow: inset 0 -1px 0 0 #D6D6D6;
+
+        &:focus {
+          -webkit-box-shadow: inset 0 -2px 0 0 #C7000B;
+          box-shadow: inset 0 -2px 0 0 #C7000B;
+
+          @media (max-width: @ipadV) {
+            /*ios不支持box-shadow*/
+            border-bottom: 1px solid #C7000B;
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            border-radius: 0;
+          }
+        }
+
+        &.ipt-not-empty,
+        &.force-focus,
+        &:focus,
+        &.ipt-not-empty {
+          outline: none;
+
+          &~.ipt-label {
+            top: 0;
+            font-size: 12px;
+            line-height: 1.5;
+          }
+        }
+      }
+    }
+
+    .ipt-label {
+      position: absolute;
+      left: 0;
+      top: 14px;
+      line-height: 1.83333333;
+      color: #999;
+      transition: 0.2s ease all;
+      -moz-transition: 0.2s ease all;
+      -webkit-transition: 0.2s ease all;
+    }
+  }
 }

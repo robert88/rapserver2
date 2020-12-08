@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/src/html/template/form/form.less" group="/src/base.css">
 <form autocomplete="off" class="ipt-form">
   {{#each fieldset}}
 
@@ -5,7 +6,7 @@
 
       <fieldset class="ipt-field J-validItem">
         <label class="ipt-wrap">
-          <textarea class="ipt-textArea J-tabItem" name="{{$value.name}}" type="{{$value.type}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}></textarea>
+          <textarea class="ipt-textArea J-tabItem {{$value.className}}" {{ATTR('id',$value.id)}} name="{{$value.name}}" type="{{$value.type}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}></textarea>
           <span class="ipt-bar"></span>
           <span class="ipt-label">{{$value.label}}</span>
         </label>
@@ -18,7 +19,7 @@
         <fieldset class="ipt-field J-validItem">
           <div class="J-select J-vertical-visible">
             <label class="ipt-wrap">
-              <input class="ipt-text J-select-text J-tabItem " type="text" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>
+              <input class="ipt-text J-select-text J-tabItem {{$value.className}}" {{ATTR('id',$value.id)}} type="text" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>
               <input class="J-select-value" name="{{$value.name}}" type="hidden" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>
               <span class="ipt-bar"></span>
               <span class="ipt-label">{{$value.label}}</span>
@@ -36,8 +37,8 @@
 
           <fieldset class="ipt-field J-validItem">
             <label class="ipt-wrap">
-              <label class="ipt-radio-label  J-tabItem"><input name="{{$value.name}}" value="Y" type="radio" class="ipt-radio" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>{{yes}}</label>
-              <label class="ipt-radio-label  J-tabItem"><input name="{{$value.name}}" value="N" type="radio" class="ipt-radio" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>{{no}}</label>
+              <label class="ipt-radio-label  J-tabItem"><input name="{{$value.name}}" value="Y" type="radio" class="ipt-radio {{$value.className}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>{{yes}}</label>
+              <label class="ipt-radio-label  J-tabItem"><input name="{{$value.name}}" value="N" type="radio" class="ipt-radio {{$value.className}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>{{no}}</label>
               <span class="ipt-bar"></span>
               <span class="ipt-label">{{$value.label}}</span>
             </label>
@@ -46,10 +47,9 @@
 
 
           {{#elseIf ($value.type=='btn')}}
-
             <fieldset class="ipt-field J-validItem">
               <label class="ipt-wrap">
-                <div class="hw-btn btn-solid-red font-medium J-submitBtn btn-large J-submitEnter J-submitFocus disabled" tabindex=0><span>提交</span></div>
+                <div class="btn btn-success J-submitBtn J-submitEnter J-submitFocus disabled"><span>{{$value.label}}</span></div>
               </label>
               <div class="ipt-error J-valid-msg"></div>
             </fieldset>
@@ -58,7 +58,7 @@
 
               <fieldset class="ipt-field J-validItem">
                 <label class="ipt-wrap">
-                  <input class="ipt-textArea J-tabItem" name="{{$value.name}}" type="{{$value.type}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>
+                  <input class="ipt-text J-tabItem {{$value.className}}" {{ATTR('id',$value.id)}} name="{{$value.name}}" type="{{$value.type}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}>
                   <span class="ipt-bar"></span>
                   <span class="ipt-label">{{$value.label}}</span>
                 </label>
