@@ -101,7 +101,7 @@
     $("#staticRootId").off("change").on("change", function() {
       var key = $(this).val();
       if (staticPathMap[key]) {
-        $("#staticRootPath").val(staticPathMap[key])
+        $("#staticRootPath").val(staticPathMap[key]).trigger("change")
       }
     })
   }
