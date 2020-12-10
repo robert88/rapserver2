@@ -7,31 +7,29 @@ exports = module.exports = {
     var run = this;
     var params = req.rap.query;
     if (!params.path || !params.rootId) {
-      throwError("params error", MESSAGE);
-      return;
+      throw Error("params error");
     } else if (params.rootId == "rapserver") {
-      throwError("can not change rapserver", MESSAGE);
-      return;
+      throw Error("can not change rapserver");
     }
-    rap.config.staticPathMap[params.rootId] = params.path;
-    updateStaticPathMapCache();
-    next(rap.config.staticPathMap);
+    run.config.staticMap[params.rootId] = params.path;
+    run.state.init(run.config.staticMap);
+    next(run.config.staticMap);
   },
   /**
   删除path
   */
   "del": function(req, res, next) {
-    var params = req.params;
+    var run = this;
+    var params = req.rap.query;
     if (!params.rootId) {
-      throwError("params error", MESSAGE);
-      return;
+      throw Error("params error");
     } else if (params.rootId == "rapserver") {
-      throwError("can not del rapserver", MESSAGE);
-      return;
+      throw Error("can not change rapserver");
+    } else if (run.config.staticMap[params.rootId]) {
+      delete run.config.staticMap[params.rootId];
+      run.state.init(run.config.staticMap);
     }
-    delete rap.config.staticPathMap[params.rootId];
-    updateStaticPathMapCache();
-    next(rap.config.staticPathMap);
+    next(run.config.staticMap);
   },
   /**
    获取 path

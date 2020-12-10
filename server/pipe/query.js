@@ -99,7 +99,7 @@ module.exports = function(run) {
     name: "query",
     fn(request, response, next) {
       //提前解析了
-      if (request.rap.query) {
+      if (response.rap.query) {
         next();
         return
       }
@@ -109,18 +109,18 @@ module.exports = function(run) {
        * ...也能达到‘querystring库’的解析效果，而且不使用querystring
        */
 
-      request.rap.query = nodeUrl.parse(request.url, true).query;
+      response.rap.query = nodeUrl.parse(request.url, true).query;
 
-      switch (request.rap.method) {
+      switch (response.rap.method) {
         case "POST":
-          parsePostParams(request.rap, request, () => {
-            paramsTypeConvert(request.rap.query);;
+          parsePostParams(response.rap, request, () => {
+            paramsTypeConvert(response.rap.query);;
             next();
           });
           break;
         default: //get，delete
-          request.rap.binaryFlag = false;
-          paramsTypeConvert(request.rap.query);
+          response.rap.binaryFlag = false;
+          paramsTypeConvert(response.rap.query);
 
           next();
       }
@@ -131,7 +131,7 @@ module.exports = function(run) {
   run.outPipe.tapAsync({
     name: "query",
     fn(request, response, next) {
-      let query = request.rap.query;
+      let query = response.rap.query;
       if (query.response && query.response["x-binary-range"]) {
         response.setHeader("x-binary-range", query.response["x-binary-range"])
       }

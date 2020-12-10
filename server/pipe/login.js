@@ -8,7 +8,7 @@ module.exports = function(run) {
     fn(request, response, next) {
       //这个是
       var loginWrap = loginIntercept.wrap((req, res, actionNext) => { next() });
-      var splitUrl = request.rap.url.split("/");
+      var splitUrl = response.rap.url.split("/");
       var needLoginWrap = false;
       if (loginIntercept.path.size == 0) {
         next();
@@ -25,7 +25,7 @@ module.exports = function(run) {
       if (needLoginWrap) {
         //这里特别容易把next认为是action的next,不需要拦截走的是next，需要拦截的走的是actionNext
         loginWrap(request, response, (loginPath) => {
-          request.rap.url = loginPath;
+          response.rap.url = loginPath;
           next()
         });
       } else {

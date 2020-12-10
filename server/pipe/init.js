@@ -46,16 +46,16 @@ module.exports = function(run, timeout) {
         obj[i] = obj[i](request);
       }
       //定义request的rap,用于存储rquest信息
-      if (!request.rap) {
-        request.rap = obj;
+      if (!response.rap) {
+        response.rap = obj;
       } else {
-        request.rap = Object.assign(request.rap, obj);
+        response.rap = Object.assign(response.rap, obj);
       }
-      response.rap = {} //响应也有rap字段
+
       //异步才会超时
       if (ENV == "product") {
         response.rap.timer = setTimeout(() => {
-          throw Error("request timeout");
+          throw Error("Request Timeout");
         }, timeout || 120000);
       }
       next();

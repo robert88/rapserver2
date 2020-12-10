@@ -11,22 +11,22 @@ module.exports = function(run) {
   run.inPipe.tapAsync({
     name: "action",
     fn(request, response, next) {
-      if (request.rap.action) {
+      if (response.rap.action) {
         next();
       } else {
 
-        let mapUrl = request.rap.url.toLowerCase();
+        let mapUrl = response.rap.url.toLowerCase();
 
 
         run.action.getAction(mapUrl, request, response, run, mapInfo => {
           //得到是一个文件
           if (mapInfo.type == "file") {
-            request.rap.url = mapInfo.value;
+            response.rap.url = mapInfo.value;
             //得到是一个数据
           } else if (mapInfo.type == "remote") {
-            request.rap.redirect = mapInfo.value;
+            response.rap.redirect = mapInfo.value;
           } else if (mapInfo.type == "data") {
-            request.rap.action = mapInfo.value;
+            response.rap.action = mapInfo.value;
           }
           next();
         }, {});
@@ -38,8 +38,8 @@ module.exports = function(run) {
   run.outPipe.tapAsync({
     name: "action",
     fn(request, response, next) {
-      if (request.rap.action) {
-        let ret = request.rap.action;
+      if (response.rap.action) {
+        let ret = response.rap.action;
         if (typeof ret == "string") {
           response.setHeader("Content-Type", ["text/plain"])
         } else if (!Buffer.isBuffer(ret) && typeof ret == "object") {
@@ -48,8 +48,8 @@ module.exports = function(run) {
         }
         response.writeHead(200);
         response.end(ret);
-      } else if (request.rap.redirect) {
-        response.setHeader("Location", request.rap.redirect)
+      } else if (response.rap.redirect) {
+        response.setHeader("Location", response.rap.redirect)
         response.writeHead(301);
         response.end();
       } else {

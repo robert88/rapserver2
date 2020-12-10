@@ -74,7 +74,7 @@ module.exports = function(run) {
     fn(request, response, next) {
 
       //如果不是action，那么是realFile,下面是检索realFile
-      if (request.rap.action || request.rap.realFile || !run.config.staticMap) {
+      if (response.rap.action || response.rap.realFile || !run.config.staticMap) {
         next();
         return;
       }
@@ -83,8 +83,8 @@ module.exports = function(run) {
       var asyncArr = [];
 
       //获取特殊根地址，query优先
-      let cookiesRootId = request.rap.cookie && request.rap.cookie["serverRootId"];
-      let queryRootId = request.rap.query && request.rap.query["serverRootId"];
+      let cookiesRootId = response.rap.cookie && response.rap.cookie["serverRootId"];
+      let queryRootId = response.rap.query && response.rap.query["serverRootId"];
       let responseRootId = queryRootId || cookiesRootId;
       let staticMap = {};
 
@@ -94,11 +94,11 @@ module.exports = function(run) {
         staticMap = run.config.staticMap;
       }
 
-      for (var id in staticMap) {
+      for (let id in staticMap) {
         //必须传递function不能用箭头函数
         asyncArr.push(function() {
           var queue = this;
-          checkFileExist(run, request.rap.url, id, staticMap[id], realFile => {
+          checkFileExist(run, response.rap.url, id, staticMap[id], realFile => {
             if (realFile) {
               queue.done(null, realFile, id, staticMap[id]);
             } else {
@@ -114,11 +114,11 @@ module.exports = function(run) {
           throw err;
         }
         if (!realFile) {
-          throw new Error(`ENOENT: no such file or directory, stat '${request.rap.url}'`);
+          throw new Error(`ENOENT: no such file or directory, stat '${response.rap.url}'`);
         }
-        request.rap.realFile = realFile; //真实路径
-        request.rap.realRoot = realRoot; //真实的跟路径
-        request.rap.realId = realId; //真实的跟路径的id
+        response.rap.realFile = realFile; //真实路径
+        response.rap.realRoot = realRoot; //真实的跟路径
+        response.rap.realId = realId; //真实的跟路径的id
         next();
       })
 
@@ -128,9 +128,9 @@ module.exports = function(run) {
   run.outPipe.tapAsync({
     name: "staticFile",
     fn(request, response, next) {
-      var filePath = request.rap.realFile;
-      var realId = request.rap.realId;
-      var realRoot = request.rap.realRoot;
+      var filePath = response.rap.realFile;
+      var realId = response.rap.realId;
+      var realRoot = response.rap.realRoot;
       //存在静态文件
       if (!filePath || response.finished) {
         next();
@@ -145,7 +145,7 @@ module.exports = function(run) {
       let videoFile = /(mp3)|(mp4)|(wav)/.test(extname);
       var fileNotZip = /(jpg)|(ppt)|(pdf)|(doc)|(ico)|(gif)|(png)/.test(extname);
       let zip;
-      let realStat = request.rap.realStat;
+      let realStat = response.rap.realStat;
 
       if (mineType[extname]) {
         response.setHeader("Content-Type", [mineType[extname]]);
@@ -168,7 +168,7 @@ module.exports = function(run) {
             throw Error("system input io error")
           }
           let ret = ""
-          if (request.rap.url != "/") {
+          if (response.rap.url != "/") {
             ret += ' <a href = "{0}" > {0}</a> \n'.tpl(path.dirname(f))
           }
           files.forEach(f => {
@@ -204,7 +204,7 @@ module.exports = function(run) {
         }
         response.writeHead(200);
       } else {
-        throw new Error(`ENOENT: no such file or directory, stat '${request.rap.url}'`)
+        throw new Error(`ENOENT: no such file or directory, stat '${response.rap.url}'`)
       }
 
 

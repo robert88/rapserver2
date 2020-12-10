@@ -35,13 +35,13 @@ module.exports = function(run) {
   run.inPipe.tapAsync({
     name: "session",
     fn(request, response, next) {
-      let sessionId = request.rap.cookie["RAPID"] || response.rap.cookie["RAPID"].value;
+      let sessionId = response.rap.cookie["RAPID"] || response.rap.cookie["RAPID"].value;
       let sessionIdSplit = sessionId.split("_");
       let sessionPath = sessionIdSplit.slice(0, sessionIdSplit.length - 1).join("/");
       let sessionFile = sessionIdSplit.slice(sessionIdSplit.length - 1, sessionIdSplit.length) + ".json";
       let absPath = sessionRootPath + "/" + sessionPath + "/" + sessionFile;
 
-      request.rap.session = {
+      response.rap.session = {
 
         reset(callback) {
           this.cache = {};

@@ -30,13 +30,13 @@ module.exports = function(run) {
     name: "stat",
     fn(request, response, next) {
 
-      let realFile = request.rap.realFile;
-      let realId = request.rap.realId;
-      let realRoot = request.rap.realRoot;
+      let realFile = response.rap.realFile;
+      let realId = response.rap.realId;
+      let realRoot = response.rap.realRoot;
       if (realFile) {
         //可以读取和更新
         run.state.readOrUpdate(realId, realRoot, realFile, (data) => {
-          request.rap.realStat = data; //得到当前url的stat信息
+          response.rap.realStat = data; //得到当前url的stat信息
           next();
         });
 
@@ -51,7 +51,7 @@ module.exports = function(run) {
     name: "stat",
     fn(request, response, next) {
       //依赖于staticFile
-      let realStat = request.rap.realStat;
+      let realStat = response.rap.realStat;
       if (realStat && !response.finished) {
         var cache = {
           modify: request.headers["if-modified-single"],

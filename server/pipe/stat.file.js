@@ -6,7 +6,7 @@ const AsyncSeries = localRequire("@/server/lib/node_modules/enhanced-resolve/lib
  */
 class StaticFileState {
   constructor(staticStateMap, system, tempDir, log) {
-    this.staticStateMap = staticStateMap;
+
     this.system = system;
     this.tempDir = tempDir;
     this.log = log || { warn: function() {} }
@@ -14,11 +14,11 @@ class StaticFileState {
       this.log.warn("warning not find static file path");
       return;
     }
-    this.init().catch(e => { console.error(e && e.message, e && e.stack) });
+    this.init(staticStateMap).catch(e => { console.error(e && e.message, e && e.stack) });
   }
   //多是异步的
-  async init() {
-    let staticStateMap = this.staticStateMap;
+  async init(staticStateMap) {
+    this.stateMap = {};
     for (let id in staticStateMap) {
       await this.initOne(id, staticStateMap[id]);
     }
@@ -40,7 +40,7 @@ class StaticFileState {
     })
   }
   async getAllStat(id, root, allFile) {
-    let stateMap = {};
+    let stateMap = this.stateMap || {};
     for (var i = 0; i < allFile.length; i++) {
       let file = allFile[i];
       let relativefile = pt.dirname(file.replace(root, ''));
@@ -49,7 +49,6 @@ class StaticFileState {
       stateMap[id][relativefile] = stateMap[id][relativefile] || {}
       stateMap[id][relativefile][pt.basename(file)] = await this.getStat(file);
     }
-    this.stateMap = stateMap;
     return stateMap
   }
 
