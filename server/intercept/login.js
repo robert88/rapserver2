@@ -4,7 +4,7 @@ function createLoginWrap(action, stringFlag) {
     //当前的actionNext是action的next不是request的next
     loginFunc = function(request, response, actionNext) {
 
-      if (request.rap.session.get("global_accent_login")) {
+      if (response.rap.session.get("global_accent_login")) {
         action.call(null, request, response, actionNext);
       } else {
         actionNext("/__accent_login__");
@@ -12,7 +12,7 @@ function createLoginWrap(action, stringFlag) {
     }
   } else {
     loginFunc = function(request, response, actionNext) {
-      if (request.rap.session.get("global_accent_login")) {
+      if (response.rap.session.get("global_accent_login")) {
         actionNext(action);
       } else {
         actionNext("/__accent_login__");
@@ -40,7 +40,7 @@ module.exports = {
     }
   },
   setloginStatus(request, flag, next) {
-    request.rap.session.set("global_accent_login", flag, next)
+    response.rap.session.set("global_accent_login", flag, next)
   },
   //添加
   addPath(path) {

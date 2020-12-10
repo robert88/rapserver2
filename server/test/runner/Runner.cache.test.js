@@ -19,12 +19,12 @@ run4005.inPipe.tapAsync({
   name: "cacheTest",
   before: "cache",
   fn(request, response, next) {
-    request.rap = request.rap || {};
-    req = request.rap
+    response.rap = response.rap || {};
+    req = response.rap
     req.realFile = testPath1;
     req.realId = "rapserver"
     req.realRoot = localRequire("@/server/test/testCache", true);
-    req = request.rap;
+    req = response.rap;
     next();
   }
 })
@@ -32,7 +32,7 @@ run4005.inPipe.tapAsync({
 run4005.outPipe.tapAsync({
   name: "cacheTest",
   fn(request, response, next) {
-    var filePath = request.rap.realFile;
+    var filePath = response.rap.realFile;
     //存在静态文件
     if (!filePath) {
       next();

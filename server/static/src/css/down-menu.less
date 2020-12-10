@@ -1,0 +1,30 @@
+.down-menu-wrap {
+  display: none;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: 100%;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  background: #fff;
+  padding: 5px 0;
+  z-index: 1000;
+  line-height: 1.2;
+
+  &.active {
+    display: block
+  }
+
+  >dd {
+    padding: 5px;
+    cursor: pointer;
+
+    &.matched {
+      display: block;
+    }
+
+    &:hover {
+      background: #f7f7f7
+    }
+  }
+
+}

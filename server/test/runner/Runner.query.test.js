@@ -12,7 +12,7 @@ let req;
 run4004.inPipe.tapAsync({
   name: "querytest",
   fn(request, response, next) {
-    req = request.rap;
+    req = response.rap;
     next();
   }
 })

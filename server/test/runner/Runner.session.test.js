@@ -18,25 +18,25 @@ run4008.inPipe.tapAsync({
   fn(request, response, next) {
     if (req == 0) {
 
-      request.rap.session.set("login", true, () => {
-        request.rap.session.set("username", "robert", () => {
-          request.rap.session.set("password", "pw", () => {
+      response.rap.session.set("login", true, () => {
+        response.rap.session.set("username", "robert", () => {
+          response.rap.session.set("password", "pw", () => {
             next();
           })
         })
       })
     } else if(req == 1) {
-      se = request.rap.session.get("login");
-      request.rap.session.del("username", () => {
-        se2 = request.rap.session.get("username")
-        se3 = request.rap.session.get("password");
+      se = response.rap.session.get("login");
+      response.rap.session.del("username", () => {
+        se2 = response.rap.session.get("username")
+        se3 = response.rap.session.get("password");
         next();
       })
     }else{
-      request.rap.session.reset( () => {
-        se = request.rap.session.get("login");
-        se2 = request.rap.session.get("username")
-        se3 = request.rap.session.get("password");
+      response.rap.session.reset( () => {
+        se = response.rap.session.get("login");
+        se2 = response.rap.session.get("username")
+        se3 = response.rap.session.get("password");
         next();
       })
     }

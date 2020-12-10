@@ -226,7 +226,7 @@ function insetCode(html, config, relativeWatch, stack, compile) {
     compile(replaceTagBySrc(), true);
     //内联js代码
   } else if (stack.codeType == "code") {
-    code = config.build(stack.content, srcFile, stack.build, function(code) {
+    code = config.build(stack.content, stack.templatePath, stack.build, function(code) {
       template = `<style>${code}</style>`
       compile(template, true);
     });

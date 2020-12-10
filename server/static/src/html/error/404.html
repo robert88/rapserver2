@@ -1,0 +1,46 @@
+<useSlot src="/src/html/template/module.html" name="root">
+  <style>
+    #beastainer {
+      padding: 20px;
+      min-height: calc(100vh - 144px);
+      display: flex;
+      align-items: center;
+    }
+
+    #beastainer .img-wrap {
+      position: relative;
+      width: 300px;
+      height: 370px;
+      margin: 0 auto;
+    }
+
+    #beastainer img {
+      position: absolute;
+      left: 0;
+      top: 0
+    }
+
+    #beastainer #beast404le {
+      left: 111px;
+      top: 47px;
+      z-index: 1;
+    }
+
+    #beastainer #beast404re {
+      left: 207px;
+      top: 47px;
+      z-index: 1;
+    }
+  </style>
+  <div class="wrap">
+    <div id="beastainer">
+      <div class="img-wrap">
+        <img id="beast404le" src="https://developer.mozilla.org/static/img/beast-404_LE.f1435cace4b4.png" alt="">
+        <img id="beast404re" src="https://developer.mozilla.org/static/img/beast-404_RE.2e53f96c5abb.png" alt="">
+        <img class="beast 404" src="https://developer.mozilla.org/static/img/beast-404.ce38fcf80386.png" alt="">
+      </div>
+
+    </div>
+  </div>
+  <script src="404.js"></script>
+</useSlot>
