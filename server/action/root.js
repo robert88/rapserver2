@@ -5,7 +5,7 @@ exports = module.exports = {
    * */
   "add": function(req, res, next) {
     var run = this;
-    var params = req.rap.query;
+    var params = res.rap.query;
     if (!params.path || !params.rootId) {
       throw Error("params error");
     } else if (params.rootId == "rapserver") {
@@ -20,7 +20,7 @@ exports = module.exports = {
   */
   "del": function(req, res, next) {
     var run = this;
-    var params = req.rap.query;
+    var params = res.rap.query;
     if (!params.rootId) {
       throw Error("params error");
     } else if (params.rootId == "rapserver") {

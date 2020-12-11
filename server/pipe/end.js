@@ -1,5 +1,6 @@
 const input = rap.system.input;
 const pt = require("path");
+const mineType = localRequire("@/server/pipe/staticFile.extname.js")
 
 module.exports = function(run) {
   run.error.tapAsync({
@@ -25,38 +26,19 @@ module.exports = function(run) {
 
         if (code == 404) {
           if (ext == "html" || ext == "" || ext == "htm") {
-            input.exists(run.config.page404, flag => {
-              if (flag) {
-                response.setHeader("Content-Type", ["text/html"])
-                response.writeHead(200);
-                let inp = fs.createReadStream(run.config.page404);
-                inp.pipe(response);
-              } else {
-                response.writeHead(code);
-                response.setHeader("Content-Type", ["text/plain"]);
-                response.end(comeFrom + ":" + (err && err.message));
-              }
-            })
-          }
-
-        } else {
-          input.exists(run.config.page500, flag => {
-            if (flag) {
-              response.setHeader("Content-Type", ["text/html"])
-              response.writeHead(200);
-              let inp = fs.createReadStream(run.config.page500);
-              inp.pipe(response);
-            } else {
-
-              response.writeHead(code);
-              response.end(comeFrom + ":" + (err && err.message));
+            //确保当前404页面不是自己，否则死循环
+            if (run.config.page404 && response.rap.url != run.config.page404) {
+              response.setHeader("Location", run.config.page404);
+              response.writeHead(301);
+              response.end();
+              return;
             }
-          })
-        } else {
-          response.setHeader("Content-Type", ["text/plain"]);
-          response.writeHead(code);
-          response.end(comeFrom + ":" + (err && err.message));
+          }
         }
+
+        response.setHeader("Content-Type", [((ext && mineType[ext]) || "text/plain")]);
+        response.writeHead(code);
+        response.end(comeFrom + ":" + (err && err.message));
 
       }
       next()
@@ -71,16 +53,5 @@ module.exports = function(run) {
     }
   });
 
-  //默认response
-  // run.outPipe.tapAsync({
-  //   name: "end",
-  //   stage: 4,
-  //   fn(request, response, next) {
-  //     response._header = null;
-  //     response.removeHeader("Content-Length");
-  //     response.setHeader("Content-Type", "text/plain");
-  //     response.writeHead(200);
-  //     response.end("helloworld");
-  //   }
-  // })
+
 }

@@ -35,7 +35,7 @@ module.exports = function(run) {
   run.inPipe.tapAsync({
     name: "session",
     fn(request, response, next) {
-      let sessionId = response.rap.cookie["RAPID"] || response.rap.cookie["RAPID"].value;
+      let sessionId = response.rap.RAPID;
       let sessionIdSplit = sessionId.split("_");
       let sessionPath = sessionIdSplit.slice(0, sessionIdSplit.length - 1).join("/");
       let sessionFile = sessionIdSplit.slice(sessionIdSplit.length - 1, sessionIdSplit.length) + ".json";
