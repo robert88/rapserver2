@@ -1,0 +1,67 @@
+<link rel="stylesheet" href="/src/html/template/header/header.less">
+<div class="top-fix-bar">
+  <a class="logo" href="{{homeUrl}}" title="rapserver管理后台">
+    <img src="/src/img/logoR.png" width="100"></a>
+  <div class="wrap">
+    <ul class="top-nav">
+      <li class="nav-list">
+        <div class="nav-list-inner">
+          <a class="a-link" accesskey="s"> <span class="text">配置</span><i class="fa-angle-down"></i></a>
+        </div>
+        <div class="nav-drop-down">
+          <div class="main-area">
+            <ul class="main-application-list clearfix">
+              {{#each configMenu}}
+                <li>
+                  <a class="app-name" href="{{$value.href}}"><i class="{{$value.icon}}"></i>{{$value.name}}</a>
+                </li>
+                {{#endEach}}
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li class="nav-list">
+        <div class="nav-list-inner">
+          <a class="a-link" accesskey="z"><span class="text">入口</span><i class="fa-angle-down"></i></a>
+        </div>
+        <div class="nav-drop-down ">
+          <div class="main-area">
+            <ul class="main-application-list clearfix">
+              <li>
+                <a class="app-name"><i class="fa-unlock-alt"></i>用户跟踪</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <!-- <div class="user-info">
+      <a class="user-home J-login" href="/logo">
+        <img class="user-avatar" src="/src/js/RBT/dl-img/loading.gif" data-src="" alt="您的头像" style="display:none">
+        <span class="user-name textoverflow ">登录</span>
+      </a>
+      <a class="logout-new a-link" title="退出"><i class="fa-power-off"></i></a>
+    </div> -->
+    <div class="top-search">
+      <div class="search-box">
+        <input class="ipt J-search" type="text" placeholder="服务器/客户端/动态">
+        <a href="javascript:;" class="search-button"><i class="fa-search"></i></a>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="top-fix-extend">
+    <a class="fa-signal signal-icon"></a>
+    <ul class="bandwidth-info ease">
+      <li class="col"><span class="text col6">停留时间</span><span class="t-warning readyStart col6"></span></li>
+      <li class="col"><span class="text  col6">网络时间</span><span class="t-warning initDomTreeTime col6"></span></li>
+      <li class="col"><span class="text col6">空白时间</span><span class="t-warning whitePaper col6"></span></li>
+      <li class="col"><span class="text col6">整体时间</span><span class="t-warning loadTime col6"></span></li>
+      <li class="col"><span class="text col6">当前网速</span><span class="t-warning netSpeek col6"></span></li>
+      <li class="col"><span class="text col6">请求数</span><span class="t-warning requestNum col6"></span></li>
+      <li><span class="text">请求大小</span>
+        <div class="t-warning transfer"></div>
+      </li>
+    </ul>
+  </div> -->
+</div>
+<!-- <script src="/js/module/layout-header.js"></script> -->

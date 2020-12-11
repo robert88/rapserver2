@@ -45,7 +45,7 @@
         success: function(ret) {
           staticMap = ret;
           updateRootInfo($right, ret);
-          $.tips("删除成功", "success", 2000);
+          $.tips("删除成功", "success", 1000);
         },
         error: function(code, xhr) {
           $.tips(xhr.responseText, "error");
@@ -76,7 +76,7 @@
           success: function(ret) {
             updateRootInfo($right, ret)
             formParam = null;
-            $.tips("添加成功", "success");
+            $.tips("添加成功", "success",1000);
           },
           error: function(code, xhr) {
             $.tips(xhr.responseText, "error");
@@ -178,7 +178,7 @@
       y: []
     };
     socketSend({
-      url: "/global/rapserverCpuInfo",
+      url: "/rapserver/root/cpuAndheap",
       type: "action",
       data: { limit: 240 },
       success: function(ret) {
@@ -266,7 +266,7 @@
    */
   initFormCache();
   initRootInfo();
-  //   initCpuChart();
+    initCpuChart();
 
 
 })(RBT.dom, RBT.parseTeample, RBT.socketSend);

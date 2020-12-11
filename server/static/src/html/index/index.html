@@ -1,0 +1,56 @@
+<useSlot src="/src/html/template/module.html" name="root">
+  <link rel="stylesheet" href="index.less">
+
+  <div class="index-static-block">
+    <div class="wrap">
+      <div class="left">
+        <h3 class="title">配置路径</h3>
+        <div class="content">
+          <include src='/src/html/template/form/form.html' moduleSpace="obj['static']"></include>
+        </div>
+
+      </div>
+      <div class="right">
+        <h3 class="title">已配置的路径</h3>
+        <div class="content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="middle-line">
+    Rapserver is http https sockie server base on nodejs 
+  </div>
+
+
+  <div class="index-chat-block">
+    <div class="wrap">
+
+      <!-- cpu -->
+      <div class="cpu">
+        <div class="info">
+          <span class="title"></span>
+          <span class="speed"></span>M
+          <span class="cpunum"></span>核
+          <span class="percent"></span>%
+        </div>
+        <div class="canvas"></div>
+      </div>
+      <!-- heap -->
+      <div class="heap">
+        <div class="info">
+          <span>总内存</span><span class="totalMemory"></span>G
+          <span>已用内存</span><span class="useMemory "></span>G
+        </div>
+        <div class="canvas"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    if ("loading" in HTMLImageElement.prototype) {
+      console.log("loading", true)
+    }
+  </script>
+  <script src="index.js"></script>
+</useSlot>

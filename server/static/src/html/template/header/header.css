@@ -1,0 +1,102 @@
+.top-fix-bar {
+  position: relative;
+  background: #1f1f1f;
+  color: #fff;
+}
+.top-fix-bar .logo {
+  position: absolute;
+  color: #affa5f;
+  left: 10px;
+  top: 5px;
+}
+.top-fix-bar .wrap {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+     -moz-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  /* 横向中间自动空间 */
+}
+@media screen and (max-width: 1300px) {
+  .top-fix-bar .wrap {
+    padding-left: 150px;
+    padding-right: 10px;
+  }
+}
+.top-fix-bar .wrap .top-nav {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  line-height: 45px;
+}
+.top-fix-bar .wrap .top-nav .nav-list {
+  position: relative;
+  min-width: 80px;
+  cursor: pointer;
+}
+.top-fix-bar .wrap .top-nav .nav-list .nav-list-inner .text {
+  margin-right: 5px;
+}
+.top-fix-bar .wrap .top-nav .nav-list .nav-drop-down {
+  display: none;
+  position: absolute;
+  top: 100%;
+  background: #f7f7f7;
+  padding: 10px 0;
+  color: #666;
+  -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+          box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+  left: 0;
+  z-index: 40;
+}
+.top-fix-bar .wrap .top-nav .nav-list .nav-drop-down .main-area {
+  width: 128px;
+  text-align: center;
+}
+.top-fix-bar .wrap .top-nav .nav-list .nav-drop-down .main-area .main-application-list li {
+  margin: 5px 0;
+}
+.top-fix-bar .wrap .top-nav .nav-list .nav-drop-down .main-area .main-application-list li > a {
+  display: block;
+  padding: 6px;
+}
+.top-fix-bar .wrap .top-nav .nav-list .nav-drop-down .main-area .main-application-list li i {
+  margin-right: 5px;
+}
+.top-fix-bar .wrap .top-nav .nav-list .nav-drop-down .main-area .main-application-list li:hover {
+  background: #1f1f1f;
+  cursor: pointer;
+  color: #fff;
+}
+.top-fix-bar .wrap .top-nav .nav-list:hover .nav-drop-down {
+  display: block;
+}
+.top-fix-bar .wrap .top-search {
+  float: right;
+  line-height: 45px;
+  color: #666;
+  position: relative;
+  width: 19%;
+}
+.top-fix-bar .wrap .top-search input {
+  height: 30px;
+  border-radius: 15px;
+  margin-top: 5px;
+  width: 100%;
+  color: #666;
+  border: none;
+  padding: 0 26px 0 10px;
+}
+.top-fix-bar .wrap .top-search .search-button {
+  position: absolute;
+  color: #666;
+  top: -1px;
+  right: 10px;
+}
+.top-fix-bar .top-fix-extend {
+  position: absolute;
+}
