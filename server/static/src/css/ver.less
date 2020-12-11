@@ -1,0 +1,187 @@
+//out:null
+@waps: 350px;
+@wap: 540px;
+@ipadV: 992px;
+@ipadH: 1200px;
+@pcs: 1600px;
+
+@wap-min: 751px;
+@ipadV-min: 993px;
+@ipadH-min: 1201px;
+@pcs-min: 1601px;
+
+@warn: #f0ad4e;
+@danger: #d9534f;
+@success: #92ab59;
+@info: #70afc4;
+@mute: #d1d5da;
+@titleColor: #333;
+@textColor: #666;
+
+.col(@n, @i) when (@i <=@n) {
+  .col@{n}-@{i} {
+    width: percentage(@i / @n);
+
+    @media screen and (max-width:@ipadV) {
+      width: 100%;
+    }
+  }
+
+  .col(@n, @i+1)
+}
+
+.col(12, 1);
+.col(10, 1);
+
+
+//字号
+.fs-lh(@lh, @fs) {
+  line-height: @lh / @fs;
+  font-size:~"@{fs}px";
+  margin-top: (@fs - @lh) / 2px;
+  margin-bottom: (@fs - @lh) / 2px;
+}
+
+.fs(@n, @i) when (@i <=@n) {
+  .fs@{i} {
+    .fs-lh(ceil(@i * 12 /10), @i);
+
+    @media screen and (max-width:@ipadV) {
+      .fs-lh(ceil(((@i - 12) *0.5 + 12) * 12 /10), floor((@i - 12) *0.5 + 12));
+    }
+  }
+
+  .fs(@n, @i+2)
+}
+
+.fs(56, 12);
+
+.spaceWap() {
+  @functions: ~`(function() {
+      this.half=function(size, base) {
+        return Math.ceil((size - base) *0.5 + base)+'px'
+      }
+    }
+
+  )()`
+}
+
+.spaceWap();
+
+.space(@n, @i) when (@i <=@n) {
+
+  .pr@{i} {
+    padding-right:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding-right:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .pl@{i} {
+    padding-left:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding-left:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .p@{i} {
+    padding:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .plr@{i} {
+    padding-left:~"@{i}px";
+    padding-right:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding-right:~`half(~"@{i}", 5)`;
+      padding-left:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .ptb@{i} {
+    padding-top:~"@{i}px";
+    padding-bottom:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding-bottom:~`half(~"@{i}", 5)`;
+      padding-top:~`half(~"@{i}", 5)`;
+    }
+  }
+
+
+  .pt@{i} {
+    padding-top:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding-top:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .pb@{i} {
+    padding-bottom:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      padding-bottom:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .m@{i} {
+    margin:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      margin:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .mr@{i} {
+    margin-right:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      margin-right:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .ml@{i} {
+    margin-left:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      margin-left:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .mt@{i} {
+    margin-top:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      margin-top:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .mb@{i} {
+    margin-bottom:~"@{i}px";
+
+    @media screen and (max-width:@ipadV) {
+      margin-bottom:~`half(~"@{i}", 5)`;
+    }
+  }
+
+  .space(@n, @i+5)
+}
+
+.space(60, 5);
+
+.clearfix {
+  zoom: 1;
+  *zoom: 1;
+
+  &:after,
+  &:before {
+    clear: both;
+  }
+}
