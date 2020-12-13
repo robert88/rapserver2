@@ -1,4 +1,4 @@
-require("D:\\yinming\\code\\rapserver2-master/server/build/build.js");
+require("../build/build.js");
 require("./resolve");
 
 // global.ENV = "product";

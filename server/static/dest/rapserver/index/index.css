@@ -1,0 +1,197 @@
+.index-static-block .wrap {
+  display: flex;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+@media screen and (max-width: 992px) {
+  .index-static-block .wrap {
+    padding-bottom: -8px;
+    padding-top: -8px;
+  }
+}
+@media (max-width: 992px) {
+  .index-static-block .wrap {
+    flex-wrap: wrap;
+  }
+}
+.index-static-block .wrap .title {
+  line-height: 1.22222222;
+  font-size: 18px;
+  margin-top: -2px;
+  margin-bottom: -2px;
+  color: #333;
+}
+@media screen and (max-width: 992px) {
+  .index-static-block .wrap .title {
+    line-height: 1.2;
+    font-size: 15px;
+    margin-top: -1.5px;
+    margin-bottom: -1.5px;
+  }
+}
+.index-static-block .wrap .left {
+  width: 50%;
+}
+@media (max-width: 992px) {
+  .index-static-block .wrap .left {
+    width: 100%;
+  }
+}
+.index-static-block .wrap .left .content {
+  padding-top: 8px;
+  padding-bottom: 20px;
+}
+@media screen and (max-width: 992px) {
+  .index-static-block .wrap .left .content {
+    padding-bottom: -8px;
+  }
+}
+.index-static-block .wrap .right {
+  width: 50%;
+  padding-left: 20px;
+}
+@media screen and (max-width: 992px) {
+  .index-static-block .wrap .right {
+    padding-left: -8px;
+  }
+}
+@media (max-width: 992px) {
+  .index-static-block .wrap .right {
+    width: 100%;
+    padding-left: 0;
+  }
+}
+.index-static-block .wrap .right .content {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+@media screen and (max-width: 992px) {
+  .index-static-block .wrap .right .content {
+    padding-bottom: -8px;
+    padding-top: -8px;
+  }
+}
+.index-static-block .wrap .right ul > li {
+  padding-right: 20px;
+  position: relative;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  display: flex;
+}
+@media screen and (max-width: 992px) {
+  .index-static-block .wrap .right ul > li {
+    padding-bottom: -3px;
+    padding-top: -3px;
+  }
+}
+@media screen and (max-width: 992px) {
+  .index-static-block .wrap .right ul > li {
+    padding-left: -3px;
+  }
+}
+.index-static-block .wrap .right ul > li .J-delPath {
+  position: absolute;
+  right: 5px;
+  top: 10px;
+}
+.index-static-block .wrap .right ul > li:nth-child(odd) {
+  background: rgba(214, 214, 214, 0.34);
+}
+@media (max-width: 992px) {
+  .index-static-block .wrap .right ul > li {
+    flex-wrap: wrap;
+  }
+}
+.index-static-block .wrap .right ul > li .rootId {
+  width: 36%;
+  color: #92ab59;
+}
+@media (max-width: 992px) {
+  .index-static-block .wrap .right ul > li .rootId {
+    width: 100%;
+  }
+}
+.index-static-block .wrap .right ul > li .rootPath {
+  width: 64%;
+}
+@media (max-width: 992px) {
+  .index-static-block .wrap .right ul > li .rootPath {
+    width: 100%;
+  }
+}
+.middle-line {
+  padding-top: 30px;
+  padding-bottom: 30px;
+  line-height: 1.21875;
+  font-size: 32px;
+  margin-top: -3.5px;
+  margin-bottom: -3.5px;
+  background: linear-gradient(to right, #b4b2bd, #d7b7ba, #b9cade, #d8d6ca);
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+@media screen and (max-width: 992px) {
+  .middle-line {
+    padding-bottom: -13px;
+    padding-top: -13px;
+  }
+}
+@media screen and (max-width: 992px) {
+  .middle-line {
+    line-height: 1.22727273;
+    font-size: 22px;
+    margin-top: -2.5px;
+    margin-bottom: -2.5px;
+  }
+}
+.middle-line img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  transform: translate(-50%, -50%);
+}
+.index-chat-block {
+  padding-top: 40px;
+}
+@media screen and (max-width: 992px) {
+  .index-chat-block {
+    padding-top: -18px;
+  }
+}
+.index-chat-block .wrap {
+  display: flex;
+}
+.index-chat-block .wrap .cpu {
+  width: 50%;
+}
+.index-chat-block .wrap .cpu .info .title {
+  color: #92ab59;
+}
+.index-chat-block .wrap .cpu .info .speed {
+  color: #d9534f;
+}
+.index-chat-block .wrap .cpu .info .cpunum {
+  color: #f0ad4e;
+}
+.index-chat-block .wrap .cpu .info .percent {
+  color: #70afc4;
+}
+.index-chat-block .wrap .cpu .canvas {
+  height: 300px;
+}
+.index-chat-block .wrap .heap {
+  width: 50%;
+}
+.index-chat-block .wrap .heap .canvas {
+  height: 300px;
+}
+.index-chat-block .wrap .heap .totalMemory {
+  color: #92ab59;
+}
+.index-chat-block .wrap .heap .useMemory {
+  color: #d9534f;
+}

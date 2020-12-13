@@ -144,10 +144,16 @@
 
     .heap {
       width: 50%;
+      .canvas {
+        height: 300px;
+      }
+      .totalMemory {
+        color: @success;
+      }
 
-      .totalMemory {}
-
-      .useMemory {}
+      .useMemory {
+        color: @danger;
+      }
     }
   }
 }

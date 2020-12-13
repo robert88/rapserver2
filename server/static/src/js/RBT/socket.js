@@ -1,15 +1,19 @@
 ;(function($){
     var host = window.location.host.split(":")[0]
-	var defaultUrl = "ws://"+host+":8001";
+	var defaultUrl = "ws://"+host;
 	var rapSendQueue = [];
     var rapSendQueueMap = {};
     var socketSendUUid = 0;
     var ws
 
-    function initSocket(){
+    function initSocket(port){
+        if(!port){
+            $.tips("sookie not find port","danger",1000);
+            return;
+        }
          ws = {};
         if(window.WebSocket){
-            ws = new WebSocket(defaultUrl);
+            ws = new WebSocket(defaultUrl+":"+port);
         }
         ws.onopen = function(e){
             ws.rapStatus = "open";
@@ -87,7 +91,7 @@
 
     RBT.socketSend = function(opts,uuid) {
         if(!ws){
-            initSocket();
+            initSocket(opts.port);
         }
         var queue
         if(uuid!=null && (queue =  rapSendQueueMap[uuid]) && queue.url==opts.url ){

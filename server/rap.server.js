@@ -51,7 +51,10 @@ function webServerWorker() {
     //sockie
     var sockie = new Sockie(run, rap.console.log, port => {
       console.log("web sockie listen:" + port);
+      run.sockie.port = port;
     });
+
+    run.sockie = sockie;
 
     //request数组中顺序代表执行顺序
     var inStagMap = {};
