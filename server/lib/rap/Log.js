@@ -52,7 +52,7 @@ module.exports = class Log {
   }
 
   //添加全局的log变量
-  init(rap, iniCallback,type) {
+  init(rap, iniCallback) {
     ["log", "warn", "error"].forEach((type) => {
       this.initActive(type);
       let uuid = "uuid-log-" + type;
@@ -69,7 +69,9 @@ module.exports = class Log {
           let logType = uuid.replace("uuid-log-", "");
           log.save(messageStack, logType, callback);
         }
-
+        if (ENV !== "product") {
+          console[type](message);
+        }
         //10s不会写入log数据
         rap.debounce(hanlder, 10000, uuid, message);
       }

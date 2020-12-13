@@ -18,8 +18,9 @@ rap.cmd = new Cmd(rap.system);
 const Log = localRequire("@/server/lib/rap/Log.js");
 let logPath = localRequire("@/server/log", true);
 let log = new Log({ system: rap.system, outpath: logPath });
-rap.console = log.init(rap, function(type, fn) {
-  rap[type] = fn;
+rap.console = {};
+log.init(rap, function(type, fn) {
+  rap.console[type] = fn;
 });
 
 /****Archiver */

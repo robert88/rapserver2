@@ -379,34 +379,7 @@ function generateMetaData(fin, opcode, masked, payload) {
 
   return meta
 }
-/*
- * 
- * @param {*} client 
- * @param {*} clientMsg 
- * 为了和http服务器对接
- */
 
-function createInComingMassegeAndServerResponse(client, clientMsg) {
-
-  var request = { params: clientMsg.data || {}, url: clientMsg.url, headers: {}, isSocket: true, cookies: querystring.parse(client.cookies, ";") };
-  var response = {
-    socket: client,
-    writeHead: function() {},
-    end: function(ret) {
-      //可以异步输出
-
-      if (typeof ret == "string") {
-        try {
-          ret = JSON.parse(ret);
-        } catch (e) {
-          //ret是普通的字符串不需要报错
-        }
-      }
-      sendMsg(client, ret, "action", client, clientMsg.sendId);
-    }
-  }
-  return { request, response }
-}
 
 require("../lib/global/global.localRequire");
 localRequire("@/server/lib/rap/rap.js");
@@ -474,7 +447,7 @@ class Sockie {
       }
       switch (clientMsg.type) {
         case "action":
-          var { request, response } = createInComingMassegeAndServerResponse();
+          var { request, response } = this.connectHttp(client,clientMsg);
           this.runner && this.runner.http.middleHandle(request, response)
           break;
         case "socket":
@@ -510,6 +483,34 @@ class Sockie {
       client.end()
     });
   }
+  /*
+ * 
+ * @param {*} client 
+ * @param {*} clientMsg 
+ * 为了和http服务器对接
+ */
+
+ connectHttp(client, clientMsg) {
+  
+  var request = { params: clientMsg.data || {}, url: clientMsg.url, headers: {}, isSocket: true, cookies: querystring.parse(client.cookies, ";") };
+  var response = {
+    socket: client,
+    writeHead: function() {},
+    end: function(ret) {
+      //可以异步输出
+
+      if (typeof ret == "string") {
+        try {
+          ret = JSON.parse(ret);
+        } catch (e) {
+          //ret是普通的字符串不需要报错
+        }
+      }
+      client.sendMsg(client, ret, "action", client, clientMsg.sendId);
+    }
+  }
+  return { request, response }
+}
   /**
    *
    * 服务器发送消息给客户端
