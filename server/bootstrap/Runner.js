@@ -11,6 +11,7 @@ global.rap = global.rap || {};
 
 rap.runnerStack = [];
 
+
 module.exports = class Runner {
 
   constructor(options) {
@@ -25,6 +26,7 @@ module.exports = class Runner {
     this.error = new AsyncSeriesWaterfallHook(["err", "response", "comeFrom"]);
     this.uuid = 0;
 
+
     //创建http服务
     this.readyStack = [];
     this.status = "ready";
@@ -32,13 +34,12 @@ module.exports = class Runner {
       this.server = https.createServer(options.https, this.middleware.bind(this)).listen(options.https.port || 3004, () => {
         this.status = "started";
         this.ready();
-        console.log("server https run port " + (options.https.port || 3004));
+        rap.console.log("server https run port " + (options.https.port || 3004));
 
         //启动http
         http.createServer(function() {
-          console.log(11)
         }).listen(options.http.port || 3005, () => {
-          console.log("server http run port " + (options.http.port || 3005));
+          rap.console.log("server http run port " + (options.http.port || 3005));
         });
       });
 
@@ -47,7 +48,7 @@ module.exports = class Runner {
       this.server = http.createServer(this.middleware.bind(this)).listen(options.http.port || 3003, () => {
         this.status = "started";
         this.ready();
-        console.log("server http run port " + (options.port || 3003));
+        rap.console.log("server http run port " + (options.port || 3003));
       });
 
     }
@@ -100,6 +101,8 @@ module.exports = class Runner {
     //捕获异步异常
     d.on('error', (err) => {
 
+      rap.console.error("error:", err.stack,"domainErrorEvent")
+
       this.error.callAsync(err, response, "domainErrorEvent", () => {
         d = null;
       });
@@ -111,6 +114,7 @@ module.exports = class Runner {
       try {
         this.handler(request, response);
       } catch (err) {
+        rap.console.error("error:", err.stack,"trycatch")
         this.error.callAsync(err, response, "trycatch", () => {
           err = null;
           d = null;
@@ -162,5 +166,5 @@ process.on('uncaughtException', function(err) {
       });
     })
   });
-  console.log(err.stack);
+  rap.console&&rap.console.error(err.stack);
 });
