@@ -50,7 +50,7 @@ function webServerWorker() {
 
     //sockie
     var sockie = new Sockie(run, rap.console.log, port => {
-      console.log("web sockie listen:" + port);
+      rap.console.log("web sockie listen:" + port);
       run.sockie.port = port;
     });
 
@@ -71,7 +71,6 @@ function webServerWorker() {
           if (response.finished || response.error) {
             return;
           }
-          // console.log("in:", request.maskIndex, tap.name)
           fn.apply(tap, arguments);
         }
       }
@@ -86,12 +85,6 @@ function webServerWorker() {
         tap.stage = errorStagMap[tap.name];
         var fn = tap.fn;
         tap.fn = function(err, response, comefrom) {
-          // console.log("error:", response.maskIndex, tap.name)
-          if (!response.error) {
-            console.error("error:", err.stack)
-            response.error = true;
-          }
-
           fn.apply(tap, arguments);
         }
       }
@@ -111,7 +104,6 @@ function webServerWorker() {
           if (response.finished || response.error) {
             return;
           }
-          // console.log("out:", request.maskIndex, tap.name)
           fn.apply(tap, arguments);
         }
       }
@@ -127,7 +119,6 @@ function webServerWorker() {
         tap.stage = updateStagMap[tap.name];
         var fn = tap.fn;
         tap.fn = function(request) {
-          console.log("update:", request.maskIndex, tap.name)
           fn.apply(tap, arguments);
         }
       }
@@ -135,8 +126,8 @@ function webServerWorker() {
 
     //http通道
     // 静态文件
-    console.log("默认静态根路径", JSON.stringify(config.staticMap));
-    console.log("action 根目录", JSON.stringify(config.actionMap));
+    rap.console.log("默认静态根路径", JSON.stringify(config.staticMap));
+    rap.console.log("action 根目录", JSON.stringify(config.actionMap));
     localRequire("@/server/pipe/init.js")(run);
     localRequire("@/server/pipe/query.js")(run);
     localRequire("@/server/pipe/cookie.js")(run);

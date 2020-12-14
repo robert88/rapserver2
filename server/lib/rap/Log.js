@@ -23,15 +23,8 @@ module.exports = class Log {
 
   //格式化-将参数序列化
   static format(log, type, callerParams) {
-    let localCallerName = ""
-    try {
-      throw new Error("here"); //获取位置
-    } catch (error) {
-      let stack = error.stack.split(/\n|\r/)[3] || "";
-      stack.replace(/\(([^\)]*?)\)\s*$/, (m, m1) => {
-        localCallerName = m1;
-      });
-    }
+
+    //参数
     let callerParamsStr = [];
     Array.prototype.forEach.call(callerParams, (arg) => {
       if (typeof arg == "object") {
@@ -42,25 +35,42 @@ module.exports = class Log {
     })
     callerParamsStr = callerParamsStr.join(",")
 
+    //位置
+    let localCallerName = ""
+    if (type != "error" || !(/at\s\w+(\.\w+)?\s\(\w:(\\[^\\]+){1,}\\\w+\.js:\d+:\d+\)/gim.test(callerParamsStr))) {
+      try {
+        throw new Error("here"); //获取位置
+      } catch (error) {
+        let stack = error.stack.split(/\n|\r/)[3] || "";
+        stack.replace(/\(([^\)]*?)\)\s*$/, (m, m1) => {
+          localCallerName = m1;
+        });
+      }
+    }else{
+      let stack = callerParamsStr.match(/at\s\w+(\.\w+)?\s\(\w:(\\[^\\]+)+?\\\w+\.js:\d+:\d+\)/gim)
+      
+    }
+
+
     //将参数解析出来
     let time = new Date().format(log.dateFormat.message)
     let ret = `[${type}][${time}][${localCallerName}]\n${callerParamsStr}`;
     // if (type == "error") {
-      // console.log(`[${type}]`.error + `[${time}][${localCallerName}]\n${callerParamsStr}`);
+    // console.log(`[${type}]`.error + `[${time}][${localCallerName}]\n${callerParamsStr}`);
     // }
     return ret;
   }
 
   //添加全局的log变量
-  init(rap, iniCallback,type) {
+  init(rap, iniCallback) {
     ["log", "warn", "error"].forEach((type) => {
       this.initActive(type);
       let uuid = "uuid-log-" + type;
       //箭头函数没有arguments
-      let fn = (...argsVar)=> {
-        let callback = argsVar[argsVar.length-1];
+      let fn = (...argsVar) => {
+        let callback = argsVar[argsVar.length - 1];
         if (typeof callback == "function") {
-          argsVar = argsVar.slice(0,argsVar.length-1)
+          argsVar = argsVar.slice(0, argsVar.length - 1)
         }
 
         let message = Log.format(this, type, argsVar);
@@ -69,7 +79,9 @@ module.exports = class Log {
           let logType = uuid.replace("uuid-log-", "");
           log.save(messageStack, logType, callback);
         }
-
+        if (ENV !== "product") {
+          console[type](message);
+        }
         //10s不会写入log数据
         rap.debounce(hanlder, 10000, uuid, message);
       }
@@ -89,7 +101,7 @@ module.exports = class Log {
         message = message.join("\n") + "\n";
       }
       this.system.output.write(filename, message, true).finally(() => {
-        this.system.input.purge("all",filename)
+        this.system.input.purge("all", filename)
         if (typeof callback == "function") {
           callback(filename);
         }

@@ -4,6 +4,9 @@ const crypto = require('crypto');
 const stream = require('stream');
 const domain = require('domain');
 const querystring = require('querystring');
+// 引入 events 模块
+var events = require('events');
+
 const CONNECTING = 1;
 const OPEN = 2;
 const CLOSE = 3;
@@ -379,34 +382,7 @@ function generateMetaData(fin, opcode, masked, payload) {
 
   return meta
 }
-/*
- * 
- * @param {*} client 
- * @param {*} clientMsg 
- * 为了和http服务器对接
- */
 
-function createInComingMassegeAndServerResponse(client, clientMsg) {
-
-  var request = { params: clientMsg.data || {}, url: clientMsg.url, headers: {}, isSocket: true, cookies: querystring.parse(client.cookies, ";") };
-  var response = {
-    socket: client,
-    writeHead: function() {},
-    end: function(ret) {
-      //可以异步输出
-
-      if (typeof ret == "string") {
-        try {
-          ret = JSON.parse(ret);
-        } catch (e) {
-          //ret是普通的字符串不需要报错
-        }
-      }
-      sendMsg(client, ret, "action", client, clientMsg.sendId);
-    }
-  }
-  return { request, response }
-}
 
 require("../lib/global/global.localRequire");
 localRequire("@/server/lib/rap/rap.js");
@@ -416,6 +392,7 @@ class Sockie {
   constructor(runner, log, ready) {
     this.server = net.createServer(null, this.middleHandle.bind(this));
     rap.getPort(port => {
+      this.port = port;
       this.server.listen(port);
       if (typeof ready == "function") {
         ready(port);
@@ -468,14 +445,15 @@ class Sockie {
     client.on("text", (text) => {
       //约定采用json方式传递
       try {
+        //type,url,data,sendId
         var clientMsg = JSON.parse(text);
       } catch (e) {
         clientMsg = {};
       }
       switch (clientMsg.type) {
         case "action":
-          var { request, response } = createInComingMassegeAndServerResponse();
-          this.runner && this.runner.http.middleHandle(request, response)
+          var { request, response } = this.connectHttp(client, clientMsg);
+          this.runner && this.runner.middleware(request, response)
           break;
         case "socket":
         default:
@@ -492,13 +470,72 @@ class Sockie {
 
     client.on("ping", (buffer) => {
       //发送一个pong
-      this.sendMsg(client, client, buffer, "test",10);
+      this.sendMsg(client, client, buffer, "test", 10);
     })
 
     client.on("pong", (buffer) => {
-     this.log("server ping return")
+      this.log("server ping return")
     })
 
+  }
+
+  /*
+   * 
+   * @param {*} client 
+   * @param {*} clientMsg 
+   * 为了和http服务器对接
+   */
+
+  connectHttp(client, clientMsg) {
+
+    var request = {
+      query: clientMsg.data || {},
+      url: clientMsg.url,
+      headers: {},
+      client:{localAddress:"sockie",localPort:this.port},
+      method:"GET",
+      isSocket: true,
+      cookies: querystring.parse(client.cookies, ";")
+    };
+    var response = Object.assign(new events.EventEmitter(),{
+      socket: client,
+      finished: false,
+      error: false,
+      headMap : {},
+      writeHead(code) {
+        this._code = code;
+      },
+      setHeader: function(key, val) {
+        this.headMap[key] = val;
+      },
+      removeHeader: function(key) {
+        delete this.headMap[key]
+      },
+      end: function(ret) {
+        //可以异步输出
+        if (this.code == "200") {
+          if (typeof ret == "string") {
+            try {
+              ret ={code:code,data:JSON.parse(ret)} ;
+            } catch (e) {
+              ret ={code:code,data:ret} ;
+            }
+          }else{
+            ret ={code:code,data:ret} ;
+          }
+          this.sendMsg(client, ret, "action", client, clientMsg.sendId);
+        } else {
+          ret ={code:code} ;
+          this.sendMsg(client, ret, "action", client, clientMsg.sendId);
+        }
+
+      }
+    });
+
+    response.on("pipe", function() {
+      console.log("pipe")
+    })
+    return { request, response }
   }
   //关闭
   bindClose(client) {
@@ -514,7 +551,7 @@ class Sockie {
    *
    * 服务器发送消息给客户端
    */
-  sendMsg(toClient, fromClient, msg, type,opcode) {
+  sendMsg(toClient, fromClient, msg, type, opcode) {
 
     var opcode = opcode || 1;
     var fin = 1;
