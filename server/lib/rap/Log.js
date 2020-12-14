@@ -4,7 +4,7 @@ const pt = require("path");
 require("../global/global.localRequire");
 localRequire("@/server/lib/global/extention.Date.js");
 localRequire("@/server/lib/global/extention.String.Cmd.Color.js");
-
+console.log("log work");
 module.exports = class Log {
 
   constructor(options) {
@@ -36,28 +36,34 @@ module.exports = class Log {
     callerParamsStr = callerParamsStr.join(",")
 
     //位置
-    let localCallerName = ""
-    if (type != "error" || !(/at\s\w+(\.\w+)?\s\(\w:(\\[^\\]+){1,}\\\w+\.js:\d+:\d+\)/gim.test(callerParamsStr))) {
+
+    let stack = callerParamsStr.match(/at\s*(.)+?\.js:\d+:\d+/gim);
+    if (type != "error" || !stack) {
       try {
         throw new Error("here"); //获取位置
       } catch (error) {
-        let stack = error.stack.split(/\n|\r/)[3] || "";
-        stack.replace(/\(([^\)]*?)\)\s*$/, (m, m1) => {
-          localCallerName = m1;
-        });
+        stack = error.stack.match(/at\s*(.)+?\.js:\d+:\d+/gim);
+        callerParamsStr = callerParamsStr+" "+stack[2]//&&stack[2].replace(/at\s*(.)+?((\/|\\)\w+(\/|\\)\w+\.js:\d+:\d+)/,"$2");
       }
     }else{
-      let stack = callerParamsStr.match(/at\s\w+(\.\w+)?\s\(\w:(\\[^\\]+)+?\\\w+\.js:\d+:\d+\)/gim)
+
+     let stackIndex = callerParamsStr.indexOf(stack[0]);
+     let endStr="";
+     if(stack.length>2){
+      if(stack.length>3){
+        endStr="...\n"
+       }
+      endStr +=stack[stack.length-1];
+     }
+     callerParamsStr = callerParamsStr.slice(0,stackIndex)+stack[0]+"\n"+endStr
       
     }
 
 
     //将参数解析出来
     let time = new Date().format(log.dateFormat.message)
-    let ret = `[${type}][${time}][${localCallerName}]\n${callerParamsStr}`;
-    // if (type == "error") {
-    // console.log(`[${type}]`.error + `[${time}][${localCallerName}]\n${callerParamsStr}`);
-    // }
+    let ret = `<${type}> ${callerParamsStr}[${time}]</${type}>`;
+
     return ret;
   }
 

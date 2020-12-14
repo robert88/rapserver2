@@ -1,0 +1,24 @@
+<error>error:,TypeError: Cannot read property 'localAddress' of undefined
+    a
+at Object.ip (d:\git\rapserver2\server\pipe\init.js:13:31
+at Object.fn (d:\git\rapserver2\server\pipe\init.js:46:24[2020/12/15 05:27:13]</error>
+<error>error:,TypeError: Cannot read property 'localAddress' of undefined
+    a
+at Object.ip (d:\git\rapserver2\server\pipe\init.js:13:31
+...
+at Socket.<anonymous> (d:\git\rapserver2\server\bootstrap\Sockie.js:456:38[2020/12/15 05:47:25]</error>
+<error> error:,TypeError: Cannot read property 'localAddress' of undefined
+    a
+at Object.ip (d:\git\rapserver2\server\pipe\init.js:13:31
+...
+at Socket.<anonymous> (d:\git\rapserver2\server\bootstrap\Sockie.js:456:38[2020/12/15 05:53:28]</error>
+<error> error:,TypeError: Cannot read property 'localAddress' of undefined
+    a
+at Object.ip (d:\git\rapserver2\server\pipe\init.js:13:31
+...
+at Socket.<anonymous> (d:\git\rapserver2\server\bootstrap\Sockie.js:456:38[2020/12/15 05:54:22]</error>
+<error> error:,TypeError: Cannot read property 'localAddress' of undefined
+    
+at Object.ip (d:\git\rapserver2\server\pipe\init.js:13:31
+...
+at Socket.<anonymous> (d:\git\rapserver2\server\bootstrap\Sockie.js:456:38[2020/12/15 05:55:32]</error>

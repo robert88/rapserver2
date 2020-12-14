@@ -10,7 +10,7 @@ module.exports = function(run) {
 
   console.log("统计stat信息...")
   run.state = new StaticFileState(run.config.staticMap, rap.system, localRequire("@/server/templ/stat", true));
-  console.log("已统计stat信息", localRequire("@/server/templ/stat", true));
+  rap.console.log("已统计stat信息", localRequire("@/server/templ/stat", true));
 
   //update作为整体更新
   run.update.tapAsync({
