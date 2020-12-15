@@ -62,7 +62,7 @@ module.exports = class Log {
 
     //将参数解析出来
     let time = new Date().format(log.dateFormat.message)
-    let ret = `<${type}> ${callerParamsStr}[${time}]</${type}>`;
+    let ret = `<${type}> ${callerParamsStr}[${time}] </${type}>`;
 
     return ret;
   }

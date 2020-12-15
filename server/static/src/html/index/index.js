@@ -216,7 +216,7 @@
   function initSockie(port, heapChart, cpuChart) {
     socketSend({
       port: port,
-      url: "/rapserver/root/cpuAndheap",
+      url: "/rapserver/sockie/cpuAndheap",
       type: "action",
       data: {
         limit: 240
