@@ -26,39 +26,44 @@ module.exports = class Log {
 
     //参数
     let callerParamsStr = [];
+    var hasStack = false;
     Array.prototype.forEach.call(callerParams, (arg) => {
+
       if (typeof arg == "object") {
         callerParamsStr.push(JSON.stringify(arg));
       } else {
-        callerParamsStr.push(arg);
+        arg = arg.toString();
+        let stack = arg.match(/at\s*(.)+?\.js:\d+:\d+/gim);
+        if (stack) {
+          hasStack = true;
+          let endStr = "";
+          if (stack.length > 2) {
+            if (stack.length > 3) {
+              endStr = "...\n"
+            }
+            endStr += stack[stack.length - 1];
+          }
+          let stackIndex = arg.indexOf(stack[0]);
+          arg = arg.slice(0, stackIndex) + stack[0] + "\n" + endStr
+          callerParamsStr.push(arg);
+        } else {
+          callerParamsStr.push(arg);
+        }
       }
     })
     callerParamsStr = callerParamsStr.join(",")
 
     //位置
 
-    let stack = callerParamsStr.match(/at\s*(.)+?\.js:\d+:\d+/gim);
-    if (type != "error" || !stack) {
+
+    if (type != "error" || !hasStack) {
       try {
         throw new Error("here"); //获取位置
       } catch (error) {
-        stack = error.stack.match(/at\s*(.)+?\.js:\d+:\d+/gim);
-        callerParamsStr = callerParamsStr+" "+stack[2]//&&stack[2].replace(/at\s*(.)+?((\/|\\)\w+(\/|\\)\w+\.js:\d+:\d+)/,"$2");
+       let stack = error.stack.match(/at\s*(.)+?\.js:\d+:\d+/gim);
+        callerParamsStr = callerParamsStr + " " + stack[2] //&&stack[2].replace(/at\s*(.)+?((\/|\\)\w+(\/|\\)\w+\.js:\d+:\d+)/,"$2");
       }
-    }else{
-
-     let stackIndex = callerParamsStr.indexOf(stack[0]);
-     let endStr="";
-     if(stack.length>2){
-      if(stack.length>3){
-        endStr="...\n"
-       }
-      endStr +=stack[stack.length-1];
-     }
-     callerParamsStr = callerParamsStr.slice(0,stackIndex)+stack[0]+"\n"+endStr
-      
     }
-
 
     //将参数解析出来
     let time = new Date().format(log.dateFormat.message)

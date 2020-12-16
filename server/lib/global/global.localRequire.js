@@ -12,13 +12,20 @@ const fs = require("fs");
 //将package.json表示跟目录，如果没有使用当前执行环境路径
 let rootPath = pt.resolve(__dirname) //process.cwd();
 
-paths.forEach(dir => {
-  var packagePath = pt.resolve(dir, "package.json");
-  if (fs.existsSync(packagePath)) {
-    rootPath = dir;
-    return
+function loopPackage(){
+  if(paths&&paths.length){
+    var dir = paths.shift();
+    var packagePath = pt.resolve(dir, "package.json");
+    if (fs.existsSync(packagePath)) {
+      rootPath = dir;
+      return;
+    }else{
+      loopPackage();
+    }
   }
-})
+}
+
+loopPackage();
 
 console.log("@对应的目录：" + rootPath)
 

@@ -100,9 +100,7 @@ module.exports = class Runner {
 
     //捕获异步异常
     d.on('error', (err) => {
-
-      rap.console.error("error:", err.stack,"domainErrorEvent")
-
+      rap.console.error("error:","[domainErrorEvent]","response url:"+response.rap&&response.rap.url, err.stack);
       this.error.callAsync(err, response, "domainErrorEvent", () => {
         d = null;
       });
@@ -114,7 +112,7 @@ module.exports = class Runner {
       try {
         this.handler(request, response);
       } catch (err) {
-        rap.console.error("error:", err.stack,"trycatch")
+        rap.console.error("error:","[trycatch]","response url:"+response.rap&&response.rap.url, err.stack);
         this.error.callAsync(err, response, "trycatch", () => {
           err = null;
           d = null;
@@ -166,5 +164,5 @@ process.on('uncaughtException', function(err) {
       });
     })
   });
-  rap.console&&rap.console.error(err.stack);
+  rap.console&&rap.console.error("error:","[uncaughtException]", err.stack);
 });
