@@ -17,7 +17,7 @@ rap.cmd = new Cmd(rap.system);
 /***log***/
 const Log = localRequire("@/server/lib/rap/Log.js");
 let logPath = localRequire("@/server/log", true);
-console.log("local log file Path",logPath);
+console.log("local log file Path",logPath)
 let log = new Log({ system: rap.system, outpath: logPath });
 
 rap.console = {}
@@ -48,14 +48,14 @@ rap.md5 = (str) =>{
 var secretkey="rapserverRobert";//唯一（公共）秘钥
   //AES对称加密
 rap.AES = (str) =>{
-  var cipher=crypto.createCipheriv('aes192', secretkey);//使用aes192加密
+  var cipher=crypto.createCipher('aes192', secretkey);//使用aes192加密
   var enc=cipher.update(str,"utf8","hex");//编码方式从utf-8转为hex;
   enc+=cipher.final('hex');//编码方式转为hex;
   return enc;
 }
   //AES对称解密
 rap.unAES = (str) =>{
-  var decipher=crypto.createCipheriv('aes192', secretkey);
+  var decipher=crypto.createDecipher('aes192', secretkey);
   var dec=decipher.update(str,"hex", "utf8");
   dec+=decipher.final("utf8");
   return dec;
