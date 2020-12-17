@@ -225,29 +225,32 @@
   function initSockie(port, heapChart, cpuChart) {
     socketSend({
       port: port,
-      url: "/rapserver/root/cpuAndheap",
+      url: "/rapserver/sockie/cpuAndheap",
       type: "action",
       data: {
         limit: 240
       },
       success: function success(ret) {
-        //第一次连接成功返回的数据
+        var totalMem = ret.totalMem; //第一次连接成功返回的数据
+
         if (ret.model) {
           $cpu.find(".title").html(ret.model);
           $cpu.find(".speed").html(ret.speed);
           $cpu.find(".cpunum").html(ret.count);
-          $heap.find(".totalMemory").html(Math.floor(ret.totalMem / 1024 / 1024 / 1024 * 100) / 100);
+          $heap.find(".totalMemory").data("totalmem", ret.totalMem).html(Math.floor(ret.totalMem / 1024 / 1024 / 1024 * 100) / 100);
+        } else {
+          totalMem = $heap.find(".totalMemory").data("totalmem");
         }
 
-        $cpu.find(".percent").html(ret.valueStack[len - 1]);
-        $heap.find(".useMemory").html(Math.floor((ret.totalMem - ret.freeMem) / 1024 / 1024 / 1024 * 100) / 100);
+        $cpu.find(".percent").html(ret.cpuStack[len - 1]);
+        $heap.find(".useMemory").html(Math.floor((totalMem - ret.freeMem) / 1024 / 1024 / 1024 * 100) / 100);
         cpuChart.redraw({
           axis: {
             x: getXaxis()
           },
           data: {
             x: ret.timeStack.slice(-240),
-            y: ret.valueStack.slice(-240)
+            y: ret.cpuStack.slice(-240)
           }
         });
         heapChart.redraw({

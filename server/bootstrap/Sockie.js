@@ -320,9 +320,8 @@ function waitMessage(client, buffer, perBuffer) {
  *
  * 统一message
  */
-function formatMessage(message, toid, fromid, type, clientMap) {
+function formatMessage(message, toid, fromid, type) {
   var defaultMsgOpts = {
-    clientlist: Object.keys(clientMap),
     message: message == null ? "" : message,
     type: type,
     to: toid,
@@ -487,7 +486,7 @@ class Sockie {
    */
 
   connectHttp(client, clientMsg) {
-
+    var that = this;
     var request = {
       query: clientMsg.data || {},
       url: clientMsg.url,
@@ -512,8 +511,10 @@ class Sockie {
         delete this.headMap[key]
       },
       end: function(ret) {
+        var code = this._code;
+        this.finished = true;
         //可以异步输出
-        if (this.code == "200") {
+        if (code == 200) {
           if (typeof ret == "string") {
             try {
               ret ={code:code,data:JSON.parse(ret)} ;
@@ -523,10 +524,10 @@ class Sockie {
           }else{
             ret ={code:code,data:ret} ;
           }
-          this.sendMsg(client, ret, "action", client, clientMsg.sendId);
+          that.sendMsg(client,client, ret, "action");
         } else {
           ret ={code:code} ;
-          this.sendMsg(client, ret, "action", client, clientMsg.sendId);
+          that.sendMsg(client, client,ret, "action");
         }
 
       }
@@ -547,47 +548,24 @@ class Sockie {
       client.end()
     });
   }
-  /*
- * 
- * @param {*} client 
- * @param {*} clientMsg 
- * 为了和http服务器对接
- */
 
- connectHttp(client, clientMsg) {
-  
-  var request = { params: clientMsg.data || {}, url: clientMsg.url, headers: {}, isSocket: true, cookies: querystring.parse(client.cookies, ";") };
-  var response = {
-    socket: client,
-    writeHead: function() {},
-    end: function(ret) {
-      //可以异步输出
-
-      if (typeof ret == "string") {
-        try {
-          ret = JSON.parse(ret);
-        } catch (e) {
-          //ret是普通的字符串不需要报错
-        }
-      }
-      client.sendMsg(client, ret, "action", client, clientMsg.sendId);
-    }
-  }
-  return { request, response }
-}
   /**
    *
    * 服务器发送消息给客户端
+   * toClient目标客户端
+   * fromClient来源
+   * msg要发送的数据
+   * type类型
    */
-  sendMsg(toClient, fromClient, msg, type, opcode) {
+  sendMsg(toClient, fromClient, msg, type) {
 
-    var opcode = opcode || 1;
+    var opcode = 1;
     var fin = 1;
     var mask = 0
 
-    if (toClient && toClient.writable && toClient.rapStatus == OPEN) {
+    if (toClient && toClient.writable && toClient.rap.status == OPEN) {
 
-      var msgJson = formatMessage(msg, toClient.rap.uuid, fromClient.rap.uuid, type, this.clientMap);
+      var msgJson = formatMessage(msg, toClient.rap.uuid, fromClient.rap.uuid, type);
       var payload = Buffer.from(msgJson);
 
       //结束fin=1，mask=0，opcode=1文本
@@ -595,7 +573,7 @@ class Sockie {
       var sendData = Buffer.concat([meta, payload], meta.length + payload.length);
       toClient.write(sendData);
     } else {
-      this.log("sendMsg error");
+      rap.console.error("sendMsg error: target client writeable :",toClient&&toClient.writable);
     }
   }
 }

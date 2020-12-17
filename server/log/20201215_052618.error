@@ -22,3 +22,8 @@ at Socket.<anonymous> (d:\git\rapserver2\server\bootstrap\Sockie.js:456:38[2020/
 at Object.ip (d:\git\rapserver2\server\pipe\init.js:13:31
 ...
 at Socket.<anonymous> (d:\git\rapserver2\server\bootstrap\Sockie.js:456:38[2020/12/15 05:55:32]</error>
+<error> error:,[domainErrorEvent],/rapserver/root/cpuandheap,Error: ENOENT: no such file or directory, stat '/rapserver/root/cpuandheap'
+    at d:\git\rapserver2\server\pipe\staticFile.js:117:17
+...
+at FSReqCallback.oncomplete (fs.js:183:21[2020/12/18 06:22:43] </error>
+<error> sendMsg error: target client writeable :,true at Sockie.sendMsg (d:\git\rapserver2\server\bootstrap\Sockie.js:575:19[2020/12/18 06:44:36] </error>
