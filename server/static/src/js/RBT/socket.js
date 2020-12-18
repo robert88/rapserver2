@@ -58,7 +58,7 @@
                         })
                     }
                 }catch (e) {
-                    console.log("socket error return");
+                    console.log("socket error return",e.stack);
                 }
             }
 

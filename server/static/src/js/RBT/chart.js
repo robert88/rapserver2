@@ -60,7 +60,7 @@
 		var $test = $(".test-text")
 		if (!$test.length) {
 			$test = $("<span></span>").appendTo("body");
-			$test.attr("style", "visibility: hidden;position:absolute;left:-100%").attr("class", "test-text")
+			$test.attr("style", "visibility: hidden;position:absolute;left:0%;z-index:-1;top:0").attr("class", "test-text")
 		}
 		$test.css("font-size", fontsize).html(text)
 		return $test.width();

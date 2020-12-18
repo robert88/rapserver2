@@ -1,5 +1,5 @@
 ;;
-(function ($, parseTeample, socketSend) {
+(function($, parseTeample, socketSend) {
 
   $.floatHeight = RBT.floatHeight;
   $.ajax = RBT.ajax;
@@ -27,29 +27,29 @@
     $.ajax({
       url: "/rapserver/root/get",
       dataType: "json",
-      success: function (ret) {
+      success: function(ret) {
         staticMap = ret;
         updateRootInfo($right, ret)
       },
-      error: function (code, xhr) {
+      error: function(code, xhr) {
         $.tips(xhr.responseText, "error");
       }
     });
 
     // 删除
-    $rootInfo.on("click", ".J-delPath", function () {
+    $rootInfo.on("click", ".J-delPath", function() {
       $.ajax({
         url: "/rapserver/root/del",
         data: {
           rootId: $(this).data("id")
         },
         dataType: "json",
-        success: function (ret) {
+        success: function(ret) {
           staticMap = ret;
           updateRootInfo($right, ret);
           $.tips("删除成功", "success", 1000);
         },
-        error: function (code, xhr) {
+        error: function(code, xhr) {
           $.tips(xhr.responseText, "error");
         }
       })
@@ -57,10 +57,10 @@
 
     //添加
     $rootInfo.find(".ipt-form").validForm({
-      focus: function ($form) {
+      focus: function($form) {
         $form.find(".form-tips-error").hide();
       },
-      success: function ($btn, $form) {
+      success: function($btn, $form) {
 
         var formParam = {
           path: $form.find("[name='path']").val(),
@@ -75,12 +75,12 @@
           data: formParam,
           type: "post",
           dataType: "json",
-          success: function (ret) {
+          success: function(ret) {
             updateRootInfo($right, ret)
             formParam = null;
             $.tips("添加成功", "success", 1000);
           },
-          error: function (code, xhr) {
+          error: function(code, xhr) {
             $.tips(xhr.responseText, "error");
           }
         })
@@ -98,7 +98,7 @@
     staticPathMap[key] = value;
     localStorage.setItem("staticPathMap", JSON.stringify(staticPathMap));
     clearTimeout(setLocalStorageTimer);
-    setLocalStorageTimer = setTimeout(function () {
+    setLocalStorageTimer = setTimeout(function() {
       initFormCache();
     }, 200);
   }
@@ -109,7 +109,7 @@
   function initFormCache() {
     var staticPathMap = parseStaticMap();
     $("#staticRootId").downMenu().add(staticPathMap);
-    $("#staticRootId").off("change").on("change", function () {
+    $("#staticRootId").off("change").on("change", function() {
       var key = $(this).val();
       if (staticPathMap[key]) {
         $("#staticRootPath").val(staticPathMap[key]).trigger("change")
@@ -133,9 +133,9 @@
     return staticPathMap;
   }
 
-/**
- * 得到240s的数组，每个相隔40s
- * */ 
+  /**
+   * 得到240s的数组，每个相隔40s
+   * */
 
   function getXaxis() {
     var zeroTime = new Date().setHours(0, 0, 0, 0);
@@ -144,7 +144,7 @@
     var xaxisTotal = 240; //240s
     var xaxisLen = 6;
     for (var i = 0; i < xaxisLen; i++) {
-      xaxis.push((currentM - (xaxisLen - i - 1) * (xaxisTotal / xaxisLen))*1000+zeroTime);
+      xaxis.push((currentM - (xaxisLen - i - 1) * (xaxisTotal / xaxisLen)) * 1000 + zeroTime);
     }
     return xaxis;
   }
@@ -160,10 +160,10 @@
       axis: {
         style: "border-left:1px solid #999;border-bottom:1px solid #999;left:30px;bottom:30px;right:30px;top:30px",
         xstyle: "left:30px;bottom:10px;right:30px;",
-        yformat: function (val) {
+        yformat: function(val) {
           return val + "%"
         },
-        xformat: function (val) {
+        xformat: function(val) {
           return val.toString().toDate().format("hh:mm:ss")
         },
         ystyle: "left:10px;top:30px;bottom:30px;",
@@ -181,10 +181,10 @@
       axis: {
         style: "border-left:1px solid #999;border-bottom:1px solid #999;left:30px;bottom:30px;right:30px;top:30px",
         xstyle: "left:30px;bottom:10px;right:30px;",
-        yformat: function (val) {
+        yformat: function(val) {
           return val + "%"
         },
-        xformat: function (val) {
+        xformat: function(val) {
           return val.toString().toDate().format("hh:mm:ss")
         },
         ystyle: "left:10px;top:30px;bottom:30px;",
@@ -201,27 +201,36 @@
       url: "/rapserver/sockie/port",
       type: "post",
       dataType: "json",
-      success: function (ret) {
-        initSockie(ret.port, heapChart, cpuChart);
+      success: function(ret) {
+        initSockie(ret.port, heapChart, cpuChart, 240, true);
       },
-      error: function (code, xhr) {
+      error: function(code, xhr) {
         $.tips(xhr.responseText, "error");
       }
     })
   }
-/**
- * 
- * 初始化sockie
-*/
-  function initSockie(port, heapChart, cpuChart) {
+
+  /**
+   * 
+   * 初始化sockie
+   */
+  var cpuStack = [];
+  var memoryStack = [];
+  var timeStack = [];
+
+  function initSockie(port, heapChart, cpuChart, limit, all) {
+    var $cpu = $(".index-chat-block .cpu")
+    var $heap = $(".index-chat-block .heap")
     socketSend({
       port: port,
       url: "/rapserver/sockie/cpuAndheap",
       type: "action",
       data: {
-        limit: 240
+        limit: limit || 240,
+        all: all ? all : "",
       },
-      success: function (ret) {
+      success: function(info) {
+        var ret = info.data;
         var totalMem = ret.totalMem;
 
         //第一次连接成功返回的数据
@@ -229,12 +238,23 @@
           $cpu.find(".title").html(ret.model);
           $cpu.find(".speed").html(ret.speed);
           $cpu.find(".cpunum").html(ret.count);
-          $heap.find(".totalMemory").data("totalmem",ret.totalMem).html(Math.floor(ret.totalMem / 1024 / 1024 / 1024 * 100) / 100);
-        }else{
-          totalMem = $heap.find(".totalMemory").data("totalmem")
+          $heap.find(".totalMemory").data("totalmem", ret.totalMem).html(Math.floor(ret.totalMem / 1024 / 1024 / 1024 * 100) / 100);
+          cpuStack = ret.cpuStack;
+          memoryStack = ret.memoryStack;
+          timeStack = ret.timeStack;
+        } else {
+          totalMem = $heap.find(".totalMemory").data("totalmem");
+
+          cpuStack.push(ret.cpuStack[0])
+          memoryStack.push(ret.cpuStack[0])
+          timeStack.push(ret.cpuStack[0])
+
+          cpuStack = cpuStack.slice(-240);
+          memoryStack = memoryStack.slice(-240);
+          timeStack = timeStack.slice(-240);
         }
 
-        $cpu.find(".percent").html(ret.cpuStack[len - 1]);
+        $cpu.find(".percent").html(cpuStack[cpuStack.length - 1]);
         $heap.find(".useMemory").html(Math.floor((totalMem - ret.freeMem) / 1024 / 1024 / 1024 * 100) / 100);
 
 
@@ -242,7 +262,7 @@
           axis: {
             x: getXaxis()
           },
-          data: {x:ret.timeStack.slice(-240),y:ret.cpuStack.slice(-240)}
+          data: { x: timeStack, y: cpuStack }
         });
 
 
@@ -250,8 +270,12 @@
           axis: {
             x: getXaxis()
           },
-          data: {x:ret.timeStack.slice(-240),y:ret.memoryStack.slice(-240)}
+          data: { x: timeStack, y: memoryStack }
         });
+
+        setTimeout(function() {
+          initSockie(ret.port, heapChart, cpuChart, 1);
+        }, 1000)
 
       }
     });

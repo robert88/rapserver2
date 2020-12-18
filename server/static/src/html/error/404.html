@@ -2,16 +2,20 @@
   <style>
     #beastainer {
       padding: 20px;
-      min-height: calc(100vh - 144px);
       display: flex;
       align-items: center;
+      min-height: calc(100vh - 144px);
+      position: relative;
     }
 
     #beastainer .img-wrap {
-      position: relative;
-      width: 300px;
-      height: 370px;
-      margin: 0 auto;
+      position: absolute;
+      width:493px;
+      height:351px;
+      left:50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      text-align: center;
     }
 
     #beastainer img {
@@ -21,23 +25,38 @@
     }
 
     #beastainer #beast404le {
-      left: 111px;
-      top: 47px;
+      left: 68px;
+    top: 181px;
       z-index: 1;
     }
 
     #beastainer #beast404re {
-      left: 207px;
-      top: 47px;
+      left: 396px;
+    top: 183px;
       z-index: 1;
     }
+
+    #draw404 {
+      position: absolute;
+    }
+    #title{
+      position: absolute;
+      font-size: 266px;
+      left:50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      text-align: center;
+    }
   </style>
-  <div class="wrap">
-    <div id="beastainer">
+  <div id="beastainer">      
+    <canvas id="draw404"></canvas>
+    <div class="wrap">
+     <h2 id="title" >404</h2>
       <div class="img-wrap">
         <img id="beast404le" src="https://developer.mozilla.org/static/img/beast-404_LE.f1435cace4b4.png" alt="">
         <img id="beast404re" src="https://developer.mozilla.org/static/img/beast-404_RE.2e53f96c5abb.png" alt="">
-        <img class="beast 404" src="https://developer.mozilla.org/static/img/beast-404.ce38fcf80386.png" alt="">
+   
+        <!-- <img class="beast 404" src="https://developer.mozilla.org/static/img/beast-404.ce38fcf80386.png" alt=""> -->
       </div>
 
     </div>
