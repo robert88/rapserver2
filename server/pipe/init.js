@@ -53,11 +53,11 @@ module.exports = function(run, timeout) {
       }
 
       //异步才会超时
-      if (ENV == "product") {
+      // if (ENV == "product") {
         response.rap.timer = setTimeout(() => {
           throw Error("Request Timeout");
         }, timeout || 120000);
-      }
+      // }
       next();
     }
 

@@ -99,8 +99,8 @@ exports = module.exports = {
     next({ port: run.sockie.port });
   },
   "cpuAndheap": function(req, res, next) {
-    let limit = res.rap.query && res.rap.query.limit || 1;
-    let all = res.rap.query && res.rap.query.all || 1;
+    let limit =  res.rap.query.limit || 1;
+    let all = res.rap.query.all || 1;
     let ret = {
       timeStack: g_cpuInfo.timeStack.slice(-limit),
       cpuStack: g_cpuInfo.cpuStack.slice(-limit),
@@ -114,6 +114,7 @@ exports = module.exports = {
       ret.count = g_cpuInfo.count;
       ret.totalMem = g_cpuInfo.totalMem;
     }
+
     next(ret);
 
   }

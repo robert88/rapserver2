@@ -21,34 +21,19 @@ module.exports = class Log {
     }
   }
 
+
   //格式化-将参数序列化
   static format(log, type, callerParams) {
 
     //参数
     let callerParamsStr = [];
-    var hasStack = false;
+
     Array.prototype.forEach.call(callerParams, (arg) => {
 
       if (typeof arg == "object") {
         callerParamsStr.push(JSON.stringify(arg));
       } else {
-        arg = arg.toString();
-        let stack = arg.match(/at\s*(.)+?\.js:\d+:\d+/gim);
-        if (stack) {
-          hasStack = true;
-          let endStr = "";
-          if (stack.length > 2) {
-            if (stack.length > 3) {
-              endStr = "...\n"
-            }
-            endStr += stack[stack.length - 1];
-          }
-          let stackIndex = arg.indexOf(stack[0]);
-          arg = arg.slice(0, stackIndex) + stack[0] + "\n" + endStr
-          callerParamsStr.push(arg);
-        } else {
-          callerParamsStr.push(arg);
-        }
+        callerParamsStr.push(arg);
       }
     })
     callerParamsStr = callerParamsStr.join(",")
@@ -56,7 +41,7 @@ module.exports = class Log {
     //位置
 
 
-    if (type != "error" || !hasStack) {
+    if (type != "error") {
       try {
         throw new Error("here"); //获取位置
       } catch (error) {

@@ -1,6 +1,8 @@
 const http = require("http");
 const https = require("https");
-const domain = require('domain');
+// const domain = require('domain');
+const async_hooks = require("async_hooks");
+
 const fs = require("fs");
 
 const AsyncSeriesWaterfallHook = localRequire("@/server/lib/node_modules/tapable/AsyncSeriesWaterfallHook.js");
@@ -37,8 +39,7 @@ module.exports = class Runner {
         rap.console.log("server https run port " + (options.https.port || 3004));
 
         //启动http
-        http.createServer(function() {
-        }).listen(options.http.port || 3005, () => {
+        http.createServer(function() {}).listen(options.http.port || 3005, () => {
           rap.console.log("server http run port " + (options.http.port || 3005));
         });
       });
@@ -95,30 +96,30 @@ module.exports = class Runner {
     //用于标识请求
     request.maskIndex = this.uuid;
     response.maskIndex = this.uuid;
-
-    let d = domain.create();
+    response.asyncId = async_hooks.triggerAsyncId();
+    // let d = domain.create();
 
     //捕获异步异常
-    d.on('error', (err) => {
-      rap.console.error("error:","[domainErrorEvent]","response url:"+response.rap&&response.rap.url, err.stack);
-      this.error.callAsync(err, response, "domainErrorEvent", () => {
+    // d.on('error', (err) => {
+    //   rap.console.error("error:","[domainErrorEvent]","response url:"+response.rap&&response.rap.url, err.stack);
+    //   this.error.callAsync(err, response, "domainErrorEvent", () => {
+    //     d = null;
+    //   });
+
+    // });
+
+    // d.run(() => {
+    //捕获同步异常
+    try {
+      this.handler(request, response);
+    } catch (err) {
+      rap.console.error("error:[trycatch]", "response url:" + response.rap && response.rap.url, err.stack);
+      this.error.callAsync(err, response, "trycatch", () => {
+        err = null;
         d = null;
       });
-
-    });
-
-    d.run(() => {
-      //捕获同步异常
-      try {
-        this.handler(request, response);
-      } catch (err) {
-        rap.console.error("error:","[trycatch]","response url:"+response.rap&&response.rap.url, err.stack);
-        this.error.callAsync(err, response, "trycatch", () => {
-          err = null;
-          d = null;
-        });
-      }
-    });
+    }
+    // });
 
 
   }
@@ -157,12 +158,33 @@ module.exports = class Runner {
 
 //服务器挂了
 process.on('uncaughtException', function(err) {
+  var id = async_hooks.triggerAsyncId();
+  var errorOwner;
   rap.runnerStack && rap.runnerStack.forEach(runner => {
-    runner.responseStack.forEach((response) => {
+    var response;
+    for (var i = 0; i < runner.responseStack.length; i++) {
+      response = runner.responseStack[i];
+      if (response.asyncId > id) {
+        var perResponse = runner.responseStack[i - 1];
+        if (perResponse&&!perResponse.rapthrow) {//rapthrow防止死循环
+          perResponse.rapthrow = true;
+          errorOwner = true
+          rap.console && rap.console.error("error:[uncaughtException]", "response url:" + perResponse.rap && perResponse.rap.url, err.stack);
+          runner.error.callAsync(err, perResponse, "uncaughtException", () => {
+            runner.clear();
+          });
+          break;
+        }
+      }
+    }
+    //最后一个
+    if(response&&!errorOwner&&!response.rapthrow){
+      response.rapthrow = true;
+      rap.console && rap.console.error("error:[uncaughtException]", "response url:" + response.rap && response.rap.url, err.stack);
       runner.error.callAsync(err, response, "uncaughtException", () => {
         runner.clear();
       });
-    })
+    }
   });
-  rap.console&&rap.console.error("error:","[uncaughtException]", err.stack);
+  
 });

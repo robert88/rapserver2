@@ -320,11 +320,12 @@ function waitMessage(client, buffer, perBuffer) {
  *
  * 统一message
  */
-function formatMessage(message, toid, fromid, type) {
+function formatMessage(message, toid, fromid, type,sendId) {
   var defaultMsgOpts = {
     message: message == null ? "" : message,
     type: type,
     to: toid,
+    sendId:sendId,
     from: fromid
   };
 
@@ -400,7 +401,6 @@ class Sockie {
 
     this.clientMap = {};
     this.runner = runner; //http或者https服务器
-    this.log = log || function() {};
   }
   //socket中间层
   middleHandle(client) {
@@ -434,7 +434,7 @@ class Sockie {
           totalBuffer = Buffer.alloc(0);
         }
       } catch (e) {
-        this.log(e)
+        rap.console.error(e.stack);
       }
     })
   }
@@ -456,7 +456,7 @@ class Sockie {
           break;
         case "socket":
         default:
-          this.log("can not parse massage!");
+          rap.console.log("can not parse massage!");
       }
     })
 
@@ -473,7 +473,7 @@ class Sockie {
     })
 
     client.on("pong", (buffer) => {
-      this.log("server ping return")
+      rap.console.log("server ping return")
     })
 
   }
@@ -488,7 +488,6 @@ class Sockie {
   connectHttp(client, clientMsg) {
     var that = this;
     var request = {
-      query: clientMsg.data || {},
       url: clientMsg.url,
       headers: {},
       client:{localAddress:"sockie",localPort:this.port},
@@ -497,6 +496,7 @@ class Sockie {
       cookies: querystring.parse(client.cookies, ";")
     };
     var response = Object.assign(new events.EventEmitter(),{
+      rap:{query: clientMsg.data || {}},
       socket: client,
       finished: false,
       error: false,
@@ -524,10 +524,10 @@ class Sockie {
           }else{
             ret ={code:code,data:ret} ;
           }
-          that.sendMsg(client,client, ret, "action");
+          that.sendMsg(client,client, ret, "action",clientMsg.sendId);
         } else {
           ret ={code:code} ;
-          that.sendMsg(client, client,ret, "action");
+          that.sendMsg(client, client,ret, "action",clientMsg.sendId);
         }
 
       }
@@ -542,7 +542,7 @@ class Sockie {
   bindClose(client) {
     client.on("close", (code, text) => {
       text = text || errerCode[code];
-      this.sendMsg(client, client, text, "error");
+      this.sendMsg(client, client, text, "close");
       delete this.clientMap[client.rap.uuid];
       client.removeAllListeners();
       client.end()
@@ -557,7 +557,7 @@ class Sockie {
    * msg要发送的数据
    * type类型
    */
-  sendMsg(toClient, fromClient, msg, type) {
+  sendMsg(toClient, fromClient, msg, type,sendId) {
 
     var opcode = 1;
     var fin = 1;
@@ -565,7 +565,14 @@ class Sockie {
 
     if (toClient && toClient.writable && toClient.rap.status == OPEN) {
 
-      var msgJson = formatMessage(msg, toClient.rap.uuid, fromClient.rap.uuid, type);
+      var msgJson;
+
+      if(type=="action"){
+        msgJson = formatMessage(msg, toClient.rap.uuid, fromClient.rap.uuid, type,sendId);
+      }else{
+        msgJson = msg;
+      }
+
       var payload = Buffer.from(msgJson);
 
       //结束fin=1，mask=0，opcode=1文本

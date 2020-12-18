@@ -17,7 +17,7 @@ rap.cmd = new Cmd(rap.system);
 /***log***/
 const Log = localRequire("@/server/lib/rap/Log.js");
 let logPath = localRequire("@/server/log", true);
-console.log("local log file Path",logPath)
+console.log("local log file Path", logPath)
 let log = new Log({ system: rap.system, outpath: logPath });
 
 rap.console = {}
@@ -39,52 +39,53 @@ rap.sha1 = (str) => {
   return sha1.digest('hex');
 }
 //不可逆
-rap.md5 = (str) =>{
+rap.md5 = (str) => {
   var md5 = crypto.createHash('md5');
   md5.update(str);
   return md5.digest('hex');
 }
 
-var secretkey="rapserverRobert";//唯一（公共）秘钥
-  //AES对称加密
-rap.AES = (str) =>{
-  var cipher=crypto.createCipher('aes192', secretkey);//使用aes192加密
-  var enc=cipher.update(str,"utf8","hex");//编码方式从utf-8转为hex;
-  enc+=cipher.final('hex');//编码方式转为hex;
-  return enc;
+// var iv = "rapserverRobert"; //唯一（公共）秘钥
+const iv = "rapserverRobert1"; //length==16必须
+const key = "rapserverRobert2"; 
+//AES对称加密
+rap.AES = (data) => {
+  //唯一（公共）秘钥
+  let decipher = crypto.createCipheriv('aes-128-cbc', key, iv);
+  return decipher.update(data, 'binary', 'base64') + decipher.final('base64');
 }
-  //AES对称解密
-rap.unAES = (str) =>{
-  var decipher=crypto.createDecipher('aes192', secretkey);
-  var dec=decipher.update(str,"hex", "utf8");
-  dec+=decipher.final("utf8");
-  return dec;
+
+//AES对称解密
+rap.unAES = (crypted) => {
+  crypted = new Buffer(crypted, 'base64').toString('binary');
+  let decipher = crypto.createDecipheriv('aes-128-cbc', key, iv);
+  return decipher.update(crypted, 'binary', 'utf8') + decipher.final('utf8');
 }
 
 /**
  * 获取端口号
  */
-function getPort(startPort,callback){
-  if(typeof startPort=="function"){
-      callback = startPort;
-      startPort = 3000;
+function getPort(startPort, callback) {
+  if (typeof startPort == "function") {
+    callback = startPort;
+    startPort = 3000;
   }
-  startPort = startPort||3000;
-  rap.cmd.execApi(`netstat -aon | findstr "${startPort}"`).then((str)=>{
-      if(str){
-        if(startPort<65535){
-          getPort(++startPort,callback)
-        }else{
-          console.error("没有可用的端口号来监听http");
-        }
-      }else{
-          callback(startPort)
+  startPort = startPort || 3000;
+  rap.cmd.execApi(`netstat -aon | findstr "${startPort}"`).then((str) => {
+    if (str) {
+      if (startPort < 65535) {
+        getPort(++startPort, callback)
+      } else {
+        console.error("没有可用的端口号来监听http");
       }
-  }).catch(e=>{
+    } else {
+      callback(startPort)
+    }
+  }).catch(e => {
     //Command failed,表示没有查到信息,即端口号没有被占用
-    if(~e.message.indexOf("Command failed:")&&e.code==1){
+    if (~e.message.indexOf("Command failed:") && e.code == 1) {
       callback(startPort);
-    }else{
+    } else {
       console.error(e.stack)
     }
 
@@ -92,4 +93,3 @@ function getPort(startPort,callback){
 }
 
 rap.getPort = getPort;
-
