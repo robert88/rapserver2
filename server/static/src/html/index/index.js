@@ -241,13 +241,15 @@
           $heap.find(".totalMemory").data("totalmem", ret.totalMem).html(Math.floor(ret.totalMem / 1024 / 1024 / 1024 * 100) / 100);
           cpuStack = ret.cpuStack;
           memoryStack = ret.memoryStack;
-          timeStack = ret.timeStack;
+          timeStack = ret.timeStack.map(item=>{
+            return item.toDate().getTime()
+          });
         } else {
           totalMem = $heap.find(".totalMemory").data("totalmem");
 
           cpuStack.push(ret.cpuStack[0])
-          memoryStack.push(ret.cpuStack[0])
-          timeStack.push(ret.cpuStack[0])
+          memoryStack.push(ret.memoryStack[0])
+          timeStack.push(ret.timeStack[0].toDate().getTime() )
 
           cpuStack = cpuStack.slice(-240);
           memoryStack = memoryStack.slice(-240);

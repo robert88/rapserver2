@@ -27,3 +27,67 @@ at Socket.<anonymous> (d:\git\rapserver2\server\bootstrap\Sockie.js:456:38[2020/
 ...
 at FSReqCallback.oncomplete (fs.js:183:21[2020/12/18 06:22:43] </error>
 <error> sendMsg error: target client writeable :,true at Sockie.sendMsg (d:\git\rapserver2\server\bootstrap\Sockie.js:575:19[2020/12/18 06:44:36] </error>
+<error> sendMsg error: target client writeable :,false at Sockie.sendMsg (d:\git\rapserver2\server\bootstrap\Sockie.js:576:19[2020/12/18 06:54:05] </error>
+<error> error:[uncaughtException],/credit/app.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/18 20:25:22] </error>
+<error> error:[uncaughtException],/favicon.ico,Error: ENOENT: no such file or directory, stat '/favicon.ico'
+    at d:\git\rapserver2\server\pipe\staticFile.js:117:17
+    at AsyncSeries.done (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\AsyncSeries.js:30:17)
+    at AsyncSeries.next (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\AsyncSeries.js:25:14)
+    at d:\git\rapserver2\server\pipe\staticFile.js:105:21
+    at d:\git\rapserver2\server\pipe\staticFile.js:54:7
+    at Array.<anonymous> (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\FileSystemInput.js:238:22)
+    at Storage.finished (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\Storage.js:43:16)
+    at d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\Storage.js:91:9
+    at d:\git\rapserver2\server\lib\node_modules\graceful-fs\polyfills.js:282:31
+    at FSReqCallback.oncomplete (fs.js:183:21)[2020/12/18 20:25:23] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:37:29] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:39:04] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:41:28] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:41:59] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:43:20] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:43:59] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:44:02] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:44:27] </error>
+<error> error:[uncaughtException],/rapserver/index/index.html,Error: read ECONNRESET
+    at TCP.onStreamRead (internal/stream_base_commons.js:209:20)
+    at TCP.callbackTrampoline (internal/async_hooks.js:129:14)[2020/12/23 06:44:37] </error>
+<error> error:[uncaughtException],/rapserver/index/404.html,Error: ENOENT: no such file or directory, stat '/rapserver/index/404.html'
+    at d:\git\rapserver2\server\pipe\staticFile.js:117:17
+    at AsyncSeries.done (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\AsyncSeries.js:30:17)
+    at AsyncSeries.next (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\AsyncSeries.js:25:14)
+    at d:\git\rapserver2\server\pipe\staticFile.js:105:21
+    at d:\git\rapserver2\server\pipe\staticFile.js:54:7
+    at Array.<anonymous> (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\FileSystemInput.js:238:22)
+    at Storage.finished (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\Storage.js:43:16)
+    at d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\Storage.js:91:9
+    at d:\git\rapserver2\server\lib\node_modules\graceful-fs\polyfills.js:282:31
+    at FSReqCallback.oncomplete (fs.js:183:21)[2020/12/23 06:49:06] </error>
+<error> error:[uncaughtException],/favicon.ico,Error: ENOENT: no such file or directory, stat '/favicon.ico'
+    at d:\git\rapserver2\server\pipe\staticFile.js:117:17
+    at AsyncSeries.done (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\AsyncSeries.js:30:17)
+    at AsyncSeries.next (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\AsyncSeries.js:25:14)
+    at d:\git\rapserver2\server\pipe\staticFile.js:105:21
+    at d:\git\rapserver2\server\pipe\staticFile.js:54:7
+    at Array.<anonymous> (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\FileSystemInput.js:238:22)
+    at Storage.finished (d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\Storage.js:43:16)
+    at d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\Storage.js:91:9
+    at d:\git\rapserver2\server\lib\node_modules\graceful-fs\polyfills.js:282:31
+    at FSReqCallback.oncomplete (fs.js:183:21)[2020/12/23 06:49:06] </error>

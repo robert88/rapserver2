@@ -209,7 +209,7 @@
       type: "post",
       dataType: "json",
       success: function success(ret) {
-        initSockie(ret.port, heapChart, cpuChart);
+        initSockie(ret.port, heapChart, cpuChart, 240, true);
       },
       error: function error(code, xhr) {
         $.tips(xhr.responseText, "error");
@@ -219,18 +219,26 @@
   /**
    * 
    * 初始化sockie
-  */
+   */
 
 
-  function initSockie(port, heapChart, cpuChart) {
+  var cpuStack = [];
+  var memoryStack = [];
+  var timeStack = [];
+
+  function initSockie(port, heapChart, cpuChart, limit, all) {
+    var $cpu = $(".index-chat-block .cpu");
+    var $heap = $(".index-chat-block .heap");
     socketSend({
       port: port,
       url: "/rapserver/sockie/cpuAndheap",
       type: "action",
       data: {
-        limit: 240
+        limit: limit || 240,
+        all: all ? all : ""
       },
-      success: function success(ret) {
+      success: function success(info) {
+        var ret = info.data;
         var totalMem = ret.totalMem; //第一次连接成功返回的数据
 
         if (ret.model) {
@@ -238,19 +246,30 @@
           $cpu.find(".speed").html(ret.speed);
           $cpu.find(".cpunum").html(ret.count);
           $heap.find(".totalMemory").data("totalmem", ret.totalMem).html(Math.floor(ret.totalMem / 1024 / 1024 / 1024 * 100) / 100);
+          cpuStack = ret.cpuStack;
+          memoryStack = ret.memoryStack;
+          timeStack = ret.timeStack.map(function (item) {
+            return item.toDate().getTime();
+          });
         } else {
           totalMem = $heap.find(".totalMemory").data("totalmem");
+          cpuStack.push(ret.cpuStack[0]);
+          memoryStack.push(ret.memoryStack[0]);
+          timeStack.push(ret.timeStack[0].toDate().getTime());
+          cpuStack = cpuStack.slice(-240);
+          memoryStack = memoryStack.slice(-240);
+          timeStack = timeStack.slice(-240);
         }
 
-        $cpu.find(".percent").html(ret.cpuStack[len - 1]);
+        $cpu.find(".percent").html(cpuStack[cpuStack.length - 1]);
         $heap.find(".useMemory").html(Math.floor((totalMem - ret.freeMem) / 1024 / 1024 / 1024 * 100) / 100);
         cpuChart.redraw({
           axis: {
             x: getXaxis()
           },
           data: {
-            x: ret.timeStack.slice(-240),
-            y: ret.cpuStack.slice(-240)
+            x: timeStack,
+            y: cpuStack
           }
         });
         heapChart.redraw({
@@ -258,10 +277,13 @@
             x: getXaxis()
           },
           data: {
-            x: ret.timeStack.slice(-240),
-            y: ret.memoryStack.slice(-240)
+            x: timeStack,
+            y: memoryStack
           }
         });
+        setTimeout(function () {
+          initSockie(ret.port, heapChart, cpuChart, 1);
+        }, 1000);
       }
     });
   }

@@ -100,7 +100,7 @@ exports = module.exports = {
   },
   "cpuAndheap": function(req, res, next) {
     let limit =  res.rap.query.limit || 1;
-    let all = res.rap.query.all || 1;
+    let all = res.rap.query.all || "";
     let ret = {
       timeStack: g_cpuInfo.timeStack.slice(-limit),
       cpuStack: g_cpuInfo.cpuStack.slice(-limit),
