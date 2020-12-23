@@ -6,7 +6,7 @@
 
       <fieldset class="ipt-field J-validItem">
         <div class="ipt-wrap">
-          <textarea class="ipt-textArea J-tabItem {{$value.className}}" {{ATTR('id',$value.id)}} name="{{$value.name}}" type="{{$value.type}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}></textarea>
+          <textarea rows=3 class="ipt-textArea J-tabItem {{$value.className}}" {{ATTR('id',$value.id)}} name="{{$value.name}}" type="{{$value.type}}" check-type="{{$value.check}}" {{#each $value.msg}}data-{{$value.name}}-msg="{{$value.value}}" {{#endEach}}></textarea>
           <span class="ipt-bar"></span>
           <span class="ipt-label">{{$value.label}}</span>
         </div>
