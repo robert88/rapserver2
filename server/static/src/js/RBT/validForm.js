@@ -663,7 +663,7 @@
       }
       $(this).data("initselect", true);
 
-      $(this).off("touchstart mouseup", ".J-select").on("touchstart mouseup", ".J-select", function(e) {
+      $(this).off("touchstart,mouseup", ".J-select").on("touchstart,mouseup", ".J-select", function(e) {
 
         var $this = $(this)
 
@@ -1128,19 +1128,31 @@
         }
         //空值校验
       })
-      $(this).find(".J-validItem").on("change.checkEmpty", "select,input,textarea", function(e) {
+      var $that = $(this).find(".J-validItem")
+      $that.find("textarea").each(function(){
+        $(this).data("orgheight",$(this).height());
+      })
+      $that.on("change.checkEmpty", "select,input,textarea", function(e) {
         if ($.trim($(this).val())) {
           $(this).addClass("ipt-not-empty");
         } else {
           $(this).removeClass("ipt-not-empty");
         }
-      }).find(".J-validItem").on("keyup.checkEmpty", "select,input,textarea", function(e) {
+      })
+      $that.on("keyup.checkEmpty", "select,input,textarea", function(e) {
         if ($.trim($(this).val())) {
           $(this).addClass("ipt-not-empty");
+          if(this.nodeName=="TEXTAREA"&&this.scrollHeight>$(this).height()){
+            $(this).height(this.scrollHeight);
+          }else{
+            $(this).height($(this).data("orgheight"));
+          }
         } else {
           $(this).removeClass("ipt-not-empty");
         }
+        
       });
+
 
     })
 

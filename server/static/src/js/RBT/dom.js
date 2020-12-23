@@ -453,7 +453,39 @@
     stop: function() {
 
     },
+    index:function(){
+      var findIndex = -1;
+      each(this, function(val,idx) {
+        if(findIndex!=-1){
+          for(var i=0;i<val.parentNode.children.length;i++){
+            var childNode = val.children[i];
+            if(childNode==val){
+              findIndex = idx;
+            }
+          }
+          return false
+        }
+        return findIndex;
+      })
 
+    },
+    children:function(){
+      var self = new Dom();
+
+      each(this, function(val,idx) {
+        if(idx==0){
+          for(var i=0;i<val.children.length;i++){
+            var childNode = val.children[i];
+            if(childNode.nodeType==1){
+              Array.prototype.push.apply(self, childNode);
+            }
+          }
+          return false
+        }
+
+      })
+      return self;
+    },
     on: function(type, delegate, fn, keep) {
       var self = this;
       type = type.split(",");
