@@ -198,22 +198,26 @@
   function find(str, context) {
     var dom = [];
     if (typeof str == "string") {
-      var tempDom
-      if (context && context.nodeType == Node.ELEMENT_NODE) {
-        tempDom = findDom(str, context);
-      } else {
-        tempDom = findDom(str);
-      }
-      if (tempDom) {
-        if (tempDom.length == null) {
-          dom.push(tempDom);
+      var splitStr = str.split(",");
+      splitStr.forEach(function(val,idx){
+        var tempDom
+        if (context && context.nodeType == Node.ELEMENT_NODE) {
+          tempDom = findDom(str, context);
         } else {
-          for (var i = 0; i < tempDom.length; i++) {
-            dom.push(tempDom[i]);
+          tempDom = findDom(str);
+        }
+        if (tempDom) {
+          if (tempDom.length == null) {
+            dom.push(tempDom);
+          } else {
+            for (var i = 0; i < tempDom.length; i++) {
+              dom.push(tempDom[i]);
+            }
           }
         }
-      }
-      tempDom = null
+        tempDom = null
+      })
+
     } else if (typeof str == "object") {
       if (str.nodeType || str == window || str == document) {
         dom.push(str);

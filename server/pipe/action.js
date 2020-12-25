@@ -117,7 +117,7 @@ class Action {
   }
 
   //解析js
-  parseAction(file, actionPath, uuid) {
+  parseAction(file, actionPath, uuid, update) {
 
     //清除一下缓存
     clearLocalRequireCache(file);
@@ -138,8 +138,8 @@ class Action {
           actionName = ("/" + uuid + "/" + filePath + "/" + key).toLowerCase().toURI();
         }
         //友好的提示
-        if (this.map[actionName]) {
-          console.log(actionName, "重复定义了")
+        if (this.map[actionName]&&!update) {
+          rap.console.log(actionName, "重复定义了")
         }
         this.map[actionName] = fileAction[key];
 
@@ -149,13 +149,23 @@ class Action {
       //不区分大小写
       let actionName = filePath;
       //友好的提示
-      if (this.map[actionName]) {
-        console.log(actionName, "重复定义了")
+      if (this.map[actionName]&&!update) {
+        rap.console.log(actionName, "重复定义了")
       }
       this.map[actionName] = fileAction;
     }
   }
 
+  update(file){
+    for (var uuid in this.actionMap) {
+      let actionPath = toPath(this.actionMap[uuid])
+      //存在
+      if(file.indexOf(actionPath)==0){
+        this.parseAction(file, actionPath, uuid,true);
+        break;
+      }
+    }
+  }
 
   /**
    *   //匹配一个action

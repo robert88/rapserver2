@@ -1,4 +1,4 @@
-const StaticFileState = localRequire("@/server/pipe/stat.file.js");
+const StaticFileState = localRequire("@/server/lib/stat.file.js");
 
 /*处理缓存，服务器端缓存和客户端缓存
  * staticMap 静态资源map
@@ -35,7 +35,10 @@ module.exports = function(run) {
       let realRoot = response.rap.realRoot;
       if (realFile) {
         //可以读取和更新
-        run.state.readOrUpdate(realId, realRoot, realFile, (data) => {
+        run.state.readOrUpdate(realId, realRoot, realFile, (err,data) => {
+          if(err){
+            throw err;
+          }
           response.rap.realStat = data; //得到当前url的stat信息
           next();
         });

@@ -116,7 +116,7 @@ module.exports = class Runner {
       rap.console.error("error:[trycatch]", "response url:" + response.rap && response.rap.url, err.stack);
       this.error.callAsync(err, response, "trycatch", () => {
         err = null;
-        d = null;
+        // d = null;
       });
     }
     // });

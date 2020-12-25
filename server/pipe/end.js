@@ -1,6 +1,6 @@
 const input = rap.system.input;
 const pt = require("path");
-const mineType = localRequire("@/server/pipe/staticFile.extname.js")
+const mineType = localRequire("@/server/lib/staticFile.extname.js")
 
 module.exports = function(run) {
   run.error.tapAsync({

@@ -1142,7 +1142,7 @@
       $that.on("keyup.checkEmpty", "select,input,textarea", function(e) {
         if ($.trim($(this).val())) {
           $(this).addClass("ipt-not-empty");
-          if(this.nodeName=="TEXTAREA"&&this.scrollHeight>$(this).height()){
+          if(this.nodeName=="TEXTAREA"&&this.scrollHeight>=$(this).height()){
             $(this).height(this.scrollHeight);
           }else{
             $(this).height($(this).data("orgheight"));

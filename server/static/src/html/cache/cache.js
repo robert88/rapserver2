@@ -7,11 +7,8 @@
 
   //更新显示的ui
   function updateRootInfo($rootInfo, ret) {
-    var orgHtml = '[[#each obj]]<li ><div class="rootId">[[$index]]</div><div  class="rootPath">[[$value]]</div>[[#if ($index!=\'rapserver\')]]<a class="J-delPath fa-times" title="可删除" data-id="[[$index]]"></a>[[#endIf]]</li>[[#endEach]]';
+    var orgHtml = '[[#each obj]]<li ><span class="type">[[$value.type]]</span><span  class="path">[[$value.path]]</span><span  class="time">[[$value.time.format(\'yy/MM/dd hh:mm:ss\')]]</span></li>[[#endEach]]';
     $rootInfo.html('<ul>{0}</ul>'.tpl(parseTeample(orgHtml, ret)));
-    for (var key in ret) {
-      setCache(key, ret[key]);
-    }
   }
 
   /**
@@ -34,25 +31,6 @@
     //   }
     // });
 
-    // 删除
-    $rootInfo.on("click", ".J-delPath", function() {
-      $.ajax({
-        url: "/rapserver/root/del",
-        data: {
-          rootId: $(this).data("id")
-        },
-        dataType: "json",
-        success: function(ret) {
-          staticMap = ret;
-          updateRootInfo($right, ret);
-          $.tips("删除成功", "success", 1000);
-        },
-        error: function(code, xhr) {
-          $.tips(xhr.responseText, "error");
-        }
-      })
-    });
-
     //添加
     $rootInfo.find(".ipt-form").validForm({
       focus: function($form) {
@@ -62,14 +40,18 @@
 
         var formParam = {
           path: $form.find("[name='path']").val(),
-          rootId: $form.find("[name='rootId']").val()
+          type: $form.find("[name='type']").val(),
+          time: new Date().getTime()
         }
-        if (staticMap[formParam.rootId]) {
-          $.tips("已添加过", "warn");
+        var mapid = formParam.path + formParam.type
+        if (staticMap[mapid] && formParam - staticMap[mapid].slice(-1)[0] < 10000) {
+          $.tips("添加频繁", "warn");
           return
         }
+        staticMap[mapid] = staticMap[mapid] || [];
+        staticMap[mapid].push(formParam.time);
         $.ajax({
-          url: "/rapserver/root/add",
+          url: "/rapserver/root/clearCache",
           data: formParam,
           type: "post",
           dataType: "json",

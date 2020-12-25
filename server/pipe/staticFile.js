@@ -1,5 +1,6 @@
-const AsyncSeries = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/AsyncSeries.js")
-const mineType = localRequire("@/server/pipe/staticFile.extname.js")
+const AsyncSeries = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/AsyncSeries.js");
+const mineType = localRequire("@/server/lib/staticFile.extname.js");
+const {resolve} = localRequire("@/server/lib/resolveFile.js");
 
 const zlib = require("zlib");
 const path = require("path");
@@ -18,43 +19,6 @@ let html5 = `<!DOCTYPE html>
 </pre>
 </body>
 </html>`;
-/**
- *如果存在就返回一个真实的地址
- * */
-function checkFileExist(run, ret, rootId, rootPath, callback) {
-
-  // if (ret.indexOf("/" + rootId) == 0) {
-  //   ret = ret.replace("/" + rootId, "");
-  // }
-
-  var basename = path.basename(ret);
-  //如果是/ 默认就定义到index.html
-  if (!basename && !run.config.directoryView) {
-    ret = "index.html";
-  }
-
-  var extname = path.extname(ret);
-  //如果没有配置查看目录那么就
-  if (!extname && !run.config.directoryView) {
-    ret = ret + ".html"; //尝试匹配html
-  }
-
-
-  let absolutePathTemp = (rootPath + "/" + ret).toURI();
-
-  //地址是ip地址
-  if (rootPath.indexOf("\\\\") == 0) {
-    absolutePathTemp = absolutePathTemp.replace(/^\\|^\//, "\\\\");
-  }
-  rap.system.input.exists(absolutePathTemp, function(err, flag) {
-    if (!err && flag) {
-      callback(absolutePathTemp);
-    } else { //不存在
-      console.log("try find " + absolutePathTemp + " but not find");
-      callback();
-    }
-  })
-}
 
 
 // 压缩
@@ -78,9 +42,6 @@ module.exports = function(run) {
         next();
         return;
       }
-      //获取特殊根地址
-
-      var asyncArr = [];
 
       //获取特殊根地址，query优先
       let cookiesRootId = response.rap.cookie && response.rap.cookie["serverRootId"];
@@ -94,22 +55,8 @@ module.exports = function(run) {
         staticMap = run.config.staticMap;
       }
 
-      for (let id in staticMap) {
-        //必须传递function不能用箭头函数
-        asyncArr.push(function() {
-          var queue = this;
-          checkFileExist(run, response.rap.url, id, staticMap[id], realFile => {
-            if (realFile) {
-              queue.done(null, realFile, id, staticMap[id]);
-            } else {
-              queue.next();
-            }
-          });
-        })
-      }
-
-      //异步处理
-      new AsyncSeries(asyncArr, (err, realFile, realId, realRoot) => {
+      //查找staticMap当中是否存在文件
+      resolve(run,staticMap,response.rap.url,(err, realFile, realId, realRoot) => {
         if (err) {
           throw err;
         }
