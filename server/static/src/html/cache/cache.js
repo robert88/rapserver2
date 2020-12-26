@@ -4,6 +4,7 @@
   $.floatHeight = RBT.floatHeight;
   $.ajax = RBT.ajax;
 
+console.log("clearSuccess")
 
   //更新显示的ui
   function updateRootInfo($rootInfo, ret) {
@@ -17,20 +18,12 @@
   function initRootInfo() {
     var $rootInfo = $(".cache-static-block");
     var $right = $rootInfo.find(".right .content");
-    var staticMap = {}
-    // //获取
-    // $.ajax({
-    //   url: "/rapserver/cache/get",
-    //   dataType: "json",
-    //   success: function(ret) {
-    //     staticMap = ret;
-    //     updateRootInfo($right, ret)
-    //   },
-    //   error: function(code, xhr) {
-    //     $.tips(xhr.responseText, "error");
-    //   }
-    // });
-
+    var staticMap = {};
+    var list = getCache();
+    list.forEach(item=>{
+      staticMap[item[0]+item[1]] = staticMap[item[0]+item[1]] || [];
+      staticMap[item[0]+item[1]].push(item[2]*1)
+    });
     //添加
     $rootInfo.find(".ipt-form").validForm({
       focus: function($form) {
@@ -43,7 +36,8 @@
           type: $form.find("[name='type']").val(),
           time: new Date().getTime()
         }
-        var mapid = formParam.path + formParam.type
+        var mapid = formParam.type+ formParam.path 
+        //时间是按小排到大
         if (staticMap[mapid] && formParam - staticMap[mapid].slice(-1)[0] < 10000) {
           $.tips("添加频繁", "warn");
           return
@@ -56,6 +50,7 @@
           type: "post",
           dataType: "json",
           success: function(ret) {
+            setCache(formParam);
             updateRootInfo($right, ret)
             formParam = null;
             $.tips("添加成功", "success", 1000);
@@ -73,6 +68,24 @@
    */
   initRootInfo();
 
+  /**
+   * 设置更新cookie
+   */
+  var clearList = [];
 
+  function setCache(obj) {
+    clearList.push([obj.type, obj.path, obj.time]);
+    clearList = clearList.slice(-30)
+    localStorage.setItem("clearCache", JSON.stringify(clearList));
+  }
+
+  function getCache() {
+    try {
+      clearList = JSON.parse(localStorage.getItem("clearCache"));
+    } catch (error) {
+      clearList = [];
+    }
+    return clearList||[];
+  }
 
 })(RBT.dom, RBT.parseTeample, RBT.socketSend);

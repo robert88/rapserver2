@@ -54,7 +54,7 @@
 
 
     //支持平板touch事件
-    if (g_touch.test(e.type)) {
+    if (g_touch.test(e.type)&&e.originalEvent) {
       e = e.originalEvent.touches[0];
     }
 

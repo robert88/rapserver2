@@ -13,14 +13,14 @@ module.exports = function(run) {
         response.removeHeader("Content-Length");
         var ext = pt.extname(response.rap && response.rap.url || "").replace(".", "")
         let code = 500;
-
-        if (err && err.message.indexOf("ENOENT: no such file") != -1) {
+        var message = err && err.message||"";
+        if (message.indexOf("ENOENT: no such file") != -1) {
           code = 404;
         }
-        if (err && err.message.indexOf("Unauthorized") != -1) {
+        if (message.indexOf("Unauthorized") != -1) {
           code = 401;
         }
-        if (err && err.message.indexOf("Request Timeout") != -1) {
+        if (message.indexOf("Request Timeout") != -1) {
           code = 408;
         }
 

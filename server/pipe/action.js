@@ -42,9 +42,16 @@ module.exports = function(run) {
         let ret = response.rap.action;
         if (typeof ret == "string") {
           response.setHeader("Content-Type", ["text/plain"])
-        } else if (!Buffer.isBuffer(ret) && typeof ret == "object") {
-          response.setHeader("Content-Type", ["application/json"])
-          ret = JSON.stringify(ret)
+        } else if (typeof ret == "object"  ) {
+          if(Buffer.isBuffer(ret)){
+            //这个应该怎么处理？
+          }else{
+            response.setHeader("Content-Type", ["application/json"])
+            ret = JSON.stringify(ret)
+          }
+
+        }else{
+          ret = ret+"";
         }
         response.writeHead(200);
         response.end(ret);

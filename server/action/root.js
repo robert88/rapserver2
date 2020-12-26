@@ -90,6 +90,7 @@ function updateDirStat(run, path, next) {
 
 //action: /rapserver/root
 exports = module.exports = {
+  "/favicon.ico":"/rapserver/favicon.ico",
   /**
    * 添加path
    * */
@@ -139,8 +140,8 @@ exports = module.exports = {
   //清除缓存
   "clearCache": function(req, res, next) {
     var run = this;
-    var path = res.rap.path;
-    var type = res.rap.type;
+    var path = res.rap.query.path;
+    var type = res.rap.query.type;
     // var time = res.rap.time;
     if (!path || !type) {
       throw Error("params error");
@@ -152,6 +153,7 @@ exports = module.exports = {
       //action
     } else if (type == "action") {
       run.action.update(path);
+      next(1);
       //目录
     } else {
       updateDirStat(run, path, function(ret) {

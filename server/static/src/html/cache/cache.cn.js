@@ -5,7 +5,7 @@ module.exports = {
       check: "required",
       id: "cacheType",
       type: "select",
-      options:[{value:"dir",name:"目录"},{value:"file",name:"文件"}],
+      options:[{value:"dir",name:"目录"},{value:"file",name:"文件"},{value:"action",name:"action"}],
       msg: [{ name: "required", value: "必填项" }]
     }, {
       name: "path",

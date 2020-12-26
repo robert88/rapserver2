@@ -57,7 +57,7 @@ module.exports = function(run) {
       let realStat = response.rap.realStat;
       if (realStat && !response.finished) {
         var cache = {
-          modify: request.headers["if-modified-single"],
+          modify: request.headers["if-modified-since"],
           etag: request.headers["if-none-match"]
         }
         response.setHeader("Last-Modified", realStat["Last-Modified"])
