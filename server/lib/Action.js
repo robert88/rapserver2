@@ -1,21 +1,30 @@
+require("./global/global.localRequire.js")
 const toPath = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/toPath.js");
 
+localRequire("@/server/lib/global/global.js");
+
+localRequire("@/server/lib/rap/rap.js");
+
+
+const {
+  ActionMap,
+  getActionMap,
+  setActionMap
+} = localRequire("@/server/lib/ActionMap.js");
 
 class Action {
-  constructor(system, actionMap) {
-    this.system = system;
+  constructor(actionMap) {
     this.map = {};
-    this.unique = {} //防止死循环
-    this.actionMap = actionMap
-    this.init()
+    this.init(actionMap)
   }
   //初始化
-  init() {
+  init(actionMap) {
 
     //可以提供多个action路径
-    for (var uuid in this.actionMap) {
-      let actionPath = toPath(this.actionMap[uuid])
-      let files = this.system.input.findFileSync(actionPath, "js", true);
+    for (var uuid in actionMap) {
+      let actionPath = toPath(actionMap[uuid]);
+      this.map[uuid] = new ActionMap();
+      let files = rap.system.input.findFileSync(actionPath, "js", true);
       files.forEach((file) => {
         this.parseAction(file, actionPath, uuid);
       });
@@ -23,36 +32,40 @@ class Action {
     }
 
     //提前处理action之间的映射，那么对应字符串的映射就不存在了
-    for (let key in this.map) {
-      this.map[key] = this.actionToAction(key);
-    }
+    this.actionToAction(this.map);
 
   }
   // action映射
-  actionToAction(actionName) {
+  actionToAction(map) {
+    for (var key in map) {
+      var val = map[key];
+      if (val.child) {
+        this.actionToAction(val.child);
+      }
 
-    //如果已经映射了就不需要深层映射
-    if (this.unique[actionName]) {
-      //返回原值
-      return this.map[actionName];
-    }
-
-    this.unique[actionName] = true;
-
-    //如果存在闭合映射，那么最终的映射一定是指向最后一个地方，第一个会等于自己
-    if (typeof this.map[actionName] == "string") {
-
-      //得到的值也是不区分大小写
-      let maybeActionName = this.map[actionName].toLowerCase();
-
-      //如果存在深层映射，
-      if (this.map[maybeActionName] && maybeActionName != actionName) {
-        //赋值的作用：如果是循环那么最终都会指向一个地方
-        return this.map[maybeActionName] = this.actionToAction(maybeActionName)
+      //判断是否地址映射,必须是/开头
+      if (typeof val.value == "string" && /^\s*\//.test(val.value)) {
+        let oldValue = val.value;
+        val.value = "__loop__";//防止死循环
+        let newValue = this.loopFindAction(val.value.trim());
+        if (findAction == null && findAction !== "__loop__") {
+          val.value = oldValue;
+        } else {
+          val.value = newValue;
+        }
       }
     }
-    //返回原值
-    return this.map[actionName];
+  }
+
+  //查找action
+  loopFindAction(filePath) {
+
+    var toAction = getActionMap(this.map, filePath);
+
+    if (typeof toAction == "string" && toAction.slice(0, 1) == "/") {
+      return this.loopFindAction(toAction);
+    }
+    return toAction;
   }
 
   //解析js
@@ -61,49 +74,26 @@ class Action {
     //清除一下缓存
     clearLocalRequireCache(file);
 
-    let fileAction = require(file);
+    let actionValue = require(file);
 
-    let filePath = toPath(file).replace(actionPath, "").replace(".js", "").toLowerCase();
+    let filePath = toPath(file).replace(actionPath, "").replace(".js", "").toLowerCase(); //相对路径
 
-    if (typeof fileAction == "object") {
-
-      //得到完整的action
-      for (var key in fileAction) {
-
-        let actionName = key.toLowerCase();
-
-        //不以“/”开头就得合并文件名作为action的一部分；“/”开头的action不会拼接文件路径
-        if (!key.indexOf("/") == 0) {
-          actionName = ("/" + uuid + "/" + filePath + "/" + key).toLowerCase().toURI();
+    if (Object.prototype.toString.call(actionValue) == "[object Object]") {
+      for (var key in actionValue) {
+        if (key.indexOf("/") == 0) {
+          setActionMap(this.map[uuid], key, actionValue[key]);
+        } else {
+          setActionMap(this.map[uuid], filePath + "/" + key, actionValue[key]);
         }
-        //友好的提示
-        if (this.map[actionName] && !update) {
-          rap.console.log(actionName, "重复定义了")
-        }
-        this.map[actionName] = fileAction[key];
-
       }
-      //独立一个action，对应的路径就是跟路径了
     } else {
-      //不区分大小写
-      let actionName = filePath;
-      //友好的提示
-      if (this.map[actionName] && !update) {
-        rap.console.log(actionName, "重复定义了")
-      }
-      this.map[actionName] = fileAction;
+      setActionMap(this.map[uuid], filePath, actionValue);
     }
-  }
 
-  update(file) {
-    for (var uuid in this.actionMap) {
-      let actionPath = toPath(this.actionMap[uuid])
-      //存在
-      if (file.indexOf(actionPath) == 0) {
-        this.parseAction(file, actionPath, uuid, true);
-        break;
-      }
-    }
+  }
+  //更新
+  update(file, actionPath, uuid) {
+    this.parseAction(file, actionPath, uuid, true);
   }
 
   /**
@@ -132,9 +122,9 @@ class Action {
           if (typeof ret == "string") {
             actionMapUnique = actionMapUnique || {};
             handlerTypeString(type, ret, function(info) {
-              if (info.type == "file" && !actionMapUnique[actionName] && info.value != actionName) {//动态得到新的url需要判断一下是否有action信息
+              if (info.type == "file" && !actionMapUnique[actionName] && info.value != actionName) { //动态得到新的url需要判断一下是否有action信息
                 actionMapUnique[actionName] = 1;
-                that.run( runner, request, response, callback, actionMapUnique);
+                that.run(runner, request, response, callback, actionMapUnique);
               } else {
                 callback(info);
               }
@@ -151,6 +141,9 @@ class Action {
 
 }
 
+/**
+ * string
+ */
 
 function handlerTypeString(type, ret, callback) {
   actionValue = actionValue.trim();
@@ -164,4 +157,9 @@ function handlerTypeString(type, ret, callback) {
     callback({ type: "file", value: actionValue });
   }
 }
+
+
 module.exports = Action;
+
+
+new Action({rapsever:localRequire("@/server/action", true)})

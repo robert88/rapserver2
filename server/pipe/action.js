@@ -8,7 +8,7 @@ module.exports = function(runner) {
   }
 
   //得到一个action对象
-  runner.action = new Action(rap.system, runner.config.actionMap);
+  runner.action = new Action(runner.config.actionMap);
 
   runner.inPipe.tapAsync({
     name: "action",
