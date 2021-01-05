@@ -47,7 +47,7 @@ class Action {
       if (typeof val.value == "string" && /^\s*\//.test(val.value)) {
         let oldValue = val.value;
         val.value = "__loop__";//防止死循环
-        let newValue = this.loopFindAction(val.value.trim());
+        let newValue = this.loopFindAction(oldValue.trim());
         if (findAction == null && findAction !== "__loop__") {
           val.value = oldValue;
         } else {
@@ -59,8 +59,13 @@ class Action {
 
   //查找action
   loopFindAction(filePath) {
-
-    var toAction = getActionMap(this.map, filePath);
+    var toAction 
+    for (var key in map) {
+       toAction = getActionMap(map[key], filePath);
+      if(toAction){
+        break;
+      }
+    }
 
     if (typeof toAction == "string" && toAction.slice(0, 1) == "/") {
       return this.loopFindAction(toAction);

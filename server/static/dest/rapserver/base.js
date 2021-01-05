@@ -689,7 +689,7 @@ RBT.userAgent = matchUserAgent(navigator.userAgent);
 
   function bind(e, fn, keep, val, index) {
     //支持平板touch事件
-    if (g_touch.test(e.type)) {
+    if (g_touch.test(e.type) && e.originalEvent) {
       e = e.originalEvent.touches[0];
     }
 
@@ -856,25 +856,28 @@ RBT.userAgent = matchUserAgent(navigator.userAgent);
     var dom = [];
 
     if (typeof str == "string") {
-      var tempDom;
+      var splitStr = str.split(",");
+      splitStr.forEach(function (val, idx) {
+        var tempDom;
 
-      if (context && context.nodeType == Node.ELEMENT_NODE) {
-        tempDom = findDom(str, context);
-      } else {
-        tempDom = findDom(str);
-      }
-
-      if (tempDom) {
-        if (tempDom.length == null) {
-          dom.push(tempDom);
+        if (context && context.nodeType == Node.ELEMENT_NODE) {
+          tempDom = findDom(str, context);
         } else {
-          for (var i = 0; i < tempDom.length; i++) {
-            dom.push(tempDom[i]);
+          tempDom = findDom(str);
+        }
+
+        if (tempDom) {
+          if (tempDom.length == null) {
+            dom.push(tempDom);
+          } else {
+            for (var i = 0; i < tempDom.length; i++) {
+              dom.push(tempDom[i]);
+            }
           }
         }
-      }
 
-      tempDom = null;
+        tempDom = null;
+      });
     } else if (_typeof(str) == "object") {
       if (str.nodeType || str == window || str == document) {
         dom.push(str);
@@ -1140,6 +1143,44 @@ RBT.userAgent = matchUserAgent(navigator.userAgent);
       }
     },
     stop: function stop() {},
+    index: function index() {
+      var findIndex = -1;
+
+      _each(this, function (val, idx) {
+        if (findIndex != -1) {
+          for (var i = 0; i < val.parentNode.children.length; i++) {
+            var childNode = val.children[i];
+
+            if (childNode == val) {
+              findIndex = idx;
+            }
+          }
+
+          return false;
+        }
+
+        return findIndex;
+      });
+    },
+    children: function children() {
+      var self = new Dom();
+
+      _each(this, function (val, idx) {
+        if (idx == 0) {
+          for (var i = 0; i < val.children.length; i++) {
+            var childNode = val.children[i];
+
+            if (childNode.nodeType == 1) {
+              Array.prototype.push.apply(self, childNode);
+            }
+          }
+
+          return false;
+        }
+      });
+
+      return self;
+    },
     on: function on(type, delegate, fn, keep) {
       var self = this;
       type = type.split(",");
@@ -2875,7 +2916,7 @@ RBT.parseTeample = function (templStr, json) {
       }
 
       $(this).data("initselect", true);
-      $(this).off("touchstart mouseup", ".J-select").on("touchstart mouseup", ".J-select", function (e) {
+      $(this).off("touchstart,mouseup", ".J-select").on("touchstart,mouseup", ".J-select", function (e) {
         var $this = $(this);
 
         if (e.type != "touchstart" && browserMobile) {
@@ -3376,15 +3417,26 @@ RBT.parseTeample = function (templStr, json) {
         } //空值校验
 
       });
-      $(this).find(".J-validItem").on("change.checkEmpty", "select,input,textarea", function (e) {
+      var $that = $(this).find(".J-validItem");
+      $that.find("textarea").each(function () {
+        $(this).data("orgheight", $(this).height());
+      });
+      $that.on("change.checkEmpty", "select,input,textarea", function (e) {
         if ($.trim($(this).val())) {
           $(this).addClass("ipt-not-empty");
         } else {
           $(this).removeClass("ipt-not-empty");
         }
-      }).find(".J-validItem").on("keyup.checkEmpty", "select,input,textarea", function (e) {
+      });
+      $that.on("keyup.checkEmpty", "select,input,textarea", function (e) {
         if ($.trim($(this).val())) {
           $(this).addClass("ipt-not-empty");
+
+          if (this.nodeName == "TEXTAREA" && this.scrollHeight >= $(this).height()) {
+            $(this).height(this.scrollHeight);
+          } else {
+            $(this).height($(this).data("orgheight"));
+          }
         } else {
           $(this).removeClass("ipt-not-empty");
         }

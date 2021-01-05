@@ -34,7 +34,7 @@
   
 <link href='/rapserver/template/header/header.css?version=1607750817301' rel="stylesheet"/>
 <link href='/rapserver/base.css' rel="stylesheet"/>
-<link href='/rapserver/index/index.css?version=1607759413628' rel="stylesheet"/>
+<link href='/rapserver/cache/cache.css?version=1608762886766' rel="stylesheet"/>
 </head>
 <body>
   <div class="loader loading-mask">
@@ -125,36 +125,47 @@
 <!-- <script src="/js/module/layout-header.js"></script> -->
 <div class="root-wrap">
   
+    
   
-  <div class="index-static-block">
-    <div class="wrap">
-      <div class="left">
-        <h3 class="title">配置路径</h3>
-        <div class="content">
-          
+    <div class="cache-static-block">
+      <div class="wrap">
+        <div class="left">
+          <h3 class="title">任务创建</h3>
+          <div class="content">
+            
 <form autocomplete="off" class="ipt-form">
   
     
-              <fieldset class="ipt-field J-validItem">
-                <div class="ipt-wrap">
-                  <input class="ipt-text J-tabItem " id="staticRootId" name="rootId" type="text" check-type="required" data-required-msg="必填项" >
-                  <span class="ipt-bar"></span>
-                  <span class="ipt-label">路径id</span>
-                </div>
-                <div class="ipt-error J-valid-msg"></div>
-              </fieldset>
+        <fieldset class="ipt-field J-validItem">
+          <div class="J-select J-vertical-visible">
+            <div class="ipt-wrap">
+              <input class="ipt-text J-select-text J-tabItem " id="cacheType" type="text" check-type="required" data-required-msg="必填项" >
+              <input class="J-select-value" name="type" type="hidden" check-type="required" data-required-msg="必填项" >
+              <span class="ipt-bar"></span>
+              <span class="ipt-label">类型</span>
+            </div>
+            <ul class="J-select-option animate-ease coustom-scroll" data-no-result="">
               
+                <li class="option" data-value="dir" data-name="目录">目录</li>
+                
+                <li class="option" data-value="file" data-name="文件">文件</li>
+                
+            </ul>
+            <div class="ipt-error J-valid-msg"></div>
+          </div>
+        </fieldset>
+        
                 
     
-              <fieldset class="ipt-field J-validItem">
-                <div class="ipt-wrap">
-                  <input class="ipt-text J-tabItem " id="staticRootPath" name="path" type="text" check-type="required" data-required-msg="必填项" >
-                  <span class="ipt-bar"></span>
-                  <span class="ipt-label">物理路径</span>
-                </div>
-                <div class="ipt-error J-valid-msg"></div>
-              </fieldset>
-              
+      <fieldset class="ipt-field J-validItem">
+        <div class="ipt-wrap">
+          <textarea rows=3 class="ipt-textArea J-tabItem " id="cachePaths" name="path" type="textarea" check-type="required" data-required-msg="必填项" ></textarea>
+          <span class="ipt-bar"></span>
+          <span class="ipt-label">根目录</span>
+        </div>
+        <div class="ipt-error J-valid-msg"></div>
+      </fieldset>
+      
                 
     
             <fieldset class="ipt-field">
@@ -166,41 +177,18 @@
             
                 
 </form>
-        </div>
-      </div>
-      <div class="right">
-        <h3 class="title">已配置的路径</h3>
-        <div class="content"></div>
-      </div>
-    </div>
-  </div>
-  <div class="middle-line">
-    Rapserver is http https sockie server base on nodejs 
-  </div>
-  <div class="index-chat-block">
-    <div class="wrap">
-      <!-- cpu -->
-      <div class="cpu">
-        <div class="info">
-          <span class="title"></span>
-          <span class="speed"></span>M
-          <span class="cpunum"></span>核
-          <span class="percent"></span>%
-        </div>
-        <div class="canvas"><canvas></canvas></div>
-      </div>
-      <!-- heap -->
-      <div class="heap">
-        <div class="info">
-          <span>总内存</span><span class="totalMemory"></span>G
-          <span>已用内存</span><span class="useMemory "></span>G
-        </div>
-        <div class="canvas"><canvas></canvas></div>
-      </div>
-    </div>
-  </div>
+          </div>
   
-
+        </div>
+        <div class="right">
+          <h3 class="title">已刷新列表</h3>
+          <div class="content"></div>
+        </div>
+      </div>
+    </div>
+  
+    
+  
 </div>
   <div class="footer">
     <div class="wrap col">
@@ -214,6 +202,6 @@
     </div>
   </div>
 <script src='/rapserver/base.js'></script>
-<script src='/rapserver/index/index.js?version=1608677025300'></script>
+<script src='/rapserver/cache/cache.js?version=1608762886763'></script>
 </body>
 </html>

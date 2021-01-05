@@ -214,3 +214,27 @@ at d:\git\rapserver2\server\rap.server.js:53:19[2020/12/15 05:47:18]</log>
 <log> server https run port 3002 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:39:21[2020/12/23 06:46:26] </log>
 <log> server http run port 3003 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:43:23[2020/12/23 06:46:26] </log>
 <log> web sockie listen:3004 at d:\git\rapserver2\server\rap.server.js:53:19[2020/12/23 06:46:33] </log>
+<log> 默认静态根路径,{"rapserver":"d:/git/rapserver2/server/static/dest"} at d:\git\rapserver2\server\rap.server.js:129:17[2020/12/24 06:39:12] </log>
+<log> action 根目录,{"rapserver":"d:/git/rapserver2/server/action"} at d:\git\rapserver2\server\rap.server.js:130:17[2020/12/24 06:39:12] </log>
+<log> 已统计stat信息,d:/git/rapserver2/server/templ/stat at module.exports (d:\git\rapserver2\server\pipe\stat.js:13:15[2020/12/24 06:39:12] </log>
+<log> server https run port 3000 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:39:21[2020/12/24 06:39:12] </log>
+<log> server http run port 3001 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:43:23[2020/12/24 06:39:12] </log>
+<log> web sockie listen:3003 at d:\git\rapserver2\server\rap.server.js:53:19[2020/12/24 06:39:14] </log>
+<log> 默认静态根路径,{"rapserver":"d:/git/rapserver2/server/static/dest"} at d:\git\rapserver2\server\rap.server.js:129:17[2021/01/01 19:55:53] </log>
+<log> action 根目录,{"rapserver":"d:/git/rapserver2/server/action"} at d:\git\rapserver2\server\rap.server.js:130:17[2021/01/01 19:55:53] </log>
+<log> 已统计stat信息,d:/git/rapserver2/server/templ/stat at module.exports (d:\git\rapserver2\server\pipe\stat.js:13:15[2021/01/01 19:55:53] </log>
+<log> server https run port 3000 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:39:21[2021/01/01 19:55:54] </log>
+<log> server http run port 3001 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:43:23[2021/01/01 19:55:54] </log>
+<log> web sockie listen:3002 at d:\git\rapserver2\server\rap.server.js:53:19[2021/01/01 19:55:55] </log>
+<log> 默认静态根路径,{"rapserver":"d:/git/rapserver2/server/static/dest"} at d:\git\rapserver2\server\rap.server.js:129:17[2021/01/01 20:00:35] </log>
+<log> action 根目录,{"rapserver":"d:/git/rapserver2/server/action"} at d:\git\rapserver2\server\rap.server.js:130:17[2021/01/01 20:00:35] </log>
+<log> 已统计stat信息,d:/git/rapserver2/server/templ/stat at module.exports (d:\git\rapserver2\server\pipe\stat.js:13:15[2021/01/01 20:00:35] </log>
+<log> server https run port 3001 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:39:21[2021/01/01 20:00:35] </log>
+<log> server http run port 3002 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:43:23[2021/01/01 20:00:35] </log>
+<log> web sockie listen:3003 at d:\git\rapserver2\server\rap.server.js:53:19[2021/01/01 20:00:37] </log>
+<log> 默认静态根路径,{"rapserver":"d:/git/rapserver2/server/static/dest"} at d:\git\rapserver2\server\rap.server.js:129:17[2021/01/01 20:01:23] </log>
+<log> action 根目录,{"rapserver":"d:/git/rapserver2/server/action"} at d:\git\rapserver2\server\rap.server.js:130:17[2021/01/01 20:01:23] </log>
+<log> 已统计stat信息,d:/git/rapserver2/server/templ/stat at module.exports (d:\git\rapserver2\server\pipe\stat.js:13:15[2021/01/01 20:01:23] </log>
+<log> server https run port 3001 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:39:21[2021/01/01 20:01:23] </log>
+<log> server http run port 3002 at Server.<anonymous> (d:\git\rapserver2\server\bootstrap\Runner.js:43:23[2021/01/01 20:01:23] </log>
+<log> web sockie listen:3003 at d:\git\rapserver2\server\rap.server.js:53:19[2021/01/01 20:01:25] </log>
