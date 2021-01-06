@@ -98,6 +98,9 @@ exports = module.exports = {
     var run = this;
     next({ port: run.sockie.port });
   },
+  ":id/test":function(req,res,next){
+    next({id:res.rap.query.id});
+  },
   "cpuAndheap": function(req, res, next) {
     let limit =  res.rap.query.limit || 1;
     let all = res.rap.query.all || "";
@@ -114,7 +117,6 @@ exports = module.exports = {
       ret.count = g_cpuInfo.count;
       ret.totalMem = g_cpuInfo.totalMem;
     }
-
     next(ret);
 
   }

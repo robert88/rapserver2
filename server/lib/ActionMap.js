@@ -46,8 +46,14 @@ function setActionMap(obj, filePath, val) {
 
   var sFile = filePath.split("/");
   sFile.forEach((item, index) => {
+    item = item.trim();
     if (!item) {
       return;
+    }
+    let queryName;
+    if (item.indexOf(":") == 0) { //动态路由
+      queryName = item.replace(":", "");
+      item = "*";
     }
 
     obj.child = obj.child || {}; //确保有子项
@@ -62,13 +68,21 @@ function setActionMap(obj, filePath, val) {
       if (!isActionMap(obj.child[item])) {
         obj.child[item] = new ActionMap(obj.child[item]);
       }
-      obj = obj.child[item];
+    }
+    obj = obj.child[item];
+    if (queryName) {
+      obj.query = queryName
     }
   })
 }
 
-//url 转为tree的对象
-function getActionMap(obj, filePath) {
+/**
+ * 
+ * 根据url来得到路由对象
+ * queryCallback
+ * */
+
+function getActionMap(obj, filePath, queryCallback) {
   filePath = toPath((filePath || "").trim()); //toPath会去掉最后一个/
   if (!isActionMap(obj)) {
     throw new Error("obj must instanceof ActionMap");
@@ -85,8 +99,13 @@ function getActionMap(obj, filePath) {
       return;
     }
     if (!isActionMap(obj.child[item])) {
-      error = true;
-      return
+      if (obj.child["*"]) { //动态路由
+        queryCallback(item, obj.child["*"].query);
+        item = "*";
+      } else {
+        error = true;
+        return
+      }
     }
 
     if (index == sFile.length - 1) {
@@ -108,4 +127,3 @@ module.exports = {
   setActionMap,
   isActionMap
 };
-
