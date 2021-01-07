@@ -1,5 +1,7 @@
 const Action = localRequire("@/server/lib/Action.js");
 
+const {getDefaultFile} = localRequire("@/server/lib/resolveFile.js")
+
 module.exports = function(runner) {
   //action是个map，可以配置多个目录的action
   if (!runner.config.actionMap) {
@@ -20,7 +22,7 @@ module.exports = function(runner) {
         runner.action.run(runner, request, response, mapInfo => {
           //得到是一个文件
           if (mapInfo.type == "file") {
-            response.rap.url = mapInfo.value;
+            response.rap.url = getDefaultFile(mapInfo.value);
             //得到是一个数据
           } else if (mapInfo.type == "remote") {
             response.rap.redirect = mapInfo.value;

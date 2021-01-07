@@ -5,6 +5,7 @@ localRequire("@/server/lib/global/global.js");
 
 localRequire("@/server/lib/rap/rap.js");
 
+const {getDefaultFile} = localRequire("@/server/lib/resolveFile.js")
 
 const {
   ActionMap,
@@ -130,7 +131,7 @@ class Action {
             handlerTypeString(type, ret, function(info) {
               if (info.type == "file" && !actionMapUnique[actionName] && info.value.toLowerCase() != actionName) { //动态得到新的url需要判断一下是否有action信息
                 actionMapUnique[actionName] = 1;
-                response.rap.url = info.value;
+                response.rap.url = getDefaultFile(info.value);
                 that.run(runner, request, response, callback, actionMapUnique);
               } else {
                 actionMapUnique = null;

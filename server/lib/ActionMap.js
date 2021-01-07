@@ -20,6 +20,7 @@ function isActionMap(obj) {
 // setActionMap(a, "/a/cc//d/", 3)
 // setActionMap(a, "/a/", 1);
 // setActionMap(a, "/", 8);
+// setActionMap(a, "/b/:b", 8);
 
 //得到{value:8,child:{a:{value:1,child:{b:{value:1,child:undefined},cc:value:3,child:{d:{value:3,child:undefined}}}}}}}
 
@@ -80,9 +81,10 @@ function setActionMap(obj, filePath, val) {
  * 
  * 根据url来得到路由对象
  * queryCallback
+ * retObj表示返回一个对象
  * */
 
-function getActionMap(obj, filePath, queryCallback) {
+function getActionMap(obj, filePath, queryCallback,retObj) {
   filePath = toPath((filePath || "").trim()); //toPath会去掉最后一个/
   if (!isActionMap(obj)) {
     throw new Error("obj must instanceof ActionMap");
@@ -94,6 +96,7 @@ function getActionMap(obj, filePath, queryCallback) {
   }
   let error = false
   var sFile = filePath.split("/");
+  var ret;
   sFile.forEach((item, index) => {
     if (error || !item) {
       return;
@@ -109,7 +112,7 @@ function getActionMap(obj, filePath, queryCallback) {
     }
 
     if (index == sFile.length - 1) {
-      obj = obj.child[item].value;
+      ret = obj.child[item].value;
     } else {
       obj = obj.child[item];
     }
@@ -117,7 +120,10 @@ function getActionMap(obj, filePath, queryCallback) {
   if (error) {
     return null;
   }
-  return obj;
+  if(retObj){
+    return obj;
+  }
+  return ret;
 }
 
 

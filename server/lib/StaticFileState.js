@@ -5,9 +5,38 @@ const AsyncSeries = localRequire("@/server/lib/node_modules/enhanced-resolve/lib
 
 const toPath = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/toPath.js");
 
+const {getDefaultFile} = localRequire("@/server/lib/resolveFile.js")
+
 localRequire("@/server/lib/global/global.js");
 
 localRequire("@/server/lib/rap/rap.js");
+
+async function findAll(root) {
+  return await new Promise((resove, reject) => {
+    rap.system.input.purge();
+    // 参数：path, fileType, deep, filterFn, callback
+    rap.system.input.findAll(root, null, true, null, (err, allFile) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resove(allFile);
+    })
+  })
+}
+
+async function getStat() {
+  return await new Promise((resove, reject) => {
+    rap.system.input.purge("stat", file);
+    rap.system.input.stat(file, (err, stat) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resove(stat);
+    });
+  })
+}
 
 const {
   ActionMap,
@@ -16,78 +45,63 @@ const {
 } = localRequire("@/server/lib/ActionMap.js");
 
 /*
- *将文件信息统计到一个json文件中
+ *将文件信息统计到一个json文件中,
+ * 由于静态文件没有命名空间来限制，那么就需要有优先级
  */
 class StaticFileState {
-  constructor(staticStateMap) {
-    return this.init(staticStateMap);
+  constructor(staticStateList) {
+
   }
   //多是异步的
-  async init(staticStateMap) {
-    this.map = {};
-    for (let id in staticStateMap) {
-      this.map[id] = new ActionMap();
-      await this.initOne(id, staticStateMap[id]);
+  async init(staticStateList) {
+    this.map = new ActionMap();
+    for (var i = 0; i < staticStateList.length; i++) {
+      await this.initOne(staticStateList[i].path);
     }
   }
 
-  async initOne(id, root) {
-    return await new Promise((resove, reject) => {
-      // 参数：path, fileType, deep, filterFn, callback
-      this.system.input.findAll(root, null, true, null, (err, allFile) => {
-        if (err) {
-          reject(err);
-        }
-        this.getAllStat(id, root, allFile).then((stateMap) => {
-          resove(stateMap);
-        }).catch(e => {
-          reject(e);
-        })
-      })
-    })
+  async initOne(root) {
+    let allFile = await findAll(root);
+    await this.setStatMap(root, allFile);
   }
-  async getAllStat(id, root, allFile) {
-    let stateMap = this.stateMap || {};
+
+  /**设置全部路由
+   * */
+  async setStatMap(root, allFile) {
     for (var i = 0; i < allFile.length; i++) {
       let file = allFile[i];
-      this.setMap(file, id, root, await this.getStat(file))
+      let relative = toPath(file).replace(toPath(root), "");
+      setActionMap(this.map, relative, await this.getStat(file));
     }
-    return stateMap
   }
 
 
 
   /*获取单个文件的stat信息*/
   async getStat(file) {
-    let stat = {};
-    let statInfo = await new Promise((resove, reject) => {
-      this.system.input.stat(file, (err, stat) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resove(stat);
-      });
-    })
+    let ret = {}
+    let awaitstat = await getStat(file);
+    let extName = pt.extname(file);
 
-    stat["Last-Modified"] = statInfo.mtimeMs;
-    stat["ETag"] = stat["Last-Modified"] + "-" + statInfo.size;
-    stat["size"] = statInfo.size;
-    stat["isDirectory"] = statInfo.isDirectory();
-    var extName = pt.extname(file);
+    ret["Last-Modified"] = awaitstat.mtimeMs;
+    ret["path"] = file;
+    ret["ETag"] = awaitstat.mtimeMs + "-" + awaitstat.size;
+    ret["size"] = awaitstat.size;
+    ret["isDirectory"] = awaitstat.isDirectory();
+
     if (extName == ".html") {
-      stat["Cache-Control"] = "no-cache";
+      ret["Cache-Control"] = "no-cache";
     } else {
       //开发环境不需要缓存
       if (ENV == "product") {
-        stat["Cache-Control"] = "only-if-cached";
+        ret["Cache-Control"] = "only-if-cached";
       }
     }
     //允许js可以获取头部
     if (extName == ".js") {
-      stat["Access-Control-Expose-Headers"] = "X-Client-Ip";
+      ret["Access-Control-Expose-Headers"] = "X-Client-Ip";
     }
-    return stat;
+    return ret;
   }
 
 
@@ -98,48 +112,17 @@ class StaticFileState {
    * type
    * callback回调
    */
-  readOrUpdate(realId, realRoot, realFile, callback) {
-    let stat = this.getMap(realId, realRoot, realFile)
-    if (stat) {
-      callback(null, stat);
-    } else {
-      this.getStat(realFile)
-        .catch(e => {
-          callback(e);
-        })
-        .then(stat => {
-          callback(null, stat);
-        }).catch(e => {
-          process.emit('uncaughtException', e); //promise 不能抛出异常，需要通过事件来触发系统错误捕获
-        });
-    }
-  }
-  update(realFile, realId, realRoot, callback) {
-    this.system.input.purge("stat", realFile);
-
-    this.getStat(realFile).catch(e => {
-      callback(e);
-    }).then(stat => {
-      this.setMap(realFile, realId, realRoot, stat)
-      callback(null, stat);
-    }).catch(e => {
-      process.emit('uncaughtException', e); //promise 不能抛出异常，需要通过事件来触发系统错误捕获
-    })
+  get(url,callback,retObj){
+    return getActionMap(this.map,url,callback,retObj);
   }
 
-  setMap(realFile, realId, realRoot, stat) {
-    let relativefile = pt.dirname(realFile.replace(realRoot, '')) || "/";
-    this.stateMap[realId] = this.stateMap[realId] || {}
-    this.stateMap[realId][relativefile] = this.stateMap[realId][relativefile] || {}
-    this.stateMap[realId][relativefile][pt.basename(realFile)] = stat;
-  }
-
-  getMap(realId, realRoot, realFile) {
-    let relativefile = pt.dirname(realFile.replace(realRoot, '')) || "/";
-    let stat = this.stateMap[realId] && this.stateMap[realId][relativefile] && this.stateMap[realId][relativefile][pt.basename(realFile)];
-    return stat;
-  }
 
 }
 
 module.exports = StaticFileState
+
+// global.ENV = process.argv[2] == "dev" ? "dev" : "product"
+// var stat = new StaticFileState()
+// stat.init([{ name: "rapserver", path: localRequire("@/server/static/dest", true) }]).then(() => {
+//   console.log(stat)
+// })

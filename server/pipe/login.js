@@ -1,6 +1,6 @@
 const loginIntercept = localRequire("@/server/intercept/login.js")
 
-
+const {getDefaultFile} = localRequire("@/server/lib/resolveFile.js")
 
 module.exports = function(run) {
   run.inPipe.tapAsync({
@@ -25,7 +25,7 @@ module.exports = function(run) {
       if (needLoginWrap) {
         //这里特别容易把next认为是action的next,不需要拦截走的是next，需要拦截的走的是actionNext
         loginWrap(request, response, (loginPath) => {
-          response.rap.url = loginPath;
+          response.rap.url = getDefaultFile(loginPath);
           next()
         });
       } else {
