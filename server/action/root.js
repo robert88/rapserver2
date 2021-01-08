@@ -1,9 +1,9 @@
 var pt = require("path");
 const { resolve, getDefaultFile } = localRequire("@/server/lib/resolveFile.js");
-
+const StaticFileState = localRequire("@/server/lib/StaticFileState.js");
 //找到对应的配置
 function findRootId(run, path) {
-  var realFile, realId, realRoot, staticMap = run.config.staticMap;
+  var realFile, realId, realRoot, staticList = run.config.staticList;
   for (var key in staticMap) {
     var item = staticMap[key];
     if (path.indexOf(item) == 0) {
@@ -90,7 +90,7 @@ function updateDirStat(run, path, next) {
 
 //action: /rapserver/root
 exports = module.exports = {
-  "/favicon.ico":"/rapserver/favicon.ico",
+  "/favicon.ico": "/rapserver/favicon.ico",
   /**
    * 添加path
    * */
@@ -102,9 +102,15 @@ exports = module.exports = {
     } else if (params.rootId == "rapserver") {
       throw Error("can not change rapserver");
     }
-    run.config.staticMap[params.rootId] = params.path;
-    run.state.init(run.config.staticMap);
-    next(run.config.staticMap);
+    run.config.staticList.push({name:params.rootId,path:params.path});
+    var stat = new StaticFileState();
+    stat.init(run.config.staticList).catch(e => {
+      rap.console.error(e)
+    }).then(item => {
+      run.stat = stat;
+      stat = null;
+      next(Object.assign({}, run.config.staticList));
+    });
   },
   /**
   删除path
@@ -116,18 +122,30 @@ exports = module.exports = {
       throw Error("params error");
     } else if (params.rootId == "rapserver") {
       throw Error("can not change rapserver");
-    } else if (run.config.staticMap[params.rootId]) {
-      delete run.config.staticMap[params.rootId];
-      run.state.init(run.config.staticMap);
+    } else {
+      for (let i = 0; i < run.config.staticList; i++) {
+        let item = run.config.staticList[i];
+        if (item.name == rootId) {
+          run.config.staticList.splice(i, 1);
+          break;
+        }
+      }
+      var stat = new StaticFileState();
+      stat.init(run.config.staticList).catch(e => {
+        rap.console.error(e)
+      }).then(item => {
+        run.stat = stat;
+        stat = null;
+        next(Object.assign({}, run.config.staticList));
+      });
     }
-    next(run.config.staticMap);
   },
   /**
    获取 path
    */
   "get": function(req, res, next) {
     let run = this;
-    next(Object.assign({}, run.config.staticMap));
+    next(Object.assign({}, run.config.staticList));
   },
   /**
    获取 全部html

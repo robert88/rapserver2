@@ -36,14 +36,14 @@ module.exports = function(run) {
     fn(request, response, next) {
 
       //浏览器接收的压缩方式
-      var acceptEncoding = request.headers["accept-encoding"] || "";
-      var clientSupportGzip = acceptEncoding.match(new RegExp("gzip", "i"));
+      let acceptEncoding = request.headers["accept-encoding"] || "";
+      let clientSupportGzip = acceptEncoding.match(new RegExp("gzip", "i"));
 
       //这些文件已经经过了高度压缩,所以不需要压缩
-      let extname = path.extname(filePath).replace(".", "");
-      let videoFile = /(mp3)|(mp4)|(wav)/.test(extname);
-      var fileNotZip = /(jpg)|(ppt)|(pdf)|(doc)|(ico)|(gif)|(png)|(mp3)|(mp4)|(wav)/.test(extname);
       let realStat = response.rap.realStat.value;
+      let extname = path.extname(realStat.path).replace(".", "");
+      let videoFile = /(mp3)|(mp4)|(wav)/.test(extname);
+      let fileNotZip = /(jpg)|(ppt)|(pdf)|(doc)|(ico)|(gif)|(png)|(mp3)|(mp4)|(wav)/.test(extname);
 
       //文件类型
       if (mineType[extname]) {
@@ -80,12 +80,12 @@ module.exports = function(run) {
         //文件是否需要压缩，且客户端是否支持压缩,只支持gzip压缩
       } else if (!fileNotZip && clientSupportGzip) {
         let zip = zipType();
-        response.setHeader("Content-Encoding", "gzip");
+        // response.setHeader("Content-Encoding", "gzip");
         //保持连接，设置错了报错HPE_INVALID_CONSTANT
         response.setHeader("Transfer-Encoding", "chunked");
         response.removeHeader("Content-Length")
         response.writeHead(200);
-        fs.createReadStream(realStat.path).pipe(zip).pipe(response);
+        fs.createReadStream(realStat.path).pipe(response);
       } else {
         //这两个是对立的如果设置Transfer-Encoding，那么就会报错，HPE_UNEXPECTED_CONTENT_LENGTH
         if (realStat["size"] < k100) {

@@ -705,7 +705,7 @@
       each(this,
         function(val, idx) {
           if (getCss(val, display) == none) {
-            setCss(val, display, show)
+            setCss(val, display, "block")
           }
         }
       );

@@ -9,10 +9,10 @@
 
   //更新显示的ui
   function updateRootInfo($rootInfo, ret) {
-    var orgHtml = '[[#each obj]]<li ><div class="rootId">[[$index]]</div><div  class="rootPath">[[$value]]</div>[[#if ($index!=\'rapserver\')]]<a class="J-delPath fa-times" title="可删除" data-id="[[$index]]"></a>[[#endIf]]</li>[[#endEach]]';
+    var orgHtml = '[[#each obj]]<li ><div class="rootId">[[$value.name]]</div><div  class="rootPath">[[$value.path]]</div>[[#if ($value.name!=\'rapserver\')]]<a class="J-delPath fa-times" title="可删除" data-id="[[$index]]"></a>[[#endIf]]</li>[[#endEach]]';
     $rootInfo.html('<ul>{0}</ul>'.tpl(parseTeample(orgHtml, ret)));
-    for (var key in ret) {
-      setCache(key, ret[key]);
+    for (var i = 0; i < ret.length; i++) {
+      setCache(ret[i].name, ret[i].path);
     }
   }
 
@@ -23,21 +23,26 @@
     var $rootInfo = $(".index-static-block");
     var $right = $rootInfo.find(".right .content");
     var staticMap = {}
+    $(".loader").show()
     //获取
     $.ajax({
       url: "/rapserver/root/get",
       dataType: "json",
       success: function(ret) {
+        $(".loader").hide()
         staticMap = ret;
-        updateRootInfo($right, ret)
+        updateRootInfo($right, ret);
       },
       error: function(code, xhr) {
+        $(".loader").hide()
         $.tips(xhr.responseText, "error");
+
       }
     });
 
     // 删除
     $rootInfo.on("click", ".J-delPath", function() {
+      $(".loader").show()
       $.ajax({
         url: "/rapserver/root/del",
         data: {
@@ -45,11 +50,13 @@
         },
         dataType: "json",
         success: function(ret) {
+          $(".loader").hide()
           staticMap = ret;
           updateRootInfo($right, ret);
           $.tips("删除成功", "success", 1000);
         },
         error: function(code, xhr) {
+          $(".loader").hide()
           $.tips(xhr.responseText, "error");
         }
       })
@@ -70,17 +77,20 @@
           $.tips("已添加过", "warn");
           return
         }
+        $(".loader").show()
         $.ajax({
           url: "/rapserver/root/add",
           data: formParam,
           type: "post",
           dataType: "json",
           success: function(ret) {
+            $(".loader").hide()
             updateRootInfo($right, ret)
             formParam = null;
             $.tips("添加成功", "success", 1000);
           },
           error: function(code, xhr) {
+            $(".loader").hide()
             $.tips(xhr.responseText, "error");
           }
         })
@@ -241,7 +251,7 @@
           $heap.find(".totalMemory").data("totalmem", ret.totalMem).html(Math.floor(ret.totalMem / 1024 / 1024 / 1024 * 100) / 100);
           cpuStack = ret.cpuStack;
           memoryStack = ret.memoryStack;
-          timeStack = ret.timeStack.map(item=>{
+          timeStack = ret.timeStack.map(item => {
             return item.toDate().getTime()
           });
         } else {
@@ -249,7 +259,7 @@
 
           cpuStack.push(ret.cpuStack[0])
           memoryStack.push(ret.memoryStack[0])
-          timeStack.push(ret.timeStack[0].toDate().getTime() )
+          timeStack.push(ret.timeStack[0].toDate().getTime())
 
           cpuStack = cpuStack.slice(-240);
           memoryStack = memoryStack.slice(-240);

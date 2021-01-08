@@ -8,7 +8,7 @@ const fs = require("fs");
 module.exports = function(callback) {
   if (ENV == "product") {
     callback({
-      staticMap: { rapserver: localRequire("@/server/static/dest", true) },
+      staticList: [{ name:"rapserver",path:localRequire("@/server/static/dest", true) }],
       actionMap: { rapserver: localRequire("@/server/action", true) },
       https: {
         key: fs.readFileSync(localRequire("@/server/exe/ssl/localhost.key", true)),
@@ -23,7 +23,7 @@ module.exports = function(callback) {
     rap.getPort(port1 => {
       rap.getPort(port1 + 1, port2 => {
         callback({
-          staticMap: { rapserver: localRequire("@/server/static/dest", true) },
+          staticList: [{ name:"rapserver",path:localRequire("@/server/static/dest", true) }],
           actionMap: { rapserver: localRequire("@/server/action", true) },
           https: {
             port: port1,

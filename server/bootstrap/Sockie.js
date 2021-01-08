@@ -320,12 +320,12 @@ function waitMessage(client, buffer, perBuffer) {
  *
  * 统一message
  */
-function formatMessage(message, toid, fromid, type,sendId) {
+function formatMessage(message, toid, fromid, type, sendId) {
   var defaultMsgOpts = {
     message: message == null ? "" : message,
     type: type,
     to: toid,
-    sendId:sendId,
+    sendId: sendId,
     from: fromid
   };
 
@@ -404,13 +404,23 @@ class Sockie {
   }
   //socket中间层
   middleHandle(client) {
-    client.rap = {};
-    client.rap.uuid = uuid++;
-    client.rap.status = CONNECTING;
-    this.clientMap[client.rap.uuid] = client;
-    this.bindReadAble(client);
-    this.bindReadMsg(client);
-    this.bindClose(client);
+    let d = domain.create();
+    // 捕获异步异常
+    d.on('error', (err) => {
+      rap.console.error(err);
+      delete this.clientMap[client.rap.uuid];
+      client.removeAllListeners();
+      client.end()
+    });
+    d.run(() => {
+      client.rap = {};
+      client.rap.uuid = uuid++;
+      client.rap.status = CONNECTING;
+      this.clientMap[client.rap.uuid] = client;
+      this.bindReadAble(client);
+      this.bindReadMsg(client);
+      this.bindClose(client);
+    })
   }
   //解析数据
   bindReadAble(client) {
@@ -490,17 +500,17 @@ class Sockie {
     var request = {
       url: clientMsg.url,
       headers: {},
-      client:{localAddress:"sockie",localPort:this.port},
-      method:"GET",
+      client: { localAddress: "sockie", localPort: this.port },
+      method: "GET",
       isSocket: true,
       cookies: querystring.parse(client.cookies, ";")
     };
-    var response = Object.assign(new events.EventEmitter(),{
-      rap:{query: clientMsg.data || {}},
+    var response = Object.assign(new events.EventEmitter(), {
+      rap: { query: clientMsg.data || {} },
       socket: client,
       finished: false,
       error: false,
-      headMap : {},
+      headMap: {},
       writeHead(code) {
         this._code = code;
       },
@@ -517,17 +527,17 @@ class Sockie {
         if (code == 200) {
           if (typeof ret == "string") {
             try {
-              ret ={code:code,data:JSON.parse(ret)} ;
+              ret = { code: code, data: JSON.parse(ret) };
             } catch (e) {
-              ret ={code:code,data:ret} ;
+              ret = { code: code, data: ret };
             }
-          }else{
-            ret ={code:code,data:ret} ;
+          } else {
+            ret = { code: code, data: ret };
           }
-          that.sendMsg(client,client, ret, "action",clientMsg.sendId);
+          that.sendMsg(client, client, ret, "action", clientMsg.sendId);
         } else {
-          ret ={code:code} ;
-          that.sendMsg(client, client,ret, "action",clientMsg.sendId);
+          ret = { code: code };
+          that.sendMsg(client, client, ret, "action", clientMsg.sendId);
         }
 
       }
@@ -542,7 +552,8 @@ class Sockie {
   bindClose(client) {
     client.on("close", (code, text) => {
       text = text || errerCode[code];
-      this.sendMsg(client, client, text, "close");
+      rap.console.warn("sockie uuid:",client.rap.uuid,"close by",text);
+      // this.sendMsg(client, client, text, "close");
       delete this.clientMap[client.rap.uuid];
       client.removeAllListeners();
       client.end()
@@ -557,7 +568,7 @@ class Sockie {
    * msg要发送的数据
    * type类型
    */
-  sendMsg(toClient, fromClient, msg, type,sendId) {
+  sendMsg(toClient, fromClient, msg, type, sendId) {
 
     var opcode = 1;
     var fin = 1;
@@ -567,9 +578,9 @@ class Sockie {
 
       var msgJson;
 
-      if(type=="action"){
-        msgJson = formatMessage(msg, toClient.rap.uuid, fromClient.rap.uuid, type,sendId);
-      }else{
+      if (type == "action") {
+        msgJson = formatMessage(msg, toClient.rap.uuid, fromClient.rap.uuid, type, sendId);
+      } else {
         msgJson = msg;
       }
 
@@ -580,7 +591,7 @@ class Sockie {
       var sendData = Buffer.concat([meta, payload], meta.length + payload.length);
       toClient.write(sendData);
     } else {
-      rap.console.error("sendMsg error: target client writeable :",toClient&&toClient.writable);
+      rap.console.warn("sendMsg error: target client writeable :", toClient && toClient.writable);
     }
   }
 }

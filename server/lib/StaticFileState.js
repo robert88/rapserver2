@@ -13,7 +13,7 @@ localRequire("@/server/lib/rap/rap.js");
 
 async function findAll(root) {
   return await new Promise((resove, reject) => {
-    rap.system.input.purge();
+    rap.system.input.purge("all");
     // 参数：path, fileType, deep, filterFn, callback
     rap.system.input.findAll(root, null, true, null, (err, allFile) => {
       if (err) {
@@ -25,7 +25,7 @@ async function findAll(root) {
   })
 }
 
-async function getStat() {
+async function getStat(file) {
   return await new Promise((resove, reject) => {
     rap.system.input.purge("stat", file);
     rap.system.input.stat(file, (err, stat) => {
@@ -49,7 +49,7 @@ const {
  * 由于静态文件没有命名空间来限制，那么就需要有优先级
  */
 class StaticFileState {
-  constructor(staticStateList) {
+  constructor() {
 
   }
   //多是异步的
@@ -62,7 +62,8 @@ class StaticFileState {
 
   async initOne(root) {
     let allFile = await findAll(root);
-    await this.setStatMap(root, allFile);
+    let ret = await this.setStatMap(root, allFile);
+    return ret;
   }
 
   /**设置全部路由
@@ -71,7 +72,8 @@ class StaticFileState {
     for (var i = 0; i < allFile.length; i++) {
       let file = allFile[i];
       let relative = toPath(file).replace(toPath(root), "");
-      setActionMap(this.map, relative, await this.getStat(file));
+      var stat = await this.getStat(file)
+      setActionMap(this.map, relative,stat );
     }
   }
 

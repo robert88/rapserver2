@@ -113,9 +113,8 @@ function getActionMap(obj, filePath, queryCallback,retObj) {
 
     if (index == sFile.length - 1) {
       ret = obj.child[item].value;
-    } else {
-      obj = obj.child[item];
-    }
+    } 
+    obj = obj.child[item];
   })
   if (error) {
     return null;

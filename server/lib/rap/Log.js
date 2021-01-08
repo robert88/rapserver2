@@ -31,7 +31,11 @@ module.exports = class Log {
     Array.prototype.forEach.call(callerParams, (arg) => {
 
       if (typeof arg == "object") {
-        callerParamsStr.push(JSON.stringify(arg));
+        if(arg instanceof Error){
+          callerParamsStr.push(arg.stack);
+        }else{
+          callerParamsStr.push(JSON.stringify(arg));
+        }
       } else {
         callerParamsStr.push(arg);
       }
