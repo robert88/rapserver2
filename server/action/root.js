@@ -123,7 +123,7 @@ exports = module.exports = {
     } else if (params.rootId == "rapserver") {
       throw Error("can not change rapserver");
     } else {
-      for (let i = 0; i < run.config.staticList; i++) {
+      for (let i = 0; i < run.config.staticList.length; i++) {
         let item = run.config.staticList[i];
         if (item.name == rootId) {
           run.config.staticList.splice(i, 1);
