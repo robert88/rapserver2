@@ -75,6 +75,7 @@ function setActionMap(obj, filePath, val) {
       obj.query = queryName
     }
   })
+  return obj;
 }
 
 /**

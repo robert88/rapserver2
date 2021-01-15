@@ -1,6 +1,12 @@
 var pt = require("path");
 const { resolve, getDefaultFile } = localRequire("@/server/lib/resolveFile.js");
 const StaticFileState = localRequire("@/server/lib/StaticFileState.js");
+const {
+  ActionMap,
+  getActionMap,
+  setActionMap
+} = localRequire("@/server/lib/ActionMap.js");
+
 //找到对应的配置
 function findRootId(run, path) {
   var realFile, realId, realRoot, staticList = run.config.staticList;
@@ -102,15 +108,27 @@ exports = module.exports = {
     } else if (params.rootId == "rapserver") {
       throw Error("can not change rapserver");
     }
-    run.config.staticList.push({name:params.rootId,path:params.path});
-    var stat = new StaticFileState();
-    stat.init(run.config.staticList).catch(e => {
-      rap.console.error(e)
-    }).then(item => {
-      run.stat = stat;
-      stat = null;
-      next(Object.assign({}, run.config.staticList));
-    });
+    //已经存在了
+    for (let i = 0; i < run.config.staticList.length; i++) {
+      let item = run.config.staticList[i];
+      if (item.path == params.path) {
+        next( run.config.staticList.slice(0) );
+        return;
+      }
+    }
+    run.config.staticList.push({ name: params.rootId, path: params.path });
+    // var stat = new StaticFileState();
+    // var map = new ActionMap(null, {});
+    // //这个过程可能比较慢
+    // stat.initOne(map, params.path).catch(e => {
+    //   rap.console.error(e);
+    // }).then(item => {
+    //   rap.console.error(e);
+    //   run.stat.map.child[params.rootId.toLowerCase()] = stat;
+    //   stat = null;
+    //   rap.console.log(params.rootId,"stat 更新成功");
+    // });
+    next(run.config.staticList.slice(0) );
   },
   /**
   删除path
@@ -127,17 +145,11 @@ exports = module.exports = {
         let item = run.config.staticList[i];
         if (item.name == rootId) {
           run.config.staticList.splice(i, 1);
+          delete run.stat.map.child[params.rootId.toLowerCase()] 
           break;
         }
       }
-      var stat = new StaticFileState();
-      stat.init(run.config.staticList).catch(e => {
-        rap.console.error(e)
-      }).then(item => {
-        run.stat = stat;
-        stat = null;
-        next(Object.assign({}, run.config.staticList));
-      });
+      next(run.config.staticList.slice(0) );
     }
   },
   /**
@@ -145,7 +157,7 @@ exports = module.exports = {
    */
   "get": function(req, res, next) {
     let run = this;
-    next(Object.assign({}, run.config.staticList));
+    next(run.config.staticList.slice(0) );
   },
   /**
    获取 全部html

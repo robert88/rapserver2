@@ -1,7 +1,7 @@
 const StaticFileState = localRequire("@/server/lib/StaticFileState.js");
 
+const toPath = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/toPath.js");
 
-const { getDefaultFile } = localRequire("@/server/lib/resolveFile.js")
 
 /*处理缓存，服务器端缓存和客户端缓存
  * staticMap 静态资源map
@@ -21,8 +21,34 @@ module.exports = function(run) {
   run.inPipe.tapAsync({
     name: "stat",
     fn(request, response, next) {
-      response.rap.realStat = run.stat.get(response.rap.url, null, true);
-      next();
+      //已经匹配了action
+      if(response.rap.action||response.rap.redirect){
+        next();
+        return;
+      }
+      for(let i=0;i<run.config.staticList.length;i++){
+        var map = run.config.staticList[i];
+        let stat =  run.stat.get(toPath(map.name+"/"+response.rap.url), null, true);
+        if(stat){
+          response.rap.realStat = stat;
+          break;
+        }
+      }
+      //还是没找到就去缓存里面找
+      if(response.rap.realStat){
+        next();
+      }else if(run.stat.map.value[toPath(response.rap.url)]){//404
+        next();
+      }else{
+        run.stat.getById(run.config.staticList,toPath(response.rap.url)).catch(e=>{
+          next();
+        }).then(stat=>{
+          response.rap.realStat = stat;//可能404，可能正确的文件信息
+          next();
+        })
+      }
+      
+
     }
   })
 
