@@ -1,14 +1,15 @@
 <useSlot src="/src/html/template/module.html" name="root">
-    <link rel="stylesheet" href="cache.less">
-  
-    <div class="cache-static-block">
-      <div class="wrap">
+  <link rel="stylesheet" href="cache.less">
+
+  <div class="cache-static-block">
+    <div class="wrap">
+      <div class="cache-title">缓存创建管理</div>
+      <div class="cache-box">
         <div class="left">
           <h3 class="title">任务创建</h3>
           <div class="content">
             <include src='/src/html/template/form/form.html' moduleSpace="obj['static']"></include>
           </div>
-  
         </div>
         <div class="right">
           <h3 class="title">已刷新列表</h3>
@@ -16,8 +17,17 @@
         </div>
       </div>
     </div>
-  
+    <div class="wrap">
+      <div class="cache-title">启动任务</div>
+      <ul class="cache-list">
+        {{#each taskList}}
+        <li class="{{$value.className}}"><span class="text">{{$value.name}}</span><span class="process"><span></span></span> <span class="btn-wrap"><a class="dev btn-success btn">开发</a><a class="online btn-danger btn">生产</a></span></li>
+        {{#endEach}}
+      </ul>
+    </div>
+  </div>
 
 
-    <script src="cache.js"></script>
-  </useSlot>
+
+  <script src="cache.js"></script>
+</useSlot>

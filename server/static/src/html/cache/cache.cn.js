@@ -17,5 +17,26 @@ module.exports = {
     }, {
       type: "btn",
       label: "提交"
-    }]
+    }],
+    taskList:[{
+      className:"restart",
+      name:"重启服务"
+    },
+    {
+      className:"rapserverGit",
+      name:"rapserver git"
+    },
+    {
+      className:"rapserverBuild",
+      name:"rapserver 静态编译"
+    },
+    {
+      className:"creditGit",
+      name:"credit git"
+    },
+    {
+      className:"creditBuild",
+      name:"credit 静态编译"
+    }
+]
   }

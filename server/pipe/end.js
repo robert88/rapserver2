@@ -29,7 +29,7 @@ module.exports = function(run) {
             //确保当前404页面不是自己，否则死循环
             if (run.config.page404 && response.rap.url != run.config.page404) {
               response.setHeader("Location", run.config.page404);
-              response.writeHead(301);
+              response.writeHead(302);
               response.end();
               return;
             }

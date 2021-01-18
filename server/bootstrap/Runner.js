@@ -105,7 +105,6 @@ module.exports = class Runner {
       this.error.callAsync(err, response, "domainErrorEvent", () => {
         d = null;
       });
-
     });
 
     d.run(() => {

@@ -1,14 +1,25 @@
 @import (reference) "../../css/ver";
 
 .cache-static-block {
+
   .wrap {
-    display: flex;
+
     .ptb20;
 
-    @media (max-width: @ipadV) {
-      flex-wrap: wrap;
-    }
 
+    .cache-title{
+      .fs24;
+      .pb10;
+      color:@success;
+    }
+    .cache-box{
+      border:1px solid @mute;
+      display: flex;
+      .p20;
+      @media (max-width: @ipadV) {
+        flex-wrap: wrap;
+      }
+    }
 
     .title {
       .fs18;
@@ -87,6 +98,24 @@
 
       }
 
+    }
+  }
+
+
+  .cache-list{
+    >li{
+      display: flex;
+      .ptb5;
+      .text{width: 20%;}
+      .process{
+        width: 60%;
+        background:#eee;
+      }
+      .btn-wrap{
+        width: 30%;
+        text-align: right;
+        a{margin:0 5px;}
+      }
     }
   }
 }

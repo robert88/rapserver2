@@ -40,11 +40,14 @@ module.exports = function(run) {
       }else if(run.stat.map.value[toPath(response.rap.url)]){//404
         next();
       }else{
-        run.stat.getById(run.config.staticList,toPath(response.rap.url)).catch(e=>{
+        run.stat.getById(run.config.staticList,toPath(response.rap.url)).catch(e=>{//getByID的错误
           next();
         }).then(stat=>{
           response.rap.realStat = stat;//可能404，可能正确的文件信息
           next();
+        }).catch(err=>{//next的错误捕获
+          rap.console.error("error:", "[stat promise catch]", "response url:" + response.rap && response.rap.url, err.stack);
+          run.error.callAsync(err, response, "promise", () => {});
         })
       }
       

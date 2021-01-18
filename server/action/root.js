@@ -58,41 +58,6 @@ function updateStaticStat(run, path, next) {
   })
 }
 
-//目录
-function updateDirStat(run, path, next) {
-  makeSureRoot(run, path, (err, realFile, realId, realRoot) => {
-    if (err) {
-      return next(0);
-    }
-    rap.console.log("action:clearCache by dir", realFile, realId, realRoot);
-    rap.system.input.purpe(); //清除全部缓存
-    rap.system.input.findAll(realFile, null, true, null, (err, allFile) => {
-      if (err) {
-        return next(0);
-      }
-
-      var fail = 0;
-      var success = 0;
-      allFile.forEach(file => {
-        run.state.update(file, realId, realRoot, function(err, ret) {
-          if (err) {
-            fail++;
-          } else {
-            success++;
-          }
-          if (fail + success == allFile.length) {
-            if (success) { //部分成功也是成功
-              next(1)
-            } else {
-              next(0)
-            }
-          }
-        });
-      })
-    })
-  })
-}
-
 
 //action: /rapserver/root
 exports = module.exports = {
@@ -143,7 +108,7 @@ exports = module.exports = {
     } else {
       for (let i = 0; i < run.config.staticList.length; i++) {
         let item = run.config.staticList[i];
-        if (item.name == rootId) {
+        if (item.name == params.rootId) {
           run.config.staticList.splice(i, 1);
           delete run.stat.map.child[params.rootId.toLowerCase()] 
           break;
@@ -186,6 +151,14 @@ exports = module.exports = {
       next(1);
       //目录
     } else {
+      for (let i = 0; i < run.config.staticList.length; i++) {
+        let item = run.config.staticList[i];
+        if (item.name == params.rootId) {
+          run.config.staticList.splice(i, 1);
+          delete run.stat.map.child[params.rootId.toLowerCase()] 
+          break;
+        }
+      }
       updateDirStat(run, path, function(ret) {
         next(ret);
       });
