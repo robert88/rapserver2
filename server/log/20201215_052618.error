@@ -158,3 +158,36 @@ at FSReqCallback.oncomplete (fs.js:183:21[2020/12/18 06:22:43] </error>
     at d:\git\rapserver2\server\lib\node_modules\enhanced-resolve\lib\Storage.js:91:9
     at d:\git\rapserver2\server\lib\node_modules\graceful-fs\polyfills.js:282:31
     at FSReqCallback.oncomplete (fs.js:183:21)[2021/01/01 19:59:18] </error>
+<error> error:[trycatch],index.html,Error: ENOENT: no such file or directory, stat 'index.html'
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\stat.js:55:15)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)
+    at _next3 (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:36:1)
+    at eval (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:56:1)
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\action.js:64:9)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)
+    at _next2 (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:49:1)
+    at eval (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:69:1)
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\cookie.js:59:7)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)[2022/07/05 11:15:41] </error>
+<error> error:[trycatch],/index/index.html,Error: ENOENT: no such file or directory, stat '/index/index.html'
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\stat.js:55:15)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)
+    at _next3 (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:36:1)
+    at eval (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:56:1)
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\action.js:64:9)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)
+    at _next2 (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:49:1)
+    at eval (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:69:1)
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\cookie.js:59:7)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)[2022/07/05 11:20:06] </error>
+<error> error:[trycatch],/index/index.html,Error: ENOENT: no such file or directory, stat '/index/index.html'
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\stat.js:55:15)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)
+    at _next3 (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:36:1)
+    at eval (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:56:1)
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\action.js:64:9)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)
+    at _next2 (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:49:1)
+    at eval (eval at create (D:\git\前端开发学习代码资料\rapserver2\server\lib\node_modules\tapable\HookCodeFactory.js:33:10), <anonymous>:69:1)
+    at Object.fn (D:\git\前端开发学习代码资料\rapserver2\server\pipe\cookie.js:59:7)
+    at tap.fn (D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:107:14)[2022/07/05 11:20:26] </error>

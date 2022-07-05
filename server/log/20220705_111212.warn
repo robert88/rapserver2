@@ -1,0 +1,4 @@
+<warn> sockie uuid:,0,close by,端点离线，例如服务器down，或者浏览器已经离开此页面 at Socket.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Sockie.js:555:19[2022/07/05 11:22:40] </warn>
+<warn> sockie uuid:,0,close by,端点离线，例如服务器down，或者浏览器已经离开此页面 at Socket.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Sockie.js:555:19[2022/07/05 11:38:23] </warn>
+<warn> sockie uuid:,1,close by,端点离线，例如服务器down，或者浏览器已经离开此页面 at Socket.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Sockie.js:555:19[2022/07/05 11:39:29] </warn>
+<warn> sockie uuid:,2,close by,端点离线，例如服务器down，或者浏览器已经离开此页面 at Socket.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Sockie.js:555:19[2022/07/05 11:39:36] </warn>

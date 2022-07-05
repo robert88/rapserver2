@@ -1661,3 +1661,184 @@ fieldset {
   background-color: #92ab59;
   border-color: #92ab59;
 }
+
+
+/*
+* 校验
+*/
+.validItem {
+  position: relative;
+  /*错误*/
+}
+.validItem .validErrMsg {
+  display: none;
+  padding-bottom: 10px;
+  margin-top: -10px;
+  top: 100%;
+  line-height: 23px;
+  font-size: 14px;
+}
+.validItem .validIcon {
+  display: none;
+  position: absolute;
+  top: 50%;
+  margin-top: -13px;
+  right: -30px;
+}
+.validItem .ipt-error {
+  display: none;
+}
+.validItem.validError input,
+.validItem.validError select {
+  border: 1px solid #d9534f;
+}
+.validItem.validError .validErrMsg {
+  color: #d9534f;
+  display: block;
+}
+.validItem.validError .validIcon {
+  color: #d9534f;
+  display: block;
+}
+.validItem.validError .ipt-error {
+  display: block;
+}
+/**
+*样式
+*/
+.ipt-form .ipt-field {
+  position: relative;
+  border: none;
+  padding-top: 10px;
+  line-height: 1.21428571;
+  font-size: 14px;
+  margin-top: -1.5px;
+  margin-bottom: -1.5px;
+}
+@media screen and (max-width: 992px) {
+  .ipt-form .ipt-field {
+    padding-top: -3px;
+  }
+}
+@media screen and (max-width: 992px) {
+  .ipt-form .ipt-field {
+    line-height: 1.23076923;
+    font-size: 13px;
+    margin-top: -1.5px;
+    margin-bottom: -1.5px;
+  }
+}
+.ipt-form .ipt-field .ipt-wrap {
+  cursor: text;
+  display: block;
+  padding-top: 20px;
+  position: relative;
+}
+@media screen and (max-width: 992px) {
+  .ipt-form .ipt-field .ipt-wrap {
+    padding-top: -8px;
+  }
+}
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea,
+.ipt-form .ipt-field .ipt-wrap .ipt-text {
+  display: block;
+  color: #333;
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  line-height: 1.375;
+  padding: 5px 0;
+  background-color: transparent;
+  -webkit-box-shadow: inset 0 -1px 0 0 #D6D6D6;
+  box-shadow: inset 0 -1px 0 0 #D6D6D6;
+}
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea:focus,
+.ipt-form .ipt-field .ipt-wrap .ipt-text:focus {
+  -webkit-box-shadow: inset 0 -2px 0 0 #C7000B;
+  box-shadow: inset 0 -2px 0 0 #C7000B;
+}
+@media (max-width: 992px) {
+  .ipt-form .ipt-field .ipt-wrap .ipt-textArea:focus,
+  .ipt-form .ipt-field .ipt-wrap .ipt-text:focus {
+    /*ios不支持box-shadow*/
+    border-bottom: 1px solid #C7000B;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+}
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea.ipt-not-empty,
+.ipt-form .ipt-field .ipt-wrap .ipt-text.ipt-not-empty,
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea.force-focus,
+.ipt-form .ipt-field .ipt-wrap .ipt-text.force-focus,
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea:focus,
+.ipt-form .ipt-field .ipt-wrap .ipt-text:focus,
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea.ipt-not-empty,
+.ipt-form .ipt-field .ipt-wrap .ipt-text.ipt-not-empty {
+  outline: none;
+}
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea.ipt-not-empty ~ .ipt-label,
+.ipt-form .ipt-field .ipt-wrap .ipt-text.ipt-not-empty ~ .ipt-label,
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea.force-focus ~ .ipt-label,
+.ipt-form .ipt-field .ipt-wrap .ipt-text.force-focus ~ .ipt-label,
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea:focus ~ .ipt-label,
+.ipt-form .ipt-field .ipt-wrap .ipt-text:focus ~ .ipt-label,
+.ipt-form .ipt-field .ipt-wrap .ipt-textArea.ipt-not-empty ~ .ipt-label,
+.ipt-form .ipt-field .ipt-wrap .ipt-text.ipt-not-empty ~ .ipt-label {
+  top: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ipt-form .ipt-field .ipt-label {
+  position: absolute;
+  left: 0;
+  top: 14px;
+  line-height: 1.83333333;
+  color: #999;
+  transition: 0.2s ease all;
+  -moz-transition: 0.2s ease all;
+  -webkit-transition: 0.2s ease all;
+}
+.ipt-form .ipt-field .J-select {
+  position: relative;
+}
+.ipt-form .ipt-field .J-select .ipt-wrap .ipt-text {
+  width: 100%;
+  padding-right: 24px;
+}
+.ipt-form .ipt-field .J-select .ipt-wrap .ipt-text:focus ~ .select-icon {
+  -webkit-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  transform: rotate(90deg);
+}
+.ipt-form .ipt-field .J-select.current .J-select-option {
+  visibility: visible;
+  height: auto;
+}
+.ipt-form .ipt-field .J-select .J-select-option {
+  position: absolute;
+  z-index: 11;
+  top: 50px;
+  left: 0;
+  visibility: hidden;
+  height: 0;
+  overflow-y: auto;
+  width: 100%;
+  max-height: 240px;
+  cursor: pointer;
+  background: #FFFFFF;
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+  -webkit-box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+.ipt-form .ipt-field .J-select .option {
+  font-size: 14px;
+  padding: 6px 10px;
+  color: #999;
+  line-height: 1.42857143;
+}
+.ipt-form .ipt-field .J-select .option:hover {
+  color: #c7000b;
+  background: #f3f3f3;
+}

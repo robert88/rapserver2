@@ -1406,25 +1406,15 @@ RBT.userAgent = matchUserAgent(navigator.userAgent);
         }
       }
     },
-    show: function (_show) {
-      function show() {
-        return _show.apply(this, arguments);
-      }
-
-      show.toString = function () {
-        return _show.toString();
-      };
-
-      return show;
-    }(function () {
+    show: function show() {
       _each(this, function (val, idx) {
         if (getCss(val, display) == none) {
-          setCss(val, display, show);
+          setCss(val, display, "block");
         }
       });
 
       return this;
-    }),
+    },
     hide: function hide() {
       _each(this, function (val, idx) {
         if (getCss(val, display) !== none) {
