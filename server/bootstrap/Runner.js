@@ -36,20 +36,20 @@ module.exports = class Runner {
       this.server = https.createServer(options.https, this.middleware.bind(this)).listen(options.https.port || 3004, () => {
         this.status = "started";
         this.ready();
-        rap.console.log("server https run port " + (options.https.port || 3004));
-
-        //启动http
-        http.createServer(function() {}).listen(options.http.port || 3005, () => {
-          rap.console.log("server http run port " + (options.http.port || 3005));
-        });
+        console.log("server https run port " + (options.https.port || 3004));
+          //启动http
+          http.createServer(this.middleware.bind(this)).listen(options.http.port || 3005, () => {
+            console.log("server http run port " + (options.http.port || 3005));
+          });
       });
+
 
 
     } else {
       this.server = http.createServer(this.middleware.bind(this)).listen(options.http.port || 3003, () => {
         this.status = "started";
         this.ready();
-        rap.console.log("server http run port " + (options.port || 3003));
+        console.log("server http run port " + (options.port || 3003));
       });
 
     }

@@ -61,6 +61,7 @@ function updateStaticStat(run, path, next) {
 
 //action: /rapserver/root
 exports = module.exports = {
+  "/":"/rapserver/index/index.html",
   "/favicon.ico": "/rapserver/favicon.ico",
   /**
    * 添加path
