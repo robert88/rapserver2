@@ -1,6 +1,12 @@
 var pt = require("path");
 const { resolve, getDefaultFile } = localRequire("@/server/lib/resolveFile.js");
 const StaticFileState = localRequire("@/server/lib/StaticFileState.js");
+const {
+  ActionMap,
+  getActionMap,
+  setActionMap
+} = localRequire("@/server/lib/ActionMap.js");
+
 //找到对应的配置
 function findRootId(run, path) {
   var realFile, realId, realRoot, staticList = run.config.staticList;
@@ -52,41 +58,6 @@ function updateStaticStat(run, path, next) {
   })
 }
 
-//目录
-function updateDirStat(run, path, next) {
-  makeSureRoot(run, path, (err, realFile, realId, realRoot) => {
-    if (err) {
-      return next(0);
-    }
-    rap.console.log("action:clearCache by dir", realFile, realId, realRoot);
-    rap.system.input.purpe(); //清除全部缓存
-    rap.system.input.findAll(realFile, null, true, null, (err, allFile) => {
-      if (err) {
-        return next(0);
-      }
-
-      var fail = 0;
-      var success = 0;
-      allFile.forEach(file => {
-        run.state.update(file, realId, realRoot, function(err, ret) {
-          if (err) {
-            fail++;
-          } else {
-            success++;
-          }
-          if (fail + success == allFile.length) {
-            if (success) { //部分成功也是成功
-              next(1)
-            } else {
-              next(0)
-            }
-          }
-        });
-      })
-    })
-  })
-}
-
 
 //action: /rapserver/root
 exports = module.exports = {
@@ -102,15 +73,27 @@ exports = module.exports = {
     } else if (params.rootId == "rapserver") {
       throw Error("can not change rapserver");
     }
-    run.config.staticList.push({name:params.rootId,path:params.path});
-    var stat = new StaticFileState();
-    stat.init(run.config.staticList).catch(e => {
-      rap.console.error(e)
-    }).then(item => {
-      run.stat = stat;
-      stat = null;
-      next(Object.assign({}, run.config.staticList));
-    });
+    //已经存在了
+    for (let i = 0; i < run.config.staticList.length; i++) {
+      let item = run.config.staticList[i];
+      if (item.path == params.path) {
+        next( run.config.staticList.slice(0) );
+        return;
+      }
+    }
+    run.config.staticList.push({ name: params.rootId, path: params.path });
+    // var stat = new StaticFileState();
+    // var map = new ActionMap(null, {});
+    // //这个过程可能比较慢
+    // stat.initOne(map, params.path).catch(e => {
+    //   rap.console.error(e);
+    // }).then(item => {
+    //   rap.console.error(e);
+    //   run.stat.map.child[params.rootId.toLowerCase()] = stat;
+    //   stat = null;
+    //   rap.console.log(params.rootId,"stat 更新成功");
+    // });
+    next(run.config.staticList.slice(0) );
   },
   /**
   删除path
@@ -125,19 +108,13 @@ exports = module.exports = {
     } else {
       for (let i = 0; i < run.config.staticList.length; i++) {
         let item = run.config.staticList[i];
-        if (item.name == rootId) {
+        if (item.name == params.rootId) {
           run.config.staticList.splice(i, 1);
+          delete run.stat.map.child[params.rootId.toLowerCase()] 
           break;
         }
       }
-      var stat = new StaticFileState();
-      stat.init(run.config.staticList).catch(e => {
-        rap.console.error(e)
-      }).then(item => {
-        run.stat = stat;
-        stat = null;
-        next(Object.assign({}, run.config.staticList));
-      });
+      next(run.config.staticList.slice(0) );
     }
   },
   /**
@@ -145,7 +122,7 @@ exports = module.exports = {
    */
   "get": function(req, res, next) {
     let run = this;
-    next(Object.assign({}, run.config.staticList));
+    next(run.config.staticList.slice(0) );
   },
   /**
    获取 全部html
@@ -174,6 +151,14 @@ exports = module.exports = {
       next(1);
       //目录
     } else {
+      for (let i = 0; i < run.config.staticList.length; i++) {
+        let item = run.config.staticList[i];
+        if (item.name == params.rootId) {
+          run.config.staticList.splice(i, 1);
+          delete run.stat.map.child[params.rootId.toLowerCase()] 
+          break;
+        }
+      }
       updateDirStat(run, path, function(ret) {
         next(ret);
       });

@@ -5,7 +5,7 @@ const AsyncSeries = localRequire("@/server/lib/node_modules/enhanced-resolve/lib
 
 const toPath = localRequire("@/server/lib/node_modules/enhanced-resolve/lib/toPath.js");
 
-const {getDefaultFile} = localRequire("@/server/lib/resolveFile.js")
+const { getDefaultFile } = localRequire("@/server/lib/resolveFile.js")
 
 localRequire("@/server/lib/global/global.js");
 
@@ -38,6 +38,16 @@ async function getStat(file) {
   })
 }
 
+async function exsits(file){
+  let a
+  try{
+     a =  await getStat(file);
+  }catch(e){
+    a =false;
+  }
+  return a;
+}
+
 const {
   ActionMap,
   getActionMap,
@@ -54,26 +64,28 @@ class StaticFileState {
   }
   //多是异步的
   async init(staticStateList) {
-    this.map = new ActionMap();
+    this.map = new ActionMap([], {});
     for (var i = 0; i < staticStateList.length; i++) {
-      await this.initOne(staticStateList[i].path);
+      var map = new ActionMap(null, {});
+      this.map.child[staticStateList[i].name.toLowerCase()] = map;
+      await this.initOne(map, staticStateList[i].path);
     }
   }
 
-  async initOne(root) {
+  async initOne(map, root) {
     let allFile = await findAll(root);
-    let ret = await this.setStatMap(root, allFile);
+    let ret = await this.setStatMap(map, root, allFile);
     return ret;
   }
 
   /**设置全部路由
    * */
-  async setStatMap(root, allFile) {
+  async setStatMap(map, root, allFile) {
     for (var i = 0; i < allFile.length; i++) {
       let file = allFile[i];
       let relative = toPath(file).replace(toPath(root), "");
       var stat = await this.getStat(file)
-      setActionMap(this.map, relative,stat );
+      setActionMap(map, relative, stat);
     }
   }
 
@@ -114,8 +126,28 @@ class StaticFileState {
    * type
    * callback回调
    */
-  get(url,callback,retObj){
-    return getActionMap(this.map,url,callback,retObj);
+  get(url, callback, retObj) {
+    return getActionMap(this.map, url, callback, retObj);
+  }
+
+  async getById(staticStateList, url) {
+    let stat;
+    for (let i = 0; i < staticStateList.length; i++) {
+      let file = toPath(staticStateList[i].path + "/" + url)
+      if (await exsits(file)) {
+        let id = staticStateList[i].name.toLowerCase()
+        this.map.child[id] = this.map.child[id] || new ActionMap(null, {});
+        let relative = toPath(url);
+        stat = await this.getStat(file)
+        return setActionMap(this.map.child[id], relative, stat);
+        //  getActionMap(this.map.child[id], url, null, true);
+      }
+    }
+    if(this.map.value.length>400){//不超过400个对象，防止内存泄漏
+      this.map.value = this.map.value.slice(200);
+    }
+    this.map.value = this.map.value || [];
+    this.map.value.push(url);
   }
 
 

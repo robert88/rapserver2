@@ -9,6 +9,7 @@ module.exports = function(callback) {
   if (ENV == "product") {
     console.log("server run https 443 and http 80" );
     callback({
+      page404:"/rapserver/error/404.html",
       staticList: [{ name:"rapserver",path:localRequire("@/server/static/dest", true) }],
       actionMap: { rapserver: localRequire("@/server/action", true) },
       https: {
@@ -25,6 +26,7 @@ module.exports = function(callback) {
       rap.getPort(port1 + 1, port2 => {
       console.log("server run https " + port1+" and http "+port2);
         callback({
+          page404:"/rapserver/error/404.html",
           staticList: [{ name:"rapserver",path:localRequire("@/server/static/dest", true) }],
           actionMap: { rapserver: localRequire("@/server/action", true) },
           https: {

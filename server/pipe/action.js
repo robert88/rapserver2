@@ -58,7 +58,7 @@ module.exports = function(runner) {
         response.end(ret);
       } else if (response.rap.redirect) {
         response.setHeader("Location", response.rap.redirect)
-        response.writeHead(301);
+        response.writeHead(302);//301有强缓存
         response.end();
       } else {
         next();

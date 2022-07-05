@@ -430,6 +430,9 @@ class Sockie {
     client.on("readable", () => {
       try {
         let tempBuffer = client.read();
+        if (!tempBuffer) {
+          return;
+        }
         totalBuffer = Buffer.concat([totalBuffer, tempBuffer]);
         //读取完整的buffer
         if (!isEndBuffer(client, totalBuffer)) {
@@ -552,7 +555,7 @@ class Sockie {
   bindClose(client) {
     client.on("close", (code, text) => {
       text = text || errerCode[code];
-      rap.console.warn("sockie uuid:",client.rap.uuid,"close by",text);
+      rap.console.warn("sockie uuid:", client.rap.uuid, "close by", text);
       // this.sendMsg(client, client, text, "close");
       delete this.clientMap[client.rap.uuid];
       client.removeAllListeners();

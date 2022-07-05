@@ -80,12 +80,12 @@ module.exports = function(run) {
         //文件是否需要压缩，且客户端是否支持压缩,只支持gzip压缩
       } else if (!fileNotZip && clientSupportGzip) {
         let zip = zipType();
-        // response.setHeader("Content-Encoding", "gzip");
+        response.setHeader("Content-Encoding", "gzip");
         //保持连接，设置错了报错HPE_INVALID_CONSTANT
         response.setHeader("Transfer-Encoding", "chunked");
         response.removeHeader("Content-Length")
         response.writeHead(200);
-        fs.createReadStream(realStat.path).pipe(response);
+        fs.createReadStream(realStat.path).pipe(zip).pipe(response);
       } else {
         //这两个是对立的如果设置Transfer-Encoding，那么就会报错，HPE_UNEXPECTED_CONTENT_LENGTH
         if (realStat["size"] < k100) {

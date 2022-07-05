@@ -1,10 +1,12 @@
 module.exports = {
   homeUrl: "/rapserver/index/index.html",
   configMenu: [{
-    name: "缓存管理",
+    name: "任务",
     icon: "fa-hdd-o",
     href: "/rapserver/cache/cache.html"
-  }]
+  }
+]
+
 }
 
 

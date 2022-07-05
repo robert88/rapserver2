@@ -9,7 +9,7 @@
 
   //更新显示的ui
   function updateRootInfo($rootInfo, ret) {
-    var orgHtml = '[[#each obj]]<li ><div class="rootId">[[$value.name]]</div><div  class="rootPath">[[$value.path]]</div>[[#if ($value.name!=\'rapserver\')]]<a class="J-delPath fa-times" title="可删除" data-id="[[$index]]"></a>[[#endIf]]</li>[[#endEach]]';
+    var orgHtml = '[[#each obj]]<li ><div class="rootId">[[$value.name]]</div><div  class="rootPath">[[$value.path]]</div>[[#if ($value.name!=\'rapserver\')]]<a class="J-delPath fa-times" title="可删除" data-id="[[$value.name]]"></a>[[#endIf]]</li>[[#endEach]]';
     $rootInfo.html('<ul>{0}</ul>'.tpl(parseTeample(orgHtml, ret)));
     for (var i = 0; i < ret.length; i++) {
       setCache(ret[i].name, ret[i].path);
