@@ -255,3 +255,8 @@ at d:\git\rapserver2\server\rap.server.js:53:19[2020/12/15 05:47:18]</log>
 <log> server https run port 3000 at Server.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Runner.js:39:21[2022/07/05 11:36:56] </log>
 <log> server http run port 3001 at Server.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Runner.js:43:23[2022/07/05 11:36:56] </log>
 <log> web sockie listen:3002 at D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:53:19[2022/07/05 11:36:56] </log>
+<log> 默认静态根路径,[{"name":"rapserver","path":"D:/git/前端开发学习代码资料/rapserver2/server/static/dest"}] at D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:114:17[2022/07/05 11:46:00] </log>
+<log> action 根目录,{"rapserver":"D:/git/前端开发学习代码资料/rapserver2/server/action"} at D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:115:17[2022/07/05 11:46:00] </log>
+<log> server https run port 443 at Server.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Runner.js:39:21[2022/07/05 11:46:00] </log>
+<log> server http run port 80 at Server.<anonymous> (D:\git\前端开发学习代码资料\rapserver2\server\bootstrap\Runner.js:43:23[2022/07/05 11:46:00] </log>
+<log> web sockie listen:3000 at D:\git\前端开发学习代码资料\rapserver2\server\rap.server.js:53:19[2022/07/05 11:46:00] </log>

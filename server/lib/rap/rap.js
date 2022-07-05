@@ -83,7 +83,8 @@ function getPort(startPort, callback) {
     }
   }).catch(e => {
     //Command failed,表示没有查到信息,即端口号没有被占用
-    if (~e.message.indexOf("Command failed:") && e.code == 1) {
+
+    if (~(e.message||"").indexOf("Command failed:") && e.code == 1) {
       callback(startPort);
     } else {
       console.error(e.stack)
